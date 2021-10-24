@@ -1,2 +1,5 @@
 rootProject.name = "Practica1-0hY3s"
-include ':app'
+include ':logic'
+include ':engine'
+include ':PCGame'
+include ':PCEngine'
