@@ -3,9 +3,10 @@ package es.ucm.fdi.mov.deleto.p1.pcengine;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
-public class Input implements es.ucm.fdi.mov.deleto.p1.engine.Input {
+public class Input implements IInput {
 
     ArrayList<TouchEvent> _events;
 

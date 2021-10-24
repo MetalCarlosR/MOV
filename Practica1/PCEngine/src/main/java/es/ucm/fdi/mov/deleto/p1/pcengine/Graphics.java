@@ -1,40 +1,65 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
-import org.graalvm.compiler.graph.Graph;
+import java.awt.Color;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferStrategy;
 
-import es.ucm.fdi.mov.deleto.p1.engine.Font;
-import es.ucm.fdi.mov.deleto.p1.engine.Image;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
-public class Graphics implements es.ucm.fdi.mov.deleto.p1.engine.Graphics {
+import es.ucm.fdi.mov.deleto.p1.engine.IFont;
+import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
-    int _width;
-    int _height;
+public class Graphics implements IGraphics {
 
     int _refWidth;
     int _refHeight;
 
-    public Graphics() {
+    String _path;
 
+    JFrame _window;
+    BufferStrategy _strategy;
+    java.awt.Graphics _buffer;
+
+    Color _color;
+
+    public Graphics(JFrame window, String path) {
+        _window = window;
+        window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        window.setVisible(true);
+        _path = path;
+
+        // We try to create 2 buffers
+        while (true) {
+            try {
+                _window.createBufferStrategy(2);
+                break;
+            } catch (Exception e) {
+            }
+        }
+        _strategy = _window.getBufferStrategy();
+        _buffer = _strategy.getDrawGraphics();
+        setColor(0xFFFFFFFF);
     }
 
     @Override
     public int getWidth() {
-        return 0;
+        return _window.getWidth();
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return _window.getHeight();
     }
 
     @Override
     public void setResolution(int x, int y) {
-        _width = x;
-        _height = y;
+        _window.setSize(x, y);
 
         if (_refHeight == 0 || _refWidth == 0) {
-            _refWidth = _width;
-            _refHeight = _height;
+            _refWidth = getWidth();
+            _refHeight = getHeight();
         }
     }
 
@@ -52,6 +77,13 @@ public class Graphics implements es.ucm.fdi.mov.deleto.p1.engine.Graphics {
         return 0;
     }
 
+    public void swapBuffers() {
+        _buffer.dispose();
+        _buffer = _strategy.getDrawGraphics();
+        _buffer.setColor(_color);
+        _strategy.show();
+    }
+
     @Override
     public void translate(int x, int y) {
 
@@ -63,37 +95,46 @@ public class Graphics implements es.ucm.fdi.mov.deleto.p1.engine.Graphics {
     }
 
     @Override
-    public void drawImage(Image image, int posX, int posY, int scaleX, int scaleY) {
-
+    public void drawImage(IImage image, int posX, int posY, int scaleX, int scaleY) {
+        Image im = (Image) image;
+        _buffer.drawImage(im.getImage(), posX, posY, null);
     }
 
     @Override
     public void clear(int color) {
-
+        _buffer.clearRect(0, 0, getWidth(), getHeight());
     }
 
     @Override
     public void setColor(int color) {
+        _color = new Color(color, true);
+        _buffer.setColor(_color);
+    }
 
+    @Override
+    public void setFont(IFont font) {
+        Font f = (Font) font;
+        // _buffer.setFont(f.getFont());
     }
 
     @Override
     public void fillCircle(int x, int y, int r) {
-
+        _buffer.fillOval(x, y, r, r);
     }
 
     @Override
     public void drawText(String text, int x, int y) {
-
+        _buffer.drawString(text, x, y);
     }
 
     @Override
-    public Image newImage(String name) {
-        return null;
+    public IImage newImage(String name) {
+
+        return new Image(_path + "sprites/" + name);
     }
 
     @Override
-    public Font newFont(String fileName, int size, boolean isBold) {
-        return null;
+    public IFont newFont(String fileName, int size, boolean isBold) {
+        return new Font(fileName, size, isBold);
     }
 }

@@ -1,10 +1,10 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
-public interface Application {
+public interface IApplication {
 
-    public void onInit();
+    public void onInit(IEngine engine);
 
-    public void onUpdate();
+    public void onUpdate(double deltaTime);
 
     public void onRender();
 
