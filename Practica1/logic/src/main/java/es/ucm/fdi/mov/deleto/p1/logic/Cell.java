@@ -21,7 +21,7 @@ public class Cell {
 
         Data is:
         [Number of neighbours + free/locked] if fixed or not
-        "3f"
+        Example: "0f 0l 2l 2f"
      */
     public void setCell(String data){
         _neigh = Character.getNumericValue(data.charAt(0));
@@ -33,8 +33,11 @@ public class Cell {
         }
     }
 
+    // llamado en el creador de mapas
     public void setCell(int neighbours, boolean locked){
-
+        _neigh = neighbours;
+        _locked = locked;
+        _state = (locked) ? (neighbours == 0) ? State.Red : State.Blue : State.Grey;
     }
 
     public void setState(State s){

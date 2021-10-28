@@ -5,10 +5,7 @@ import com.sun.tools.javac.util.Pair;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -39,7 +36,7 @@ public class OhY3s implements IApplication {
     }
 
     public Pair<Cell, String> getTip() {
-        List<Cell> cells = _grid.getTipCells();
+        Vector<Cell> cells = _grid.getTipCells();
 
         Collections.shuffle(cells);
 

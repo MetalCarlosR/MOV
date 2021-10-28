@@ -5,8 +5,6 @@ import com.sun.tools.javac.util.Pair;
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
@@ -139,10 +137,7 @@ public class Grid {
         return checkWin();
     }
 
-    private void setCell(){
-
-    }
-
+    // TO DO: bruh
     private boolean checkWin(){
         if(_percentage >= 99 && _mistakes == 0){
             return true;
@@ -211,7 +206,7 @@ public class Grid {
     public int getVisibleNeighs(Cell c){
         int n = 0;
 
-        List<Pair<Integer, Integer>> dirs = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
         dirs.add(new Pair<Integer, Integer>(-1,0));
         dirs.add(new Pair<Integer, Integer>(1,0));
         dirs.add(new Pair<Integer, Integer>(0,-1));
@@ -229,7 +224,7 @@ public class Grid {
         int n = 0;
         int visible = getVisibleNeighs(c);
 
-        List<Pair<Integer, Integer>> dirs = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
         dirs.add(new Pair<Integer, Integer>(-1,0));
         dirs.add(new Pair<Integer, Integer>(1,0));
         dirs.add(new Pair<Integer, Integer>(0,-1));
@@ -251,7 +246,7 @@ public class Grid {
     public int getNumPossibleDirs(Cell c){
         int n = 0;
 
-        List<Pair<Integer, Integer>> dirs = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
         dirs.add(new Pair<Integer, Integer>(-1,0));
         dirs.add(new Pair<Integer, Integer>(1,0));
         dirs.add(new Pair<Integer, Integer>(0,-1));
@@ -268,7 +263,7 @@ public class Grid {
     public Pair<Integer, Integer> getDirForObviousBlueDot(Cell c){
         Pair <Integer, Integer> dir = null;
 
-        List<Pair<Integer, Integer>> dirs = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
         dirs.add(new Pair<Integer, Integer>(-1,0));
         dirs.add(new Pair<Integer, Integer>(1,0));
         dirs.add(new Pair<Integer, Integer>(0,-1));
@@ -302,9 +297,9 @@ public class Grid {
 
     }
 
-    public List<Cell> getTipCells(){
+    public Vector<Cell> getTipCells(){
         //List<Cell> ret = new Vector<Cell>(_fixedCells);
-        List<Cell> ret = new Vector<Cell>();
+        Vector<Cell> ret = new Vector<Cell>();
         for(Cell c : _fixedCells){
             if(getVisibleNeighs(c) != c.getNeigh() && c.getState() != Cell.State.Red)
                 ret.add(c);
@@ -318,8 +313,8 @@ public class Grid {
 
     private Cell[][] _cells;
 
-    private List<Cell> _fixedCells = new Vector<Cell>();
-    private List<Cell> _isolated = new Vector<Cell>();
+    private Vector<Cell> _fixedCells = new Vector<Cell>();
+    private Vector<Cell> _isolated = new Vector<Cell>();
     private int _size = 0;
     private int _percentage = 0;
     private int _freeCells = 0;
