@@ -13,6 +13,8 @@ public class PCGame {
 
         _game.newGame(size);
 
+        _game.draw();
+
         Engine engine = new Engine(_game,"Pito","./assets/");
 
         engine.getGraphics().setResolution(1080/2,2220/2);

@@ -20,12 +20,12 @@ public class Cell {
         This method is used when reading an example from a file
 
         Data is:
-        [Number of neighbours + fixed/libre] if fixed or not
+        [Number of neighbours + free/locked] if fixed or not
         "3f"
      */
     public void setCell(String data){
         _neigh = Character.getNumericValue(data.charAt(0));
-        _locked = data.charAt(1) == 'f';
+        _locked = data.charAt(1) == 'l';
         if(_locked){
             if(_neigh > 0)
                 _state = State.Blue;

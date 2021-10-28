@@ -1,5 +1,16 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import com.sun.tools.javac.util.Pair;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.Vector;
+
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
@@ -24,13 +35,73 @@ public class OhY3s implements IApplication {
 
     public void click(int x, int y) {
         _grid.changeState(x, y);
+        System.out.println("Neighbours "+ _grid.getVisibleNeighs(_grid.getCell(x,y)));
     }
 
-    public String getTip() {
-        return "Activate monke mode";
+    public Pair<Cell, String> getTip() {
+        List<Cell> cells = _grid.getTipCells();
+
+        Collections.shuffle(cells);
+
+        String t = "";
+        Cell c = null;
+
+        int i = 0;
+        while(i < cells.size() && t == ""){
+            //int rand = (int)Math.floor(Math.random()*(cells.size()));
+            c = cells.get(i);
+
+            // TO DO: si se optimiza, no hace falta
+            int visibleNeigh = _grid.getVisibleNeighs(c);
+
+            // Estan desordenados para que muestre los casos especificos o por optimizacion
+            // 6. y 7. para aislados si esta en azul o en gris
+            if(c.getNeigh() == 0){
+                if(c.getState() == Cell.State.Grey)
+                    t = "This one should be easy...";
+                else if (c.getState() == Cell.State.Blue)
+                    t = "A blue dot should always see at least one other";
+            }
+            // 4. ve demasiados cells
+            else if(visibleNeigh > c.getNeigh()){
+                t = "This number sees a bit too much";
+            }
+            // 1. ya los ve todos
+            else if(visibleNeigh == c.getNeigh()){
+                t = "This number can see all its dots";
+            }
+            // 8. solo te queda una direccion en la que mirar
+            else if(_grid.getNumPossibleDirs(c) == 1){
+                t = "Only one direction remains for this number to look in";
+            }
+            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
+            else if(_grid.getPossibleNeighs(c)){
+                t = "Looking further in one direction would exceed this number";
+            }
+            // 3. 5. y 9.
+            else{
+                Pair<Integer, Integer> obvious = _grid.getDirForObviousBlueDot(c);
+                // 3. y 9. hay un punto que tiene que ser clicado si o si
+                if(obvious != null){
+                    t = "One specific dot is included in all solutions imaginable";
+                }
+                // 5. no ve los suficientes
+                else if(obvious == null){
+                    t = "This number can't see enough";
+                }
+            }
+            // TO DO:
+            // 10. ??
+
+            i++;
+        }
+
+        return new Pair<Cell, String>(c, t);
     }
 
     public void draw() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
         _grid.draw();
     }
 
@@ -43,13 +114,75 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onUpdate(double deltaTime) {
-        aaaa += deltaTime * 100;
+        //aaaa += deltaTime * 100;
+
+        // Enter data using BufferReader
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(System.in));
+
+        // Reading data using readLine
+        String rawInp = null;
+        try {
+            rawInp = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        String[] input = rawInp.split(" ");
+
+        switch (input[0]){
+            case "click":{
+                int x = -1;
+                int y = -1;
+                try{
+                    if(input.length < 3)
+                        throw new RuntimeException();
+                    x = Integer.valueOf(input[1]);
+                    y = Integer.valueOf(input[2]);
+                    if (x < 0 || y < 0 || x >= _grid.getSize() || y >= _grid.getSize())
+                        throw new RuntimeException();
+                }
+                catch (RuntimeException e){
+                    System.out.println("Click command expects 2 valid ints");
+                    break;
+                }
+                click(x, y);
+                break;
+            }
+            case "exit":{
+                System.out.println("Exiting...");
+                break;
+            }
+            case "undo":{
+                System.out.println("NOT IMPLEMENTED YET");
+                break;
+            }
+            case "tip":{
+                Pair<Cell, String> tip = getTip();
+                System.out.println("Position: " + tip.fst._x + " " + tip.fst._y + "\n" + tip.snd);
+                break;
+            }
+            case "settings":{
+                System.out.println("NOT IMPLEMENTED YET");
+                break;
+            }
+            case "about":{
+                System.out.println("NOT IMPLEMENTED YET");
+                break;
+            }
+            default:{
+                System.out.println("Unknown command:\n" + rawInp);
+                break;
+            }
+        }
+
+        draw();
     }
 
     @Override
     public void onRender() {
-        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
-        _engine.getGraphics().drawImage(image,(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
+//        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
+//        _engine.getGraphics().drawImage(image,(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
+        //draw();
     }
 
     @Override
