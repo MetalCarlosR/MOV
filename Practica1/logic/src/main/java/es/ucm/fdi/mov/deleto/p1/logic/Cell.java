@@ -37,6 +37,10 @@ public class Cell {
 
     }
 
+    public void setState(State s){
+        _state = s;
+    }
+
     public boolean changeState(){
         if(_locked)
             return false;

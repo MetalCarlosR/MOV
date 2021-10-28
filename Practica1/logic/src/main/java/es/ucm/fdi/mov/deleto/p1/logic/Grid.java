@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner; // Import the Scanner class to read text files
+import java.util.Stack;
 import java.util.Vector;
 
 public class Grid {
@@ -18,7 +19,8 @@ public class Grid {
     }
 
     private void initializeGrid() {
-        int notFixed = 0;
+        _freeCells = 0;
+        _clicked = 0;
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
                 _cells[i][j] = new Cell(j, i, 0,true);
@@ -32,7 +34,7 @@ public class Grid {
                 for(int j = 0; j < _size; j++) {
                     _cells[i][j].setCell(pairs[j]);
                     if(!_cells[i][j].isLocked())
-                        notFixed++;
+                        _freeCells++;
                     else _fixedCells.add(_cells[i][j]);
                 }
                 i++;
@@ -55,9 +57,6 @@ public class Grid {
                     }
                 }
             }
-
-            if(notFixed > 0)
-                _percentInc = 100.0f / notFixed;
         }
         catch (FileNotFoundException e){
             // TO DO: hacemos esto really?
@@ -104,17 +103,44 @@ public class Grid {
         System.out.println(_percentage + "%");
     }
 
+    public boolean clickCell(int x, int y){
+        Cell c = getCell(x,y);
+        undoStack.push(new Pair<>(c,c.getState()));
+        return changeState(x, y);
+    }
+
+    public boolean undoMove(){
+        if(undoStack.empty())
+            return false;
+
+        Pair<Cell, Cell.State> c = undoStack.pop();
+
+        c.fst.setState(c.snd);
+        if(c.snd == Cell.State.Grey)
+            _clicked--;
+
+        _percentage =  (100 * _clicked) / _freeCells;
+
+        return  true;
+    }
+
     public boolean changeState(int x, int y){
-        Cell.State empty = getCell(x, y).getState();
         if(!getCell(x, y).changeState())
             System.out.println("Couldn't click on " + x + " " + y);
         else {
-            if(empty == Cell.State.Grey)
-                _percentage += _percentInc;
-            else if(empty == Cell.State.Red)_percentage -= _percentInc;
+            Cell.State state = getCell(x, y).getState();
+            if(state == Cell.State.Grey)
+                _clicked--;
+            else if(state == Cell.State.Blue) _clicked++;
+
+            _percentage =  (100 * _clicked) / _freeCells;
         }
 
         return checkWin();
+    }
+
+    private void setCell(){
+
     }
 
     private boolean checkWin(){
@@ -296,6 +322,9 @@ public class Grid {
     private List<Cell> _isolated = new Vector<Cell>();
     private int _size = 0;
     private int _percentage = 0;
-    private float _percentInc = 0;
+    private int _freeCells = 0;
+    private int _clicked = 0;
     private int _mistakes = 0;
+
+    private Stack<Pair<Cell, Cell.State>> undoStack = new Stack<>();
 }

@@ -34,7 +34,7 @@ public class OhY3s implements IApplication {
     }
 
     public void click(int x, int y) {
-        _grid.changeState(x, y);
+        _grid.clickCell(x, y);
         System.out.println("Neighbours "+ _grid.getVisibleNeighs(_grid.getCell(x,y)));
     }
 
@@ -149,11 +149,14 @@ public class OhY3s implements IApplication {
                 break;
             }
             case "exit":{
+                // TO DO: que pare
                 System.out.println("Exiting...");
                 break;
             }
             case "undo":{
-                System.out.println("NOT IMPLEMENTED YET");
+                if(_grid.undoMove())
+                    System.out.println("Undoing last move...");
+                else System.out.println("Couldn't undo last move");
                 break;
             }
             case "tip":{
