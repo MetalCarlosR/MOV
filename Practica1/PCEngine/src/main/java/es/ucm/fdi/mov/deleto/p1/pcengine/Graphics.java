@@ -1,6 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.Ellipse2D;
@@ -35,6 +36,8 @@ public class Graphics implements IGraphics {
     int _scaleX;
     int _scaleY;
 
+    static final int BORDE_H = 31;
+
     public Graphics(JFrame window, String path) {
         _window = window;
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -52,7 +55,10 @@ public class Graphics implements IGraphics {
         _strategy = _window.getBufferStrategy();
         _buffer = _strategy.getDrawGraphics();
         setColor(0xFFFFFFFF);
-
+        _originY = (_window.getHeight() - _window.getContentPane().getHeight());
+        _originY = BORDE_H;
+        System.out.println(_originY);
+        System.out.println(_window.getContentPane().getHeight());
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
                 int actualW = _window.getWidth();
@@ -61,9 +67,25 @@ public class Graphics implements IGraphics {
                 if((double)actualH * _refFactor > actualW)
                 {
                     //CABE EL ANCHO Y NO EL ALTO, BANDAS ARRIBA Y ABAJO
+                    int ancho = actualW;
+                    int border = (actualH - (int)(actualW / _refFactor));
+//                    System.out.println("BANDAS ARRIBA Y ABAJO");
+//                    System.out.println("ACTUAL: {"+actualW+", "+actualH+"}");
+//                    System.out.println("CANVAS: {"+actualW+", "+(actualW / _refFactor)+"}");
+//                    System.out.println("Resto: {"+(_window.getHeight() - _window.getContentPane().getHeight())+", "+(border / 2)+"}");
+                    System.out.println(_window.getHeight() + " - " +_window.getContentPane().getHeight() + " - " +getHeight());
+
+                    _originX = 0;
+                    //_originY = BORDE_H+border/2;
                 }
                 else{
                     //CABE EL ALTO Y NO EL ANCHO, BANDAS IZQUIERDA Y DERECHA
+//                    System.out.println("BANDAS IZQUIERDA Y DERECHA");
+                    System.out.println(_window.getHeight() + " - " +_window.getContentPane().getHeight() + " - " + getHeight());
+
+//                    System.out.println(_window.getContentPane().getHeight());
+                    //_originY = BORDE_H;
+
                 }
             }
         });
@@ -81,7 +103,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public int getHeight() {
-        return _refHeight;
+        return _refHeight-BORDE_H;
     }
 
     @Override
@@ -91,14 +113,15 @@ public class Graphics implements IGraphics {
         _refHeight = y;
 
         _refFactor = (double)x/(double)y;
+
     }
 
     private int realPositionX(int x) {
-        return (_virtualW/_refWidth)*x+_originX;
+        return x+_originX;
     }
 
     private int realPositionY(int y) {
-        return (_virtualH/_refHeight)*y+_originX;
+        return y+_originY;
     }
 
     public void swapBuffers() {

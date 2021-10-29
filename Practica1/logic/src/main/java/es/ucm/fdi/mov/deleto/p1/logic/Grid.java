@@ -73,6 +73,8 @@ public class Grid {
         int padding = 4;
         graphics.setColor(0xFFFF00FF);
         graphics.fillRect(0,0,graphics.getWidth(),graphics.getHeight());
+        graphics.setColor(0xFFFFFFFF);
+        graphics.fillRect(0,0,100,100);
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
