@@ -9,6 +9,9 @@ import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
 
+import es.ucm.fdi.mov.deleto.p1.engine.IFont;
+import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
+
 public class Grid {
     public Grid(int size){
         _size = size;
@@ -63,6 +66,47 @@ public class Grid {
             System.out.println("Generating one by default\n");
             e.printStackTrace();
         }
+    }
+
+    public void _draw(IGraphics graphics, IFont font){
+        int r = 30;
+        int padding = 4;
+        graphics.setColor(0xFFFF00FF);
+        graphics.fillRect(0,0,graphics.getWidth(),graphics.getHeight());
+        for(int i = 0; i < _size; i++) {
+            for(int j = 0; j < _size; j++)
+            {
+                char ch = ' ';
+                Cell cel = _cells[i][j];
+                Cell.State state = cel.getState();
+
+                if (cel.isLocked()){
+                    if(cel.getNeigh() == 0){
+                        ch = 'X';
+                    }
+                    else ch = (char)('0' + cel.getNeigh());
+                }
+                else{
+                    if(cel.getState() == Cell.State.Blue)
+                        ch = 'O';
+                    else if(cel.getState() == Cell.State.Red)
+                        ch = '+';
+                }
+                graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+                graphics.fillCircle((i+1)*(r*2+padding)+padding,(j+1)*(r*2+padding)+padding,r);
+                graphics.setColor(0xFFFFFFFF);
+                if(cel.getState() == Cell.State.Blue && cel.isLocked())
+                    graphics.drawText(Integer.toString(cel._neigh),(i+1)*(r*2+padding)+padding+r/2,(j+1)*(r*2+padding)+padding+r/2 );
+            }
+            //System.out.println("|");
+        }
+        for(int j = 0; j < _size; j++)
+        {
+            //System.out.print("+---");
+        }
+        //System.out.println("+");
+
+//        System.out.println(_percentage + "%");
     }
 
     public void draw(){

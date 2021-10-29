@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
+import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -21,6 +22,7 @@ public class OhY3s implements IApplication {
 
     double aaaa = 0;
     IImage image;
+    IFont _font;
 
     public OhY3s() {
 
@@ -96,98 +98,101 @@ public class OhY3s implements IApplication {
         return new Pair<Cell, String>(c, t);
     }
 
-    public void draw() {
+    public void _draw() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
-        _grid.draw();
+//        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
+//        _engine.getGraphics().drawImage(image,32+(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
+        _grid._draw(_engine.getGraphics(), _font);
     }
+
 
     @Override
     public void onInit(IEngine engine) {
         _engine = engine;
         _engine.getGraphics().setColor(0xFF0000FF);
         image = _engine.getGraphics().newImage("close.png");
+        _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",42,true);
     }
 
     @Override
     public void onUpdate(double deltaTime) {
-        //aaaa += deltaTime * 100;
+        aaaa += deltaTime * 100;
 
         // Enter data using BufferReader
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(System.in));
 
         // Reading data using readLine
-        String rawInp = null;
+        String rawInp = "";
+        /*
         try {
             rawInp = reader.readLine();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
         String[] input = rawInp.split(" ");
+//
+//        switch (input[0]){
+//            case "click":{
+//                int x = -1;
+//                int y = -1;
+//                try{
+//                    if(input.length < 3)
+//                        throw new RuntimeException();
+//                    x = Integer.valueOf(input[1]);
+//                    y = Integer.valueOf(input[2]);
+//                    if (x < 0 || y < 0 || x >= _grid.getSize() || y >= _grid.getSize())
+//                        throw new RuntimeException();
+//                }
+//                catch (RuntimeException e){
+//                    System.out.println("Click command expects 2 valid ints");
+//                    break;
+//                }
+//                click(x, y);
+//                break;
+//            }
+//            case "exit":{
+//                // TO DO: que pare
+//                System.out.println("Exiting...");
+//                _engine.exit();
+//                break;
+//            }
+//            case "undo":{
+//                if(_grid.undoMove())
+//                    System.out.println("Undoing last move...");
+//                else System.out.println("Couldn't undo last move");
+//                break;
+//            }
+//            case "tip":{
+//                Pair<Cell, String> tip = getTip();
+//                System.out.println("Position: " + tip.fst._x + " " + tip.fst._y + "\n" + tip.snd);
+//                break;
+//            }
+//            case "settings":{
+//                System.out.println("NOT IMPLEMENTED YET");
+//                break;
+//            }
+//            case "about":{
+//                System.out.println("NOT IMPLEMENTED YET");
+//                break;
+//            }
+//            default:{
+//                System.out.println("Unknown command:\n" + rawInp);
+//                break;
+//            }
+//        }
 
-        switch (input[0]){
-            case "click":{
-                int x = -1;
-                int y = -1;
-                try{
-                    if(input.length < 3)
-                        throw new RuntimeException();
-                    x = Integer.valueOf(input[1]);
-                    y = Integer.valueOf(input[2]);
-                    if (x < 0 || y < 0 || x >= _grid.getSize() || y >= _grid.getSize())
-                        throw new RuntimeException();
-                }
-                catch (RuntimeException e){
-                    System.out.println("Click command expects 2 valid ints");
-                    break;
-                }
-                click(x, y);
-                break;
-            }
-            case "exit":{
-                // TO DO: que pare
-                System.out.println("Exiting...");
-                break;
-            }
-            case "undo":{
-                if(_grid.undoMove())
-                    System.out.println("Undoing last move...");
-                else System.out.println("Couldn't undo last move");
-                break;
-            }
-            case "tip":{
-                Pair<Cell, String> tip = getTip();
-                System.out.println("Position: " + tip.fst._x + " " + tip.fst._y + "\n" + tip.snd);
-                break;
-            }
-            case "settings":{
-                System.out.println("NOT IMPLEMENTED YET");
-                break;
-            }
-            case "about":{
-                System.out.println("NOT IMPLEMENTED YET");
-                break;
-            }
-            default:{
-                System.out.println("Unknown command:\n" + rawInp);
-                break;
-            }
-        }
-
-        draw();
     }
 
     @Override
     public void onRender() {
-//        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
-//        _engine.getGraphics().drawImage(image,(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
-        //draw();
+        _draw();
     }
 
     @Override
     public void onExit() {
-
+        System.out.println("SALIENDO PAPA");
     }
 
     @Override

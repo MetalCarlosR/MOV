@@ -8,8 +8,6 @@ public interface IGraphics {
 
     public void setResolution(int x, int y);
 
-    public void setRefResolution(int x, int y);
-
     public void translate(int x, int y);
 
     public void scale(int x, int y);
@@ -23,6 +21,8 @@ public interface IGraphics {
     public void setFont(IFont font);
 
     public void fillCircle(int x, int y, int r);
+
+    public void fillRect(int x, int y, int w, int h);
 
     public void drawText(String text, int x, int y);
 

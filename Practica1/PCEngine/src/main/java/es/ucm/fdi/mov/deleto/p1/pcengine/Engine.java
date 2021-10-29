@@ -27,8 +27,11 @@ public class Engine implements IEngine {
     public void run() {
 
         while (true) {
+            System.out.println("entrando");
+
             running = true;
             _app.onInit(this);
+
             // Vamos allá.
             long lastFrameTime = System.nanoTime();
 
@@ -42,7 +45,7 @@ public class Engine implements IEngine {
                 for (TouchEvent ev : _input.getTouchEvents()) {
                     _app.onEvent(ev);
                 }
-                _graphics.clear(0x000000FF);
+                _graphics.clear(0xFF000000);
                 _app.onRender();
                 _graphics.swapBuffers();
             }
@@ -51,9 +54,11 @@ public class Engine implements IEngine {
             if (_nextApp != null) {
                 _app = _nextApp;
                 _nextApp = null;
+                System.out.println("cagamos");
             } else
                 break;
         }
+        _graphics.release();
     }
 
     @Override
