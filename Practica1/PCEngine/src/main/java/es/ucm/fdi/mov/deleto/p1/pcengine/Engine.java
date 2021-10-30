@@ -46,7 +46,7 @@ public class Engine implements IEngine {
                     _app.onEvent(ev);
                 }
                 do {
-                    _graphics.clear(0xFF000000);
+                    _graphics.clear(0xFFFFFFFF);
                     _app.onRender();
                 }while(_graphics.swapBuffers());
 

@@ -69,13 +69,18 @@ public class Grid {
     }
 
     public void _draw(IGraphics graphics, IFont font){
-        int r = 30;
-        int padding = 4;
-        graphics.setColor(0xFFFF00FF);
-        graphics.fillRect(0,0,400,600);
-        graphics.setColor(0xFFFFFFFF);
+        int padding = 5;
+        int r = (graphics.getWidth()-padding*_size)/(_size*2);
+
+        int x = (r-padding)/2;
+        int y = 80;
+
+
+
+        graphics.setColor(0xFF000000);
         graphics.fillRect(0,0,10,10);
         graphics.fillRect(400-10,600-10,10,10);
+
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
@@ -96,10 +101,14 @@ public class Grid {
                         ch = '+';
                 }
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
-                graphics.fillCircle((i+1)*(r*2+padding)+padding,(j+1)*(r*2+padding)+padding,r);
+                graphics.fillCircle(x+(j)*(r*2+padding)+padding,
+                                    y+(i)*(r*2+padding)+padding,
+                                     r);
                 graphics.setColor(0xFFFFFFFF);
                 if(cel.getState() == Cell.State.Blue && cel.isLocked())
-                    graphics.drawText(Integer.toString(cel._neigh),(i+1)*(r*2+padding)+padding+r/2,(j+1)*(r*2+padding)+padding+r/2 );
+                    graphics.drawText(Integer.toString(cel._neigh),
+                            x+(j)*(r*2+padding)+padding+(r-12)/2,
+                            y+(i)*(r*2+padding)+padding+(r+14)/2 );
             }
             //System.out.println("|");
         }
@@ -110,6 +119,8 @@ public class Grid {
         //System.out.println("+");
 
 //        System.out.println(_percentage + "%");
+        graphics.setColor(0xFF000000);
+        graphics.drawText(Integer.toString(_percentage)+"%",(graphics.getWidth()/2)-12,540);
     }
 
     public void draw(){

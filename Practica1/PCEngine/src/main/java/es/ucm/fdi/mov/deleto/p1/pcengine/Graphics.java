@@ -31,6 +31,8 @@ public class Graphics implements IGraphics {
 
     Dimension _size;
     String _path;
+    java.awt.Font _actualFont;
+
 
     JFrame _window;
     BufferStrategy _strategy;
@@ -48,6 +50,7 @@ public class Graphics implements IGraphics {
         _window = window;
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         window.setVisible(true);
+        window.setIgnoreRepaint(true);
         _path = path;
         _size = new Dimension();
         // We try to create 2 buffers
@@ -183,6 +186,7 @@ public class Graphics implements IGraphics {
     public void setFont(IFont font) {
         Font f = (Font) font;
         _buffer.setFont(f.getFont());
+        _actualFont=f.getFont();
     }
 
     @Override
@@ -197,7 +201,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public void drawText(String text, int x, int y) {
-        _buffer.setFont(_buffer.getFont().deriveFont(_buffer.getFont().getSize()*(_endX-_originX)/_refWidth));
+        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),(int)(_actualFont.getSize()*(_endX-_originX)/_refWidth)));
         _buffer.drawString(text, realPositionX(x), realPositionY(y));
     }
 

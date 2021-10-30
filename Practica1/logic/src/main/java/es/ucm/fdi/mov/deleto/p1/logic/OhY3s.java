@@ -23,6 +23,7 @@ public class OhY3s implements IApplication {
     double aaaa = 0;
     IImage image;
     IFont _font;
+    IFont _title;
 
     public OhY3s() {
 
@@ -103,16 +104,21 @@ public class OhY3s implements IApplication {
         System.out.flush();
 //        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
 //        _engine.getGraphics().drawImage(image,32+(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
+        _engine.getGraphics().setFont(_font);
         _grid._draw(_engine.getGraphics(), _font);
+        _engine.getGraphics().setFont(_title);
+        _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth()-(36*3))/2,64);
     }
 
 
     @Override
     public void onInit(IEngine engine) {
         _engine = engine;
-        _engine.getGraphics().setColor(0xFF0000FF);
+        _engine.getGraphics().setColor(0xFFFFFFFF);
         image = _engine.getGraphics().newImage("close.png");
-        _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",42,true);
+        _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,true);
+        _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",72,true);
+        _engine.getGraphics().setFont(_font);
     }
 
     @Override
