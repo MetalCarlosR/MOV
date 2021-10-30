@@ -24,6 +24,7 @@ public class OhY3s implements IApplication {
     IImage image;
     IFont _font;
     IFont _title;
+    IFont _subtitle;
 
     public OhY3s() {
 
@@ -100,14 +101,21 @@ public class OhY3s implements IApplication {
     }
 
     public void _draw() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-//        _engine.getGraphics().fillCircle((int)aaaa % _engine.getGraphics().getWidth() - 50, 100, 100);
-//        _engine.getGraphics().drawImage(image,32+(int)aaaa % _engine.getGraphics().getWidth() - 50, 600, 1, 1);
-        _engine.getGraphics().setFont(_font);
-        _grid._draw(_engine.getGraphics(), _font);
+        //Draw Title
+        _engine.getGraphics().setColor(0xFF000000);
         _engine.getGraphics().setFont(_title);
-        _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth()-(36*3))/2,64);
+        _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,32);
+
+        //Draw Grid
+        _engine.getGraphics().setFont(_font);
+        _grid._draw(_engine.getGraphics(), _font, image);
+
+        //Draw percentage
+        _engine.getGraphics().setFont(_subtitle);
+        _engine.getGraphics().setColor(0xFF777777);
+        _engine.getGraphics().drawText(Integer.toString(_grid.get_percentage())+"%",(_engine.getGraphics().getWidth()/2),540);
+
+        //TODO Draw bottom bar
     }
 
 
@@ -115,9 +123,10 @@ public class OhY3s implements IApplication {
     public void onInit(IEngine engine) {
         _engine = engine;
         _engine.getGraphics().setColor(0xFFFFFFFF);
-        image = _engine.getGraphics().newImage("close.png");
-        _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,true);
+        image = _engine.getGraphics().newImage("lock.png");
+        _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",64,true);
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",72,true);
+        _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
         _engine.getGraphics().setFont(_font);
     }
 

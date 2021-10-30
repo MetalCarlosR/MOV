@@ -12,7 +12,9 @@ public interface IGraphics {
 
     public void scale(int x, int y);
 
-    public void drawImage(IImage image, int posX, int posY, int scaleX, int scaleY);
+    public void setOpacity(float opacity);
+
+    public void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY);
 
     public void clear(int color);
 

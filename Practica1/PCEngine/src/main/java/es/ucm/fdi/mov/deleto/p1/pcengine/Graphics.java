@@ -1,13 +1,13 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
@@ -45,8 +45,8 @@ public class Graphics implements IGraphics {
     int _scaleX;
     int _scaleY;
 
-    static final int BORDE_H = 31;
-    static final int BORDE_W = 8;
+    static final int WINDOW_MENU_HIGHT = 23;
+    static final int WINDOW_BORDER = 8;
 
     public Graphics(JFrame window, String path) {
         _window = window;
@@ -75,26 +75,30 @@ public class Graphics implements IGraphics {
             public void componentResized(ComponentEvent componentEvent) {
                 int actualW = _window.getWidth();
                 int actualH = _window.getHeight();
-                //  MINIMO ANCHO NECESARIO
-                if((double)actualH * _refFactor > actualW+BORDE_W)
-                {
-                    //CABE EL ANCHO Y NO EL ALTO, BANDAS ARRIBA Y ABAJO
-                        int border = ((actualH-14) - (int)((actualW) / _refFactor));
-                    if(border < 0)
-                        border=0;
-                    _originX = BORDE_W;
-                    _originY = BORDE_H + border/2;
-                }
-                else{
-                    int bandas = (actualW+10 - (int)(Math.floor((actualH) * _refFactor)));
-                    if(bandas < 0)
-                        bandas=0;
-                    _originX = BORDE_W+bandas/2;
-                    _originY = BORDE_H;
-//                    _endX = _originX +(int)(actualH*_refFactor) - bandas/2;
-                }
+
+                int leftOffset = 0;
+                int topOffset = 0;
+
+                //We start the canvas skipping the window decorations
+                _originX= WINDOW_BORDER;
+                _originY= WINDOW_MENU_HIGHT + WINDOW_BORDER;
+
+                //Respecting the aspect ratio this would be the expected width and height
+                int expectedWidth  = (int)(actualH * _refFactor);
+                int expectedHeight = (int)(actualW / _refFactor);
+
+                //If the expectedWidth doesn't fit we add height to the bars
+                //Otherwise add width
+                if( expectedWidth > actualW+ WINDOW_BORDER)
+                    topOffset = (actualH-WINDOW_MENU_HIGHT + WINDOW_BORDER - expectedHeight)/2;
+                else
+                    leftOffset = (actualW+ WINDOW_BORDER - expectedWidth)/2;
+
+                _originX += leftOffset;
+                _originY +=  topOffset;
+
                 _endX = actualW-_originX;
-                _endY = actualH-_originY+4;
+                _endY = actualH-_originY;
             }
         });
     }
@@ -116,9 +120,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public void setResolution(int x, int y) {
-        _window.setSize(x+16, (y+8)+BORDE_H);
-
-        //_window.setSize(_window.getWidth()+insetWide, _window.getHeight()+insetTall);
+        _window.setSize(x+(WINDOW_BORDER *2), (y+ WINDOW_BORDER *2)+ WINDOW_MENU_HIGHT);
 
         _refWidth  = x;
         _refHeight = y;
@@ -177,9 +179,16 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public void drawImage(IImage image, int posX, int posY, int scaleX, int scaleY) {
-        Image im = (Image) image;
-        _buffer.drawImage(im.getImage(), posX, posY, null);
+    public void setOpacity(float opacity) {
+        ((Graphics2D) _buffer).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+    }
+
+    @Override
+    public void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY) {
+        Image im   = (Image) image;
+        int width  = (int) (realLength(im.getWidth()) * scaleX);
+        int height = (int) (realLength(im.getHeight())* scaleY);
+        _buffer.drawImage(im.getImage(), realPositionX(posX)-width/2, realPositionY(posY)-height/2,width,height, null);
     }
 
 
@@ -198,7 +207,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public void fillCircle(int x, int y, int r) {
-        _buffer.fillOval(realPositionX(x), realPositionY(y), realLength(r), realLength(r));
+        _buffer.fillOval(realPositionX(x), realPositionY(y), realLength(r*2), realLength(r*2));
     }
 
     @Override
@@ -209,7 +218,10 @@ public class Graphics implements IGraphics {
     @Override
     public void drawText(String text, int x, int y) {
         _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength(_actualFont.getSize())));
-        _buffer.drawString(text, realPositionX(x), realPositionY(y));
+        FontMetrics fm = _buffer.getFontMetrics();
+        int fX = (fm.stringWidth(text))/2;
+        int fY = fm.getHeight()/2;
+        _buffer.drawString(text, realPositionX(x)-fX, realPositionY(y)+fY/2);
     }
 
     @Override

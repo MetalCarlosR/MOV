@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Grid {
     public Grid(int size){
@@ -68,97 +69,47 @@ public class Grid {
         }
     }
 
-    public void _draw(IGraphics graphics, IFont font){
-        int padding = 5;
-        int r = (graphics.getWidth()-padding*_size)/(_size*2);
+    public int get_percentage(){
+        return _percentage;
+    }
 
-        int x = (r-padding)/2;
-        int y = 80;
+    public void _draw(IGraphics graphics, IFont font, IImage lock){
+        int padding = 10;
+        int r = (graphics.getWidth()-_size*padding)/(_size*2);
 
-
+        int originX = (padding/2);
+        int originY = 80;
 
         graphics.setColor(0xFF000000);
         graphics.fillRect(0,0,10,10);
         graphics.fillRect(400-10,600-10,10,10);
 
+
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
-                char ch = ' ';
                 Cell cel = _cells[i][j];
                 Cell.State state = cel.getState();
 
-                if (cel.isLocked()){
-                    if(cel.getNeigh() == 0){
-                        ch = 'X';
-                    }
-                    else ch = (char)('0' + cel.getNeigh());
-                }
-                else{
-                    if(cel.getState() == Cell.State.Blue)
-                        ch = 'O';
-                    else if(cel.getState() == Cell.State.Red)
-                        ch = '+';
-                }
+                int x = originX+(j)*(r*2)+padding*j;
+                int y = originY+(i)*(r*2)+padding*i;
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
-                graphics.fillCircle(x+(j)*(r*2+padding)+padding,
-                                    y+(i)*(r*2+padding)+padding,
-                                     r);
+                graphics.fillCircle(x,y,r);
+
                 graphics.setColor(0xFFFFFFFF);
                 if(cel.getState() == Cell.State.Blue && cel.isLocked())
-                    graphics.drawText(Integer.toString(cel._neigh),
-                            x+(j)*(r*2+padding)+padding+(r-12)/2,
-                            y+(i)*(r*2+padding)+padding+(r+14)/2 );
-            }
-            //System.out.println("|");
-        }
-        for(int j = 0; j < _size; j++)
-        {
-            //System.out.print("+---");
-        }
-        //System.out.println("+");
+                    graphics.drawText(Integer.toString(cel._neigh), x+r,y+r);
+                else if(cel.getState() == Cell.State.Red && cel.isLocked())
+                {
+                    graphics.setOpacity(0.2f);
+                    graphics.drawImage(lock, x+r,y+r,0.65f,0.65f);
+                    graphics.setOpacity(1.0f);
 
-//        System.out.println(_percentage + "%");
-        graphics.setColor(0xFF000000);
-        graphics.drawText(Integer.toString(_percentage)+"%",(graphics.getWidth()/2)-12,540);
-    }
-
-    public void draw(){
-        for(int i = 0; i < _size; i++) {
-            for(int j = 0; j < _size; j++)
-            {
-                System.out.print("+---");
-            }
-            System.out.println("+");
-            for(int j = 0; j < _size; j++)
-            {
-                char ch = ' ';
-                Cell cel = _cells[i][j];
-                if (cel.isLocked()){
-                    if(cel.getNeigh() == 0){
-                        ch = 'X';
-                    }
-                    else ch = (char)('0' + cel.getNeigh());
                 }
-                else{
-                    if(cel.getState() == Cell.State.Blue)
-                        ch = 'O';
-                    else if(cel.getState() == Cell.State.Red)
-                        ch = '+';
-                }
-                System.out.print("| " + ch + " ");
             }
-            System.out.println("|");
         }
-        for(int j = 0; j < _size; j++)
-        {
-            System.out.print("+---");
-        }
-        System.out.println("+");
 
-        System.out.println(_percentage + "%");
     }
-
     public boolean clickCell(int x, int y){
         Cell c = getCell(x,y);
         undoStack.push(new Pair<>(c,c.getState()));

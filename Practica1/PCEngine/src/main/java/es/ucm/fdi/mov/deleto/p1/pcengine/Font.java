@@ -32,4 +32,9 @@ public class Font implements IFont {
     }
 
     public  java.awt.Font getFont(){return _font;};
+
+    @Override
+    public int getSize() {
+        return _size;
+    }
 }
