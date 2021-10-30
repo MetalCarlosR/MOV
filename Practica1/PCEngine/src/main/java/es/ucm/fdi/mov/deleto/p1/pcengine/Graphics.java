@@ -2,7 +2,9 @@ package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.geom.Ellipse2D;
@@ -51,9 +53,10 @@ public class Graphics implements IGraphics {
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         window.setVisible(true);
         window.setIgnoreRepaint(true);
+
         _path = path;
         _size = new Dimension();
-        // We try to create 2 buffers
+
         while (true) {
             try {
                 _window.createBufferStrategy(2);
@@ -64,11 +67,10 @@ public class Graphics implements IGraphics {
         }
         _strategy = _window.getBufferStrategy();
         _buffer = _strategy.getDrawGraphics();
-        setColor(0xFFFFFFFF);
 
-        System.out.println(_originY);
         _originX=0;
-        System.out.println(_window.getContentPane().getHeight());
+        _originY=0;
+
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
                 int actualW = _window.getWidth();
@@ -138,26 +140,31 @@ public class Graphics implements IGraphics {
     }
 
     public boolean swapBuffers() {
+        //debug
         setColor(0xFFFFFF00);
-//        _buffer.fillRect(_originX, _originY,_endX,_endY);
         _buffer.fillRect(_endX-10,_endY+10,10,10);
+        _buffer.setColor(_color);
+        //debug
+
         _buffer.dispose();
         _buffer = _strategy.getDrawGraphics();
-        _buffer.setColor(_color);
-        _strategy.show();
+        //Enable antialiasing for the new buffer
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+
+        //Check if resize was applied during rendering, if so then repaint
         boolean repeat = !_size.equals(_window.getSize());
-        if(repeat)
-            System.out.println("AAAAAA");
+        if(!repeat)
+            _strategy.show();
         return repeat;
     }
 
     @Override
     public void clear(int color) {
+        _size = _window.getSize();
         Color aux = _color;
         setColor(color);
         _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
         setColor(aux.getRGB());
-        _size = _window.getSize();
     }
     @Override
     public void translate(int x, int y) {
@@ -201,7 +208,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public void drawText(String text, int x, int y) {
-        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),(int)(_actualFont.getSize()*(_endX-_originX)/_refWidth)));
+        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength(_actualFont.getSize())));
         _buffer.drawString(text, realPositionX(x), realPositionY(y));
     }
 
