@@ -8,6 +8,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
@@ -16,6 +18,8 @@ import javax.swing.WindowConstants;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.engine.IInput;
+import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Graphics implements IGraphics {
 
@@ -48,11 +52,11 @@ public class Graphics implements IGraphics {
     static final int WINDOW_MENU_HIGHT = 23;
     static final int WINDOW_BORDER = 8;
 
-    public Graphics(JFrame window, String path) {
-        _window = window;
-        window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        window.setVisible(true);
-        window.setIgnoreRepaint(true);
+    public Graphics(String name, String path) {
+        _window = new JFrame(name);
+        _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        _window.setVisible(true);
+        _window.setIgnoreRepaint(true);
 
         _path = path;
         _size = new Dimension();
@@ -70,6 +74,7 @@ public class Graphics implements IGraphics {
 
         _originX=0;
         _originY=0;
+
 
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
@@ -128,13 +133,24 @@ public class Graphics implements IGraphics {
         _refFactor = (double)x/(double)y;
 
     }
+    public JFrame getWindow(){return  _window;};
 
     private int realPositionX(int x) {
-        return _originX+x * (_endX-_originX)/_refWidth;
+        return _originX+ (x * (_endX-_originX)/_refWidth);
+    }
+
+    public int refPositionX(int x)
+    {
+        return (int)((x-_originX)*((double)_refWidth / (_endX-_originX)));
     }
 
     private int realPositionY(int y) {
         return _originY+y * (_endY-_originY)/_refHeight;
+    }
+
+    public int refPositionY(int x)
+    {
+        return (int)((x-_originY)*((double)_refHeight / (_endY-_originY)));
     }
 
     private  int realLength(int length){
@@ -152,6 +168,7 @@ public class Graphics implements IGraphics {
         _buffer = _strategy.getDrawGraphics();
         //Enable antialiasing for the new buffer
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
         //Check if resize was applied during rendering, if so then repaint
         boolean repeat = !_size.equals(_window.getSize());

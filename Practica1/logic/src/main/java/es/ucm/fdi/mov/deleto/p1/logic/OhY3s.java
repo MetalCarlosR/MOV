@@ -20,7 +20,6 @@ public class OhY3s implements IApplication {
     private Grid _grid;
     private UIBar _bar;
 
-    double aaaa = 0;
     IImage image;
     IFont _font;
     IFont _title;
@@ -132,8 +131,6 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onUpdate(double deltaTime) {
-        aaaa += deltaTime * 100;
-
         // Enter data using BufferReader
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(System.in));
@@ -212,7 +209,11 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onEvent(TouchEvent event) {
-
+        if(event.get_type() == TouchEvent.EventType.RELEASE)
+        {
+            if(_grid.processClick(event.get_x(),event.get_y()))
+                System.out.printf("Click on {%d,%d} %s\n",event.get_x(),event.get_y(),event.get_type() == TouchEvent.EventType.RELEASE ? "Released" : "Clicked");
+        }
     }
     // TO DO:
     // private Text _title;

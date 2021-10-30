@@ -20,8 +20,8 @@ public class Engine implements IEngine {
 
     public Engine(IApplication app, String appName, String assetsPath) {
         _app = app;
-        _graphics = new Graphics(new JFrame(appName),assetsPath);
-        _input = new Input();
+        _graphics = new Graphics(appName,assetsPath);
+        _input = new Input(_graphics);
     }
 
     public void run() {

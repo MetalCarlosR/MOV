@@ -14,6 +14,9 @@ import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Grid {
+
+    static final int PADDING = 10;
+
     public Grid(int size){
         _size = size;
         _cells = new Cell[size][size];
@@ -73,12 +76,38 @@ public class Grid {
         return _percentage;
     }
 
-    public void _draw(IGraphics graphics, IFont font, IImage lock){
-        int padding = 10;
-        int r = (graphics.getWidth()-_size*padding)/(_size*2);
+    public boolean processClick(int x, int y)
+    {
+        int r = (400-_size* PADDING)/(_size*2);
+        int originX = (PADDING /2);
+        int originY = 600/8;
+        System.out.printf("actual: {%d,%d}\n",x,y);
+        if( y >= originY &&
+            y <  originY+(600 - (_size*(r+PADDING))) &&
+            x >= originX &&
+            x < (400 - PADDING))
+        {
+            int xX = (x)/(2*r+PADDING);
+            int yY = (y-originY)/(2*r+PADDING);
 
-        int originX = (padding/2);
-        int originY = 80;
+            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
+            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
+
+            System.out.printf("center:{%d,%d} - logic:{%d,%d} \nminimum:{%d,%d} - maximum: {%d,%d}\n - rad: %d\n",cX,cY,xX,yY,cX-r,cY-r,cX+r,cY+r,r);
+
+            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
+            {
+                clickCell(xX,yY);
+                return  true;
+            }
+            return false;
+        }
+        return false;
+    }
+    public void _draw(IGraphics graphics, IFont font, IImage lock){
+        int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
+        int originX = (PADDING /2);
+        int originY = graphics.getHeight()/8;
 
         graphics.setColor(0xFF000000);
         graphics.fillRect(0,0,10,10);
@@ -91,20 +120,22 @@ public class Grid {
                 Cell cel = _cells[i][j];
                 Cell.State state = cel.getState();
 
-                int x = originX+(j)*(r*2)+padding*j;
-                int y = originY+(i)*(r*2)+padding*i;
+                int x = originX+(j)*(r*2)+ PADDING *j;
+                int y = originY+(i)*(r*2)+ PADDING *i;
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
                 graphics.fillCircle(x,y,r);
 
                 graphics.setColor(0xFFFFFFFF);
                 if(cel.getState() == Cell.State.Blue && cel.isLocked())
+                {
+                    graphics.setFont(font);
                     graphics.drawText(Integer.toString(cel._neigh), x+r,y+r);
+                }
                 else if(cel.getState() == Cell.State.Red && cel.isLocked())
                 {
                     graphics.setOpacity(0.2f);
                     graphics.drawImage(lock, x+r,y+r,0.65f,0.65f);
                     graphics.setOpacity(1.0f);
-
                 }
             }
         }
