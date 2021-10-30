@@ -67,7 +67,7 @@ public class Grid {
             }
         }
         catch (FileNotFoundException e){
-            // TO DO: hacemos esto really?
+            // TODO: hacemos esto really?
             System.out.println("Couldn't open the file");
             System.out.println(System.getProperty("user.dir"));
             System.out.println("Generating one by default\n");
@@ -95,7 +95,6 @@ public class Grid {
             int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
             int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
 
-
             if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
             {
                 clickCell(xX,yY);
@@ -105,7 +104,7 @@ public class Grid {
         }
         return false;
     }
-    public void _draw(IGraphics graphics, IFont font, IImage lock){
+    public void _draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
         int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
         int originY = graphics.getHeight()/8;
@@ -123,6 +122,13 @@ public class Grid {
 
                 int x = originX+(j)*(r*2)+ PADDING *j;
                 int y = originY+(i)*(r*2)+ PADDING *i;
+                if(cel == focus)
+                {
+                    int ring = (int)(r*0.15f);
+
+                    graphics.setColor(0xFF000000);
+                    graphics.fillCircle(x-(ring),y-(ring),(int)(r+ring));
+                }
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
                 graphics.fillCircle(x,y,r);
 
@@ -157,6 +163,8 @@ public class Grid {
         c.fst.setState(c.snd);
         if(c.snd == Cell.State.Grey)
             _clicked--;
+        else if(c.snd == Cell.State.Red)
+            _clicked++;
 
         _percentage =  (100 * _clicked) / _freeCells;
 
@@ -178,7 +186,7 @@ public class Grid {
         return checkWin();
     }
 
-    // TO DO: bruh
+    // TODO: bruh
     private boolean checkWin(){
         if(_percentage >= 99 && _mistakes == 0){
             return true;
@@ -242,7 +250,7 @@ public class Grid {
         return false;
     }
 
-    // TO DO: Optimizable
+    // TODO: Optimizable
     // devuelve el numero de cells azules visibles
     public int getVisibleNeighs(Cell c){
         int n = 0;

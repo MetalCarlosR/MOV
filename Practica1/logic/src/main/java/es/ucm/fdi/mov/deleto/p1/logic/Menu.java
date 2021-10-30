@@ -114,7 +114,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
     @Override
     public void onEvent(TouchEvent event) {
-        if(event.get_type() == TouchEvent.EventType.RELEASE)
+        if(event.get_type() != TouchEvent.EventType.TOUCH)
             return;
         if(_state == State.Initial)
         {
@@ -127,12 +127,14 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         }
         else
         {
+            int x = event.get_x();
+            int y = event.get_y();
             for(int i = 0; i<_buttonsX.length;i++)
             {
-                if( event.get_x() < _buttonsX[i]+2*BUTTON_RAD &&
-                    event.get_x() > _buttonsX[i] &&
-                    event.get_y() < _buttonsY[i]+2*BUTTON_RAD &&
-                    event.get_y() > _buttonsY[i])
+                if(  x < _buttonsX[i]+2*BUTTON_RAD &&
+                     x > _buttonsX[i] &&
+                     y < _buttonsY[i]+2*BUTTON_RAD &&
+                     y > _buttonsY[i])
                 {
                     OhY3s a = new OhY3s();
                     System.out.printf("HAS TOCADO {%d}",4+i);
@@ -141,6 +143,12 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     break;
                 }
             }
+            int iW = _exit.getWidth();
+            int iH = _exit.getHeight();
+            int iX = (_engine.getGraphics().getWidth()/2) - (iW/2);
+            int iY = (_engine.getGraphics().getHeight()-16) -(iH/2);
+            if(x > iX && x < iX+iW && y> iY && y < iY+iH)
+                _engine.exit();
         }
     }
 }

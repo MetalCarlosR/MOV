@@ -3,7 +3,6 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 import com.sun.tools.javac.util.Pair;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Vector;
@@ -25,9 +24,9 @@ public class OhY3s implements IApplication {
     IFont _title;
     IFont _subtitle;
 
-    public OhY3s() {
-
-    }
+    String _currentTip = "";
+    Cell   _cellTip = null;
+    public OhY3s() {}
 
     public void newGame(int size) {
         if(size > 4)
@@ -35,11 +34,6 @@ public class OhY3s implements IApplication {
         size = 4;
         _grid = new Grid(size);
         _bar = new UIBar();
-    }
-
-    public void click(int x, int y) {
-        _grid.clickCell(x, y);
-        System.out.println("Neighbours "+ _grid.getVisibleNeighs(_grid.getCell(x,y)));
     }
 
     public Pair<Cell, String> getTip() {
@@ -94,7 +88,7 @@ public class OhY3s implements IApplication {
                     t = "This number can't see enough";
                 }
             }
-            // TO DO:
+            // TODO:
             // 10. ??
 
             i++;
@@ -103,15 +97,23 @@ public class OhY3s implements IApplication {
         return new Pair<Cell, String>(c, t);
     }
 
-    public void _draw() {
+    public void draw() {
         //Draw Title
         _engine.getGraphics().setColor(0xFF000000);
-        _engine.getGraphics().setFont(_title);
-        _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,32);
+        if(!_currentTip.equals(""))
+        {
+            _engine.getGraphics().setFont(_subtitle);
+            _engine.getGraphics().drawText(_currentTip,(_engine.getGraphics().getWidth())/2,32);
+        }
+        else
+        {
+            _engine.getGraphics().setFont(_title);
+            _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,32);
+        }
 
         //Draw Grid
         _engine.getGraphics().setFont(_font);
-        _grid._draw(_engine.getGraphics(), _font, image);
+        _grid._draw(_engine.getGraphics(), _font, image,_cellTip);
 
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
@@ -137,75 +139,11 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onUpdate(double deltaTime) {
-        // Enter data using BufferReader
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(System.in));
-
-        // Reading data using readLine
-        String rawInp = "";
-        /*
-        try {
-            rawInp = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        String[] input = rawInp.split(" ");
-//
-//        switch (input[0]){
-//            case "click":{
-//                int x = -1;
-//                int y = -1;
-//                try{
-//                    if(input.length < 3)
-//                        throw new RuntimeException();
-//                    x = Integer.valueOf(input[1]);
-//                    y = Integer.valueOf(input[2]);
-//                    if (x < 0 || y < 0 || x >= _grid.getSize() || y >= _grid.getSize())
-//                        throw new RuntimeException();
-//                }
-//                catch (RuntimeException e){
-//                    System.out.println("Click command expects 2 valid ints");
-//                    break;
-//                }
-//                click(x, y);
-//                break;
-//            }
-//            case "exit":{
-//                // TO DO: que pare
-//                System.out.println("Exiting...");
-//                _engine.exit();
-//                break;
-//            }
-//            case "undo":{
-//                if(_grid.undoMove())
-//                    System.out.println("Undoing last move...");
-//                else System.out.println("Couldn't undo last move");
-//                break;
-//            }
-//            case "tip":{
-//                Pair<Cell, String> tip = getTip();
-//                System.out.println("Position: " + tip.fst._x + " " + tip.fst._y + "\n" + tip.snd);
-//                break;
-//            }
-//            case "settings":{
-//                System.out.println("NOT IMPLEMENTED YET");
-//                break;
-//            }
-//            case "about":{
-//                System.out.println("NOT IMPLEMENTED YET");
-//                break;
-//            }
-//            default:{
-//                System.out.println("Unknown command:\n" + rawInp);
-//                break;
-//            }
-//        }
-
     }
 
     @Override
     public void onRender() {
-        _draw();
+        draw();
     }
 
     @Override
@@ -218,7 +156,10 @@ public class OhY3s implements IApplication {
         if(event.get_type() == TouchEvent.EventType.TOUCH)
         {
             if(_grid.processClick(event.get_x(),event.get_y()))
-                System.out.printf("Click on {%d,%d} %s\n",event.get_x(),event.get_y(),event.get_type() == TouchEvent.EventType.RELEASE ? "Released" : "Clicked");
+            {
+                _currentTip = "";
+                _cellTip    = null;
+            }
             else
             {
                 UIBar.Action a = _bar.HandleClick(event.get_x(),event.get_y());
@@ -226,6 +167,8 @@ public class OhY3s implements IApplication {
                 {
                     switch (a){
                         case CLUE:
+                            _currentTip = getTip().snd;
+                            _cellTip    = getTip().fst;
                             break;
                         case CLOSE:
                             _engine.changeApp(new Menu(Menu.State.SelectSize));
