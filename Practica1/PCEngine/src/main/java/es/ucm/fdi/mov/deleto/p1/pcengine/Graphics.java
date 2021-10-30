@@ -75,6 +75,7 @@ public class Graphics implements IGraphics {
         _originX=0;
         _originY=0;
 
+        _color = new Color(0xff000000);
 
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
@@ -169,6 +170,7 @@ public class Graphics implements IGraphics {
         //Enable antialiasing for the new buffer
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 
         //Check if resize was applied during rendering, if so then repaint
         boolean repeat = !_size.equals(_window.getSize());

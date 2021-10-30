@@ -30,7 +30,11 @@ public class OhY3s implements IApplication {
     }
 
     public void newGame(int size) {
+        if(size > 4)
+            System.err.println("Only Size 4 implemented, sorry bro :C");
+        size = 4;
         _grid = new Grid(size);
+        _bar = new UIBar();
     }
 
     public void click(int x, int y) {
@@ -115,6 +119,7 @@ public class OhY3s implements IApplication {
         _engine.getGraphics().drawText(Integer.toString(_grid.get_percentage())+"%",(_engine.getGraphics().getWidth()/2),540);
 
         //TODO Draw bottom bar
+        _bar.Draw();
     }
 
 
@@ -127,6 +132,7 @@ public class OhY3s implements IApplication {
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",72,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
         _engine.getGraphics().setFont(_font);
+        _bar.Init(_engine.getGraphics());
     }
 
     @Override
@@ -209,10 +215,29 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onEvent(TouchEvent event) {
-        if(event.get_type() == TouchEvent.EventType.RELEASE)
+        if(event.get_type() == TouchEvent.EventType.TOUCH)
         {
             if(_grid.processClick(event.get_x(),event.get_y()))
                 System.out.printf("Click on {%d,%d} %s\n",event.get_x(),event.get_y(),event.get_type() == TouchEvent.EventType.RELEASE ? "Released" : "Clicked");
+            else
+            {
+                UIBar.Action a = _bar.HandleClick(event.get_x(),event.get_y());
+                if(a!= UIBar.Action.NO_ACTION)
+                {
+                    switch (a){
+                        case CLUE:
+                            break;
+                        case CLOSE:
+                            _engine.changeApp(new Menu(Menu.State.SelectSize));
+                            break;
+                        case UNDO:
+                            _grid.undoMove();
+                            break;
+                        case NO_ACTION:
+                            break;
+                    }
+                }
+            }
         }
     }
     // TO DO:

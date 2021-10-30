@@ -36,6 +36,9 @@ public class Grid {
             while (myReader.hasNextLine()) {
                 String data = myReader.nextLine();
                 String[] pairs = data.split(" ");
+                System.out.println(data);
+                System.out.println(_size);
+
                 for(int j = 0; j < _size; j++) {
                     _cells[i][j].setCell(pairs[j]);
                     if(!_cells[i][j].isLocked())
@@ -81,7 +84,6 @@ public class Grid {
         int r = (400-_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
         int originY = 600/8;
-        System.out.printf("actual: {%d,%d}\n",x,y);
         if( y >= originY &&
             y <  originY+(600 - (_size*(r+PADDING))) &&
             x >= originX &&
@@ -93,7 +95,6 @@ public class Grid {
             int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
             int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
 
-            System.out.printf("center:{%d,%d} - logic:{%d,%d} \nminimum:{%d,%d} - maximum: {%d,%d}\n - rad: %d\n",cX,cY,xX,yY,cX-r,cY-r,cX+r,cY+r,r);
 
             if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
             {
