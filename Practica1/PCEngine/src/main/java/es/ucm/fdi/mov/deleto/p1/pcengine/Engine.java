@@ -45,9 +45,11 @@ public class Engine implements IEngine {
                 for (TouchEvent ev : _input.getTouchEvents()) {
                     _app.onEvent(ev);
                 }
-                _graphics.clear(0xFF000000);
-                _app.onRender();
-                _graphics.swapBuffers();
+                do {
+                    _graphics.clear(0xFF000000);
+                    _app.onRender();
+                }while(_graphics.swapBuffers());
+
             }
             _app.onExit();
 

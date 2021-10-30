@@ -9,6 +9,8 @@ import es.ucm.fdi.mov.deleto.p1.pcengine.Engine;
 
 public class PCGame {
     public static void main(String[] args){
+        System.setProperty("sun.awt.noerasebackground", "true");
+
         _game = new OhY3s();
 
         _game.newGame(size);

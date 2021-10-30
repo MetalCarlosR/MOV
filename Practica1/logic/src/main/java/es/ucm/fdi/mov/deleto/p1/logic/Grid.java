@@ -72,9 +72,10 @@ public class Grid {
         int r = 30;
         int padding = 4;
         graphics.setColor(0xFFFF00FF);
-        graphics.fillRect(0,0,graphics.getWidth(),graphics.getHeight());
+        graphics.fillRect(0,0,400,600);
         graphics.setColor(0xFFFFFFFF);
-        graphics.fillRect(0,0,100,100);
+        graphics.fillRect(0,0,10,10);
+        graphics.fillRect(400-10,600-10,10,10);
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
