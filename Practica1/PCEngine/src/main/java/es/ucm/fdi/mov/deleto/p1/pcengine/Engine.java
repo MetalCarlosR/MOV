@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
+import java.util.List;
+
 import javax.swing.JFrame;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -9,7 +11,6 @@ import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Engine implements IEngine {
-
     Graphics _graphics;
     Input _input;
 
@@ -27,22 +28,18 @@ public class Engine implements IEngine {
     public void run() {
 
         while (true) {
-            System.out.println("entrando");
-
             running = true;
             _app.onInit(this);
 
-            // Vamos allá.
             long lastFrameTime = System.nanoTime();
-
-            long informePrevio = lastFrameTime; // Informes de FPS
             while (running) {
                 long currentTime = System.nanoTime();
                 long nanoElapsedTime = currentTime - lastFrameTime;
                 lastFrameTime = currentTime;
                 double elapsedTime = (double) nanoElapsedTime / 1.0E9;
                 _app.onUpdate(elapsedTime);
-                for (TouchEvent ev : _input.getTouchEvents()) {
+                List<TouchEvent> evs = _input.getTouchEvents();
+                for (TouchEvent ev : evs) {
                     _app.onEvent(ev);
                 }
                 do {
@@ -56,7 +53,6 @@ public class Engine implements IEngine {
             if (_nextApp != null) {
                 _app = _nextApp;
                 _nextApp = null;
-                System.out.println("cagamos");
             } else
                 break;
         }

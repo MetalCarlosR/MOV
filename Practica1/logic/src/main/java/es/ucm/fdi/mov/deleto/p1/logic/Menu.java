@@ -85,8 +85,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 int x = (g.getWidth() - ((BUTTON_RAD *3*2)+(padding*3)))/2;
                 for(int i = 0; i<6; i++)
                 {
-                    int xX = x+((i%3)* BUTTON_RAD *2)+(padding*(i%3));
-                    int yY = y+(i/3* BUTTON_RAD *2)+(padding*(i/3));
+                    int xX = (x+((i%3)* BUTTON_RAD *2)+(padding*(i%3)))+BUTTON_RAD;
+                    int yY = (y+(i/3* BUTTON_RAD *2)+(padding*(i/3)))+BUTTON_RAD;
 
                     _buttonsX[i]=xX;
                     _buttonsY[i]=yY;
@@ -95,7 +95,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     g.fillCircle(xX,yY, BUTTON_RAD);
                     g.setColor(0xffffffff);
                     g.setFont(_subtitle);
-                    g.drawText(Integer.toString(4+i),xX+ BUTTON_RAD,yY+ BUTTON_RAD);
+                    g.drawText(Integer.toString(4+i),xX,yY);
                 }
                 g.setOpacity(0.6f);
                 g.drawImage(_exit,g.getWidth()/2,g.getHeight()-16,1.f,1.f);
@@ -131,10 +131,10 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
             int y = event.get_y();
             for(int i = 0; i<_buttonsX.length;i++)
             {
-                if(  x < _buttonsX[i]+2*BUTTON_RAD &&
-                     x > _buttonsX[i] &&
-                     y < _buttonsY[i]+2*BUTTON_RAD &&
-                     y > _buttonsY[i])
+                if(  x < _buttonsX[i]+BUTTON_RAD &&
+                     x > _buttonsX[i]-BUTTON_RAD &&
+                     y < _buttonsY[i]+BUTTON_RAD &&
+                     y > _buttonsY[i]-BUTTON_RAD)
                 {
                     OhY3s a = new OhY3s();
                     System.out.printf("HAS TOCADO {%d}",4+i);

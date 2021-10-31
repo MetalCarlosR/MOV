@@ -2,8 +2,6 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 
 import com.sun.tools.javac.util.Pair;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Vector;
 
@@ -113,14 +111,13 @@ public class OhY3s implements IApplication {
 
         //Draw Grid
         _engine.getGraphics().setFont(_font);
-        _grid._draw(_engine.getGraphics(), _font, image,_cellTip);
+        _grid.draw(_engine.getGraphics(), _font, image,_cellTip);
 
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
         _engine.getGraphics().setColor(0xFF777777);
-        _engine.getGraphics().drawText(Integer.toString(_grid.get_percentage())+"%",(_engine.getGraphics().getWidth()/2),540);
+        _engine.getGraphics().drawText(Integer.toString(_grid.getPercentage())+"%",(_engine.getGraphics().getWidth()/2),540);
 
-        //TODO Draw bottom bar
         _bar.Draw();
     }
 

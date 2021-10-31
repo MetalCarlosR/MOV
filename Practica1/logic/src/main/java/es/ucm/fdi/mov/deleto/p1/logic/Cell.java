@@ -2,13 +2,15 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 
 public class Cell {
 
-    enum State{
-        Grey,
-        Blue,
-        Red
+    enum State{ Grey, Blue, Red }
 
-    }
-
+    /**
+     *
+     * @param x logical X coordinate [from 0 to grid size]
+     * @param y logical Y coordinate [from 0 to grid size]
+     * @param n number of neighbours
+     * @param f whether it is locked or not, i.e it's state can be changed by the player
+     */
     public Cell(int x, int y, int n, boolean f){
         _x = x;
         _y = y;
@@ -16,14 +18,25 @@ public class Cell {
         _locked = f;
     }
 
-    /*
-        This method is used when reading an example from a file
+    public Cell(String data)
+    {
+        setCell(data);
+    }
 
-        Data is:
-        [Number of neighbours + free/locked] if fixed or not
-        Example: "0f 0l 2l 2f"
+    /***
+     * Method to initialize a cell by passing a string. Used when reading maps from files
+     *
+     * @param data string of structure "N{f/l}" where N is the number of neighbours,
+     *             l means its locked and f means its free
+     *
+     *             Example: "0f 0l 2l 2f"
      */
-    public void setCell(String data){
+    private void setCell(String data){
+        if(data == null)
+        {
+            System.err.println("Invalid data string given to SetCell");
+            return;
+        }
         _neigh = Character.getNumericValue(data.charAt(0));
         _locked = data.charAt(1) == 'l';
         if(_locked){
@@ -31,13 +44,6 @@ public class Cell {
                 _state = State.Blue;
             else _state = State.Red;
         }
-    }
-
-    // llamado en el creador de mapas
-    public void setCell(int neighbours, boolean locked){
-        _neigh = neighbours;
-        _locked = locked;
-        _state = (locked) ? (neighbours == 0) ? State.Red : State.Blue : State.Grey;
     }
 
     public void setState(State s){
@@ -65,8 +71,6 @@ public class Cell {
         return _locked;
     }
 
-    // if 0 its red
-    // if not blue
     int _neigh = 0;
     boolean _locked = false;
     int _x = 0;

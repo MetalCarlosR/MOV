@@ -9,6 +9,8 @@ import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
 
+import javax.security.auth.login.LoginException;
+
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
@@ -26,41 +28,34 @@ public class Grid {
     private void initializeGrid() {
         _freeCells = 0;
         _clicked = 0;
-        for(int i = 0; i < _size; i++) {
-            for(int j = 0; j < _size; j++)
-                _cells[i][j] = new Cell(j, i, 0,true);
-        }
-        File myObj = new File("./Assets/examples/ex2.txt");
-        try (Scanner myReader = new Scanner(myObj)){
-            int i = 0;
-            while (myReader.hasNextLine()) {
-                String data = myReader.nextLine();
-                String[] pairs = data.split(" ");
-                System.out.println(data);
-                System.out.println(_size);
+        File inputFile = new File("./Assets/examples/ex2.txt");
+        try (Scanner reader = new Scanner(inputFile)){
+            int i = -1;
+            while (reader.hasNextLine() && ++i < _size) {
+                String data = reader.nextLine();
+                String[] cellDefinitions = data.split(" ");
+                if(cellDefinitions.length != _size)
+                    throw new RuntimeException("Malformed map was given");
 
                 for(int j = 0; j < _size; j++) {
-                    _cells[i][j].setCell(pairs[j]);
-                    if(!_cells[i][j].isLocked())
-                        _freeCells++;
-                    else _fixedCells.add(_cells[i][j]);
+                    Cell c = new Cell(cellDefinitions[j]);
+                    _cells[i][j] = c;
+
+                    if(c.isLocked())
+                        _fixedCells.add(c);
                 }
-                i++;
             }
+            _freeCells = (_size*_size)-_fixedCells.size();
 
             for(i = 0; i < _size; i++){
                 for(int j = 0; j < _size; j++){
-                    boolean isolated = true;
-                    // si esta vacia
+                    //If it neighs count its 0
                     if(_cells[i][j].getNeigh() == 0){
-                        //mira en las 4 direcciones si alguien la ve
-                        if(i-1 >= 0 && _cells[i-1][j].getNeigh() > 0
-                        || j-1 >= 0 && _cells[i][j-1].getNeigh() > 0
-                        || i+1 < _size && _cells[i+1][j].getNeigh() > 0
-                        || j+1 < _size && _cells[i][j+1].getNeigh() > 0
-                        )
-                            isolated = false;
-                        if(isolated)
+                        //Checks if any adjacent cells can see it
+                        if(    getCell(i-1,j).getNeigh() > 0 || getCell(i,j-1).getNeigh() > 0 ||
+                               getCell(i+1,j).getNeigh() > 0 || getCell(i,j+1).getNeigh() > 0 )
+                            continue;
+                        else
                             _isolated.add(_cells[i][j]);
                     }
                 }
@@ -68,14 +63,15 @@ public class Grid {
         }
         catch (FileNotFoundException e){
             // TODO: hacemos esto really?
-            System.out.println("Couldn't open the file");
-            System.out.println(System.getProperty("user.dir"));
-            System.out.println("Generating one by default\n");
             e.printStackTrace();
+            System.err.println("Couldn't open the file");
+            System.err.println(System.getProperty("user.dir"));
+            System.err.println("Generating one by default\n");
+            throw new RuntimeException("Map generation not implemented yet");
         }
     }
 
-    public int get_percentage(){
+    public int getPercentage(){
         return _percentage;
     }
 
@@ -104,44 +100,46 @@ public class Grid {
         }
         return false;
     }
-    public void _draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
+
+    public void draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
         int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
         int originY = graphics.getHeight()/8;
 
         graphics.setColor(0xFF000000);
-        graphics.fillRect(0,0,10,10);
-        graphics.fillRect(400-10,600-10,10,10);
+        graphics.fillRect(5,5,10,10);
+        graphics.fillRect(400-5,600-5,10,10);
 
 
         for(int i = 0; i < _size; i++) {
+            int y = (originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
             {
                 Cell cel = _cells[i][j];
                 Cell.State state = cel.getState();
 
-                int x = originX+(j)*(r*2)+ PADDING *j;
-                int y = originY+(i)*(r*2)+ PADDING *i;
+                int x = (originX+(j)*(r*2)+ PADDING *j)+r;
+
                 if(cel == focus)
                 {
                     int ring = (int)(r*0.15f);
 
                     graphics.setColor(0xFF000000);
-                    graphics.fillCircle(x-(ring),y-(ring),(int)(r+ring));
+                    graphics.fillCircle(x,y,(int)(r+ring));
                 }
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
                 graphics.fillCircle(x,y,r);
 
-                graphics.setColor(0xFFFFFFFF);
                 if(cel.getState() == Cell.State.Blue && cel.isLocked())
                 {
+                    graphics.setColor(0xFFFFFFFF);
                     graphics.setFont(font);
-                    graphics.drawText(Integer.toString(cel._neigh), x+r,y+r);
+                    graphics.drawText(Integer.toString(cel._neigh), x,y);
                 }
                 else if(cel.getState() == Cell.State.Red && cel.isLocked())
                 {
                     graphics.setOpacity(0.2f);
-                    graphics.drawImage(lock, x+r,y+r,0.65f,0.65f);
+                    graphics.drawImage(lock, x,y,0.65f,0.65f);
                     graphics.setOpacity(1.0f);
                 }
             }
