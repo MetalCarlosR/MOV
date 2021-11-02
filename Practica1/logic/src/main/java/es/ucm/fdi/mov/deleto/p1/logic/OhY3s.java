@@ -2,7 +2,10 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 
 import com.sun.tools.javac.util.Pair;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.Random;
 import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -24,75 +27,22 @@ public class OhY3s implements IApplication {
 
     String _currentTip = "";
     Cell   _cellTip = null;
-    public OhY3s() {}
+    boolean _newGame = false;
+    public OhY3s() {
+        _grid = new Grid();
+        _bar = new UIBar();
+    }
 
     public void newGame(int size) {
         if(size > 4)
             System.err.println("Only Size 4 implemented, sorry bro :C");
         size = 4;
-        _grid = new Grid(size);
-        _bar = new UIBar();
+        _grid.init(size);
     }
 
-    public Pair<Cell, String> getTip() {
-        Vector<Cell> cells = _grid.getTipCells();
-
-        Collections.shuffle(cells);
-
-        String t = "";
-        Cell c = null;
-
-        int i = 0;
-        while(i < cells.size() && t == ""){
-            //int rand = (int)Math.floor(Math.random()*(cells.size()));
-            c = cells.get(i);
-
-            // TO DO: si se optimiza, no hace falta
-            int visibleNeigh = _grid.getVisibleNeighs(c);
-
-            // Estan desordenados para que muestre los casos especificos o por optimizacion
-            // 6. y 7. para aislados si esta en azul o en gris
-            if(c.getNeigh() == 0){
-                if(c.getState() == Cell.State.Grey)
-                    t = "This one should be easy...";
-                else if (c.getState() == Cell.State.Blue)
-                    t = "A blue dot should always see at least one other";
-            }
-            // 4. ve demasiados cells
-            else if(visibleNeigh > c.getNeigh()){
-                t = "This number sees a bit too much";
-            }
-            // 1. ya los ve todos
-            else if(visibleNeigh == c.getNeigh()){
-                t = "This number can see all its dots";
-            }
-            // 8. solo te queda una direccion en la que mirar
-            else if(_grid.getNumPossibleDirs(c) == 1){
-                t = "Only one direction remains for this number to look in";
-            }
-            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
-            else if(_grid.getPossibleNeighs(c)){
-                t = "Looking further in one direction would exceed this number";
-            }
-            // 3. 5. y 9.
-            else{
-                Pair<Integer, Integer> obvious = _grid.getDirForObviousBlueDot(c);
-                // 3. y 9. hay un punto que tiene que ser clicado si o si
-                if(obvious != null){
-                    t = "One specific dot is included in all solutions imaginable";
-                }
-                // 5. no ve los suficientes
-                else if(obvious == null){
-                    t = "This number can't see enough";
-                }
-            }
-            // TODO:
-            // 10. ??
-
-            i++;
-        }
-
-        return new Pair<Cell, String>(c, t);
+    public Clue getTip() {
+//        Vector<Cell> cells = _grid.getTipCells();
+        return _grid.getTip();
     }
 
     public void draw() {
@@ -131,11 +81,16 @@ public class OhY3s implements IApplication {
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",72,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
         _engine.getGraphics().setFont(_font);
-        _bar.Init(_engine.getGraphics());
+        _bar.init(_engine.getGraphics());
     }
 
     @Override
     public void onUpdate(double deltaTime) {
+        if(_newGame)
+        {
+            newGame(_grid.getSize());
+            _newGame = false;
+        }
     }
 
     @Override
@@ -150,12 +105,47 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onEvent(TouchEvent event) {
-        if(event.get_type() == TouchEvent.EventType.TOUCH)
+        if(event.get_type() == TouchEvent.EventType.RELEASE)
         {
             if(_grid.processClick(event.get_x(),event.get_y()))
             {
                 _currentTip = "";
                 _cellTip    = null;
+                if(_grid.getPercentage() == 100) {
+                    if (_grid.checkWin()) {
+                        System.out.println("NEW GAME");
+                        String[] messages = new String[]{
+                                "Wonderful",
+                                "Spectacular",
+                                "Marvelous",
+                                "Outstanding",
+                                "Remarkable",
+                                "Shazam",
+                                "Impressive",
+                                "Great",
+                                "Well done",
+                                "Fabulous",
+                                "Clever",
+                                "Dazzling",
+                                "Fantastic",
+                                "Excellent",
+                                "Nice",
+                                "Super",
+                                "Awesome",
+                                "Ojoo",
+                                "Brilliant",
+                                "Splendid",
+                                "Exceptional",
+                                "Magnificent",
+                                "Yay"};
+                        _engine.changeApp(new Menu(Menu.State.SelectSize,messages[new Random().nextInt(messages.length)] ));
+                    } else
+                    {
+                        Clue t = getTip();
+                        _cellTip = t.getCell();
+                        _currentTip = t.getMessage();
+                    }
+                }
             }
             else
             {
@@ -164,11 +154,12 @@ public class OhY3s implements IApplication {
                 {
                     switch (a){
                         case CLUE:
-                            _currentTip = getTip().snd;
-                            _cellTip    = getTip().fst;
+                            Clue tip = getTip();
+                            _currentTip = tip.getMessage();
+                            _cellTip    = tip.getCell();
                             break;
                         case CLOSE:
-                            _engine.changeApp(new Menu(Menu.State.SelectSize));
+                            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
                             break;
                         case UNDO:
                             _grid.undoMove();

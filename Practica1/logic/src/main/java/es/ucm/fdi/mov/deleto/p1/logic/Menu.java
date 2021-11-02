@@ -10,6 +10,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     IFont _title;
     IFont _title2;
+    IFont _title3;
     IFont _subtitle;
     IFont _regular;
 
@@ -17,6 +18,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     IImage _exit;
 
     static final int BUTTON_RAD = 35;
+    String _titleStr = null;
 
     public enum State{Initial, SelectSize}
     State _state = State.Initial;
@@ -25,9 +27,12 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     int _buttonsY[];
 
     IEngine _engine;
-    public Menu(){}
-    public Menu(State state){
+    public Menu(){
+        _titleStr = "Oh Yes";
+    }
+    public Menu(State state, String titleStr){
         _state = state;
+        _titleStr = titleStr;
     }
     @Override
     public void onInit(IEngine engine) {
@@ -36,6 +41,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _regular = g.newFont("JosefinSans-Bold.ttf",56,true);
         _title = g.newFont("Molle-Regular.ttf",72,false);
         _title2 = g.newFont("Molle-Regular.ttf",68,false);
+        _title3 = g.newFont("JosefinSans-Bold.ttf",60,false);
+
         _subtitle = g.newFont("JosefinSans-Bold.ttf",38,false);
 
         _exit = g.newImage("close.png");
@@ -72,9 +79,16 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 break;
             case SelectSize:
                 int y =(int)(68*0.75f);
-                g.setFont(_title2);
+                if(_titleStr == "Oh Yes")
+                {
+                    g.setFont(_title2);
+                }
+                else
+                {
+                    g.setFont(_title3);
+                }
                 g.setColor(0xff000000);
-                g.drawText("Oh Yes", g.getWidth()/2,y);
+                g.drawText(_titleStr, g.getWidth()/2,y);
 
                 y+=80;
                 g.setFont(_subtitle);

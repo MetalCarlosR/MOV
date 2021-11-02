@@ -4,7 +4,11 @@ import com.sun.tools.javac.util.Pair;
 
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
@@ -19,10 +23,32 @@ public class Grid {
 
     static final int PADDING = 10;
 
-    public Grid(int size){
+    public Grid(){
+        _dirs.add(new Pair<Integer, Integer>(-1,0));
+        _dirs.add(new Pair<Integer, Integer>(1,0));
+        _dirs.add(new Pair<Integer, Integer>(0,-1));
+        _dirs.add(new Pair<Integer, Integer>(0,1));
+    }
+
+    public void init(int size)
+    {
         _size = size;
         _cells = new Cell[size][size];
         initializeGrid();
+//        for (int i = 0; i < size; i++) {
+//            for (int j = 0; j < size; j++) {
+//                _cells[i][j] = new Cell(i,j, Cell.State.Grey);
+//            }
+//        }
+//        int tries = 50;
+//        while(--tries>0)
+//        {
+//            randomize(size);
+//            if(canBeSolved())
+//                break;
+//        }
+//        if(tries <= 1)
+//            throw new RuntimeException("AAAAAA");
     }
 
     private void initializeGrid() {
@@ -38,7 +64,7 @@ public class Grid {
                     throw new RuntimeException("Malformed map was given");
 
                 for(int j = 0; j < _size; j++) {
-                    Cell c = new Cell(cellDefinitions[j]);
+                    Cell c = new Cell(cellDefinitions[j],j,i);
                     _cells[i][j] = c;
 
                     if(c.isLocked())
@@ -49,17 +75,13 @@ public class Grid {
 
             for(i = 0; i < _size; i++){
                 for(int j = 0; j < _size; j++){
-                    //If it neighs count its 0
-                    if(_cells[i][j].getNeigh() == 0){
-                        //Checks if any adjacent cells can see it
-                        if(    getCell(i-1,j).getNeigh() > 0 || getCell(i,j-1).getNeigh() > 0 ||
-                               getCell(i+1,j).getNeigh() > 0 || getCell(i,j+1).getNeigh() > 0 )
-                            continue;
-                        else
-                            _isolated.add(_cells[i][j]);
-                    }
+                    if(isIsolated(getCell(j,i)))
+                        _isolated.add(getCell(j,i));
                 }
             }
+            for(Cell is : _isolated)
+                System.out.printf("{%d-%d} ",is._x,is._y);
+            System.out.printf("\n");
         }
         catch (FileNotFoundException e){
             // TODO: hacemos esto really?
@@ -69,6 +91,159 @@ public class Grid {
             System.err.println("Generating one by default\n");
             throw new RuntimeException("Map generation not implemented yet");
         }
+    }
+
+    private void randomize(int size)
+    {
+        Random r = new Random();
+        int numberOfLocked = r.nextInt(size/2)+size;
+        for (int i = 0; i < numberOfLocked; i++) {
+            Cell selected = null;
+            do {
+                int x = r.nextInt(size);
+                int y = r.nextInt(size);
+                selected = getCell(x,y);
+            }while (selected.isLocked());
+            selected.lock();
+        }
+        for (Cell[] line:_cells) {
+            for (Cell c:line) {
+                if(c.isLocked())
+                    c.setNeigh(r.nextInt(size - 1) + 1);
+                else
+                    c.setState(Cell.State.Grey);
+            }
+        }
+    }
+    public Clue getTip()
+    {
+        Vector<Cell> fixed = getFixedCells();
+        Collections.shuffle(fixed);
+
+        Vector<Cell> isolated = getIsolatedCells();
+        Collections.shuffle(isolated);
+
+        Deque<Clue> clues = new ArrayDeque<>(fixed.size()+isolated.size());
+
+        for(Cell c : fixed){
+            // TODO: si se optimiza, no hace falta
+            int visibleNeigh = getVisibleNeighs(c);
+            // 4. ve demasiados cells
+            if(visibleNeigh > c.getNeigh()){
+                clues.addFirst(new Clue(c,"This number sees a bit too much", null));
+                return clues.getFirst();
+            }
+            // 1. ya los ve todos
+            else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c)>0){
+                Pair<Integer, Integer> sel = null;
+                for (Pair<Integer, Integer> d: _dirs) {
+                    if((sel=getPossibleGrowthInDir(c, d))!=null)
+                        break;
+                }
+                clues.addFirst(new Clue(c,"This number can see all its dots",new Cell(sel.fst, sel.snd, Cell.State.Red)));
+                return clues.getFirst();
+            }
+            // 8. solo te queda una direccion en la que mirar
+            else if(getNumPossibleDirs(c) == 1)
+            {
+                Pair<Integer, Integer> sel = null;
+                for (Pair<Integer, Integer> d: _dirs) {
+                    if((sel=getPossibleGrowthInDir(c, d))!=null)
+                        break;
+                }
+                clues.addFirst(new Clue(c,"Only one direction remains for this number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
+                return clues.getFirst();
+            }
+            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
+            {
+                Pair<Integer,Integer> sel =  getPossibleNeighs(c);
+                if (sel!=null)
+                {
+                    clues.addFirst(new Clue(c, "Looking further in one direction would exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
+                    return clues.getFirst();
+                }
+            }
+            // 3. 5. y 9.
+
+            Pair<Integer, Integer> obvious = getDirForObviousBlueDot(c);
+            // 3. y 9. hay un punto que tiene que ser clicado si o si
+            if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
+            {
+                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(c._x+obvious.fst,c._y+obvious.snd, Cell.State.Blue)));
+                return clues.getFirst();
+            }
+            // 5. no ve los suficientes
+            else
+            {
+                if(clues.size()>0)
+                    clues.addLast(new Clue(c,"This number can't see enough",null));
+                else
+                    clues.addFirst(new Clue(c,"This number can't see enough",null));
+                continue;
+            }
+            // TODO: 10. ??
+        }
+        // 6. y 7.
+        for (Cell c: isolated) {
+
+            Cell r = new Cell(c._x,c._y, Cell.State.Red);
+            if(c.getState() == Cell.State.Grey)
+            {
+                clues.addFirst(new Clue(c,"This one should be easy...", r));
+                return clues.getFirst();
+            }
+            else if (c.getState() == Cell.State.Blue)
+            {
+                clues.addFirst(new Clue(c,"A blue dot should always see at least one other",r));
+                return clues.getFirst();
+            }
+        }
+
+        return clues.size() >0 ? clues.getFirst() : null;
+    }
+
+    private boolean canBeSolved()
+    {
+        Cell[][] copy = _cells.clone();
+        boolean solvable = false;
+        int stries = 100;
+
+        while (--stries > 100)
+        {
+            int tries = 100;
+            while(--tries >0)
+            {
+                Clue c = getTip();
+                if(c!=null)
+                {
+                    System.out.println(c.getMessage());
+                    if(c.getCorrectState() != null)
+                        getCell(c.getCorrectState()._x,c.getCorrectState()._y).setState(c.getCorrectState().getState());
+                    if(getPercentage() == 100)
+                        break;
+                }
+
+            }
+            if(getPercentage() == 100){
+                solvable = true;
+                break;
+            }
+        }
+
+
+        _cells = copy.clone();
+        return solvable;
+    }
+
+    private boolean isIsolated(Cell c)
+    {
+        for(Pair<Integer,Integer> d:_dirs)
+        {
+            Cell next = getCell(c._x+d.fst, c._y+d.snd);
+            if(next!=null && next.getState() != Cell.State.Red)
+                return  false;
+        }
+        return true;
     }
 
     public int getPercentage(){
@@ -111,6 +286,7 @@ public class Grid {
         graphics.fillRect(400-5,600-5,10,10);
 
 
+
         for(int i = 0; i < _size; i++) {
             int y = (originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
@@ -134,7 +310,7 @@ public class Grid {
                 {
                     graphics.setColor(0xFFFFFFFF);
                     graphics.setFont(font);
-                    graphics.drawText(Integer.toString(cel._neigh), x,y);
+                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y);
                 }
                 else if(cel.getState() == Cell.State.Red && cel.isLocked())
                 {
@@ -185,9 +361,9 @@ public class Grid {
     }
 
     // TODO: bruh
-    private boolean checkWin(){
+    public boolean checkWin(){
         if(_percentage >= 99 && _mistakes == 0){
-            return true;
+            return getFixedCells().size() + getIsolatedCells().size() == 0;
         }
         return false;
     }
@@ -203,15 +379,14 @@ public class Grid {
     // devuelve todos los azules ya visibles de una cell
     private int getVisibleNeighInDir(Cell c, Pair<Integer,Integer> d){
         int n = 0;
-        int x = c._x + d.fst;
-        int y = c._y + d.snd;
-        while(x < _size && x >= 0
-                && y < _size && y >= 0){
-            if(getCell(x,y).getState() != Cell.State.Blue)
-                break;
-            n++;
+        int x = c._x+d.fst;
+        int y = c._y+d.snd;
+        while(  getCell(x,y) !=null  &&
+                getCell(x,y).getState()== Cell.State.Blue)
+        {
             x+= d.fst;
             y+= d.snd;
+            n++;
         }
 
         return n;
@@ -220,87 +395,79 @@ public class Grid {
     // si pongo todos los grises de una direccion a azul tendria n neighbours
     private int getPossibleNeighInDir(Cell c, Pair<Integer, Integer> d){
         int n = 0;
-        int x = c._x + d.fst;
-        int y = c._y + d.snd;
-        while(x < _size && x >= 0
-                && y < _size && y >= 0){
-            if(getCell(x,y).getState() == Cell.State.Red)
-                break;
-            n++;
+        int x = c._x+d.fst;
+        int y = c._y+d.snd;
+        while(getCell(x,y) != null &&
+              getCell(x,y).getState() != Cell.State.Red)
+        {
             x+= d.fst;
             y+= d.snd;
+            n++;
         }
-
         return n;
     }
 
-    // devuelve si hay un gris en una direccion
-    private boolean getPossibleGrowthInDir(Cell c, Pair<Integer, Integer> d){
+    // devuelve si hay un gris en una direccion, su posición si no devuelve null
+    private Pair<Integer, Integer> getPossibleGrowthInDir(Cell c, Pair<Integer, Integer> d){
         int x = c._x + d.fst;
         int y = c._y + d.snd;
-        while(x < _size && x >= 0
-                && y < _size && y >= 0){
+
+        System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,d.fst,d.snd);
+
+        while(getCell(x,y) != null ){
             if(getCell(x,y).getState() == Cell.State.Grey)
-                return true;
+                return  new Pair<Integer, Integer>(x,y);
+            else if(getCell(x,y).getState() == Cell.State.Red)
+                return  null;
             x+= d.fst;
             y+= d.snd;
         }
-        return false;
+        return null;
     }
 
     // TODO: Optimizable
     // devuelve el numero de cells azules visibles
     public int getVisibleNeighs(Cell c){
         int n = 0;
-
-        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
-        dirs.add(new Pair<Integer, Integer>(-1,0));
-        dirs.add(new Pair<Integer, Integer>(1,0));
-        dirs.add(new Pair<Integer, Integer>(0,-1));
-        dirs.add(new Pair<Integer, Integer>(0,1));
-
-        for (Pair<Integer, Integer> d: dirs) {
+        for (Pair<Integer, Integer> d: _dirs) {
             n+= getVisibleNeighInDir(c, d);
         }
-
         return n;
     }
 
     // devuelve si en alguna direccion, al añadir uno, superas el numero de vecinos
-    public boolean getPossibleNeighs(Cell c){
+    public Pair<Integer, Integer> getPossibleNeighs(Cell c){
         int n = 0;
         int visible = getVisibleNeighs(c);
-
-        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
-        dirs.add(new Pair<Integer, Integer>(-1,0));
-        dirs.add(new Pair<Integer, Integer>(1,0));
-        dirs.add(new Pair<Integer, Integer>(0,-1));
-        dirs.add(new Pair<Integer, Integer>(0,1));
-
-        for (Pair<Integer, Integer> d: dirs) {
-            Cell ghostCell = getCell(c._x + d.fst, c._y + d.snd);
-            if(ghostCell != null){
-                n = getVisibleNeighInDir(ghostCell, d);
-                if(n + 1 + visible > c.getNeigh())
-                    return true;
+        if(c.getState() != Cell.State.Blue)
+            return null;
+        for (Pair<Integer, Integer> d: _dirs) {
+            Cell ghostCell = null;
+            int i = 1;
+            for(;i<_size;i++)
+            {
+                ghostCell = getCell(c._x + (d.fst*i), c._y + (d.snd*i));
+                if(ghostCell!=null && ghostCell.getState() == Cell.State.Grey)
+                {
+                    n = getVisibleNeighInDir(ghostCell, d);
+                    if(n + visible + i > c.getNeigh())
+                        return new Pair<Integer, Integer>(ghostCell._x,ghostCell._y);
+                    break;
+                }
+                else if(ghostCell!= null && ghostCell.getState()== Cell.State.Red)
+                    break;
             }
         }
 
-        return false;
+        return null;
     }
 
     // devuelve el numero de direcciones posibles en las que crecer
     public int getNumPossibleDirs(Cell c){
         int n = 0;
 
-        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
-        dirs.add(new Pair<Integer, Integer>(-1,0));
-        dirs.add(new Pair<Integer, Integer>(1,0));
-        dirs.add(new Pair<Integer, Integer>(0,-1));
-        dirs.add(new Pair<Integer, Integer>(0,1));
-
-        for (Pair<Integer, Integer> d: dirs) {
-            if(getPossibleGrowthInDir(c, d))
+        for (Pair<Integer, Integer> d: _dirs) {
+            if(getPossibleGrowthInDir(c, d)!=null)
                 n++;
         }
 
@@ -338,30 +505,44 @@ public class Grid {
             max -= neigh[i];
         }
 
-        if(max > 0 || max == 0 && sum == c.getNeigh())
+        if(max > 0 || max == 0 && (c.getState() == Cell.State.Blue && sum == c.getNeigh()))
             dir = dirs.get(id);
+
+        System.out.println(dir);
+        if(dir!=null)
+            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
+
         return dir;
 
     }
 
-    public Vector<Cell> getTipCells(){
-        //List<Cell> ret = new Vector<Cell>(_fixedCells);
+    public Vector<Cell> getFixedCells(){
         Vector<Cell> ret = new Vector<Cell>();
         for(Cell c : _fixedCells){
-            if(getVisibleNeighs(c) != c.getNeigh() && c.getState() != Cell.State.Red)
+            if(((getVisibleNeighs(c) != c.getNeigh())|| getPossibleNeighs(c)!=null)&&
+                    c.getState() != Cell.State.Red)//
                 ret.add(c);
         }
+        return  ret;
+    }
+
+    public Vector<Cell> getIsolatedCells(){
+        Vector<Cell> ret = new Vector<Cell>();
         for(Cell c : _isolated){
             if(c.getState() != Cell.State.Red)
                 ret.add(c);
         }
         return ret;
-    };
+    }
+
 
     private Cell[][] _cells;
 
     private Vector<Cell> _fixedCells = new Vector<Cell>();
     private Vector<Cell> _isolated = new Vector<Cell>();
+
+    ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
+
     private int _size = 0;
     private int _percentage = 0;
     private int _freeCells = 0;

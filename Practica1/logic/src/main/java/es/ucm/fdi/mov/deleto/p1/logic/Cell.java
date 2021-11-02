@@ -17,10 +17,20 @@ public class Cell {
         _neigh = n;
         _locked = f;
     }
+    public Cell(int x, int y, State s)
+    {
+        _x=x;
+        _y=y;
+        _locked=false;
+        _neigh = 0;
+        _state = s;
+    }
 
-    public Cell(String data)
+    public Cell(String data, int x, int y)
     {
         setCell(data);
+        _x=x;
+        _y=y;
     }
 
     /***
@@ -64,17 +74,26 @@ public class Cell {
     }
 
     public int getNeigh() {
+        if(!isLocked())
+            throw new RuntimeException("AAAAAAAAAAAAAAAAAAAA");
         return _neigh;
     }
 
     public boolean isLocked() {
         return _locked;
     }
-
-    int _neigh = 0;
-    boolean _locked = false;
+    public  void lock()
+    {
+        _locked=true;
+    }
+    public void setNeigh(int n)
+    {
+        _neigh=n;
+    }
+    private int _neigh = 0;
+    private boolean _locked = false;
     int _x = 0;
     int _y = 0;
 
-    State _state = State.Grey;
+    private State _state = State.Grey;
 }

@@ -18,7 +18,7 @@ public class UIBar {
     int _h, _w;
     float _scale;
 
-    public void Init(IGraphics g){
+    public void init(IGraphics g){
         _g=g;
         _close = _g.newImage("close.png");
         _undo = _g.newImage("history.png");

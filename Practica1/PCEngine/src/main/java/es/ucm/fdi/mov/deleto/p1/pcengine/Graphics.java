@@ -40,14 +40,17 @@ public class Graphics implements IGraphics {
 
     Color _color;
 
-    static final int WINDOW_MENU_HEIGHT = 23;
-    static final int WINDOW_BORDER = 8;
+    static int WINDOW_MENU_HEIGHT = 23;
+    static int WINDOW_BORDER = 8;
 
     public Graphics(String name, String path) {
         _window = new JFrame(name);
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
         _window.setIgnoreRepaint(true);
+
+        WINDOW_BORDER = _window.getInsets().right;
+        WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
 
         _path = path;
         _size = new Dimension();
