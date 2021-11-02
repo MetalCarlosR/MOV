@@ -40,14 +40,14 @@ public class Input implements IInput {
     }
 
     @Override
-    public List<TouchEvent> getTouchEvents() {
+    public synchronized List<TouchEvent> getTouchEvents() {
         List<TouchEvent> events = new ArrayList<>(_events);
         _events.clear();
         return events;
     }
 
     @Override
-    public void newTouchEvent(TouchEvent event) {
+    public synchronized void newTouchEvent(TouchEvent event) {
         _events.add(event);
     }
 }
