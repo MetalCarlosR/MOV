@@ -4,19 +4,14 @@ import com.sun.tools.javac.util.Pair;
 
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
-import java.sql.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
-
-import javax.print.DocFlavor;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -49,13 +44,31 @@ public class Grid {
         while(--tries>0)
         {
             randomize(size);
-            //if(canBeSolved())
+            if(canBeSolved())
                 break;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    _cells[i][j].setState(Cell.State.Red);
+                    _cells[i][j].setNeigh(0);
+                    _cells[i][j].unlock();
+                }
+            }
         }
         if(tries <= 1) {
             System.err.println("Couldn't generate a new map...\nLoading one from file");
             loadGridFromFile("./Assets/examples/ex2.txt");
         }
+        _freeCells = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if(!getCell(i,j).isLocked())
+                {
+                    getCell(i,j).setState(Cell.State.Grey);
+                    _freeCells++;
+                }
+            }
+        }
+        _percentage = 0;
     }
 
     private void loadGridFromFile(String file) {
@@ -104,7 +117,6 @@ public class Grid {
     {
         Random r = new Random();
         int maxBlue = r.nextInt((int)(size*size*0.3)) + (int)(size*size*0.5);
-        int numberOfLocked = r.nextInt(size/2)+size;
         // hacemos esto en un numero aleatorio de veces
         // primero, elegimos aleatoriamente casillas, y le damos un numero aleatorio de vecinos
         // tenemos que actualizar los vecinos de las nuevas casillas
@@ -115,7 +127,6 @@ public class Grid {
             int n = r.nextInt((size-1)*2-1)+1;
             getCell(x, y).setState(Cell.State.Blue);
             ArrayList<Pair<Integer, Integer>> list = new ArrayList<>(_dirs);
-            //Collections.shuffle(list);
             int j = 0;
             while(n > 0 && j < 4 && maxBlue > 0){
                 int m = 0;
@@ -153,130 +164,51 @@ public class Grid {
                     _fixedCells.add(c);
                 }
                 else {
+                    _visibleCells.add(c);
                     _freeCells++;
                     c.setState(Cell.State.Grey);
                 }
             }
         }
     }
-    public Clue getTip()
-    {
-        Vector<Cell> fixed = getFixedCells();
-        Collections.shuffle(fixed);
-
-        Vector<Cell> isolated = getIsolatedCells();
-        Collections.shuffle(isolated);
-
-        Deque<Clue> clues = new ArrayDeque<>(fixed.size()+isolated.size());
-
-        for(Cell c : fixed){
-            // TODO: si se optimiza, no hace falta
-            int visibleNeigh = getVisibleNeighs(c);
-            // 4. ve demasiados cells
-            if(visibleNeigh > c.getNeigh()){
-                clues.addFirst(new Clue(c,"This number sees a bit too much", null));
-                return clues.getFirst();
-            }
-            // 1. ya los ve todos
-            else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c)>0){
-                Pair<Integer, Integer> sel = null;
-                for (Pair<Integer, Integer> d: _dirs) {
-                    if((sel=getPossibleGrowthInDir(c, d))!=null)
-                        break;
-                }
-                clues.addFirst(new Clue(c,"This number can see all its dots",new Cell(sel.fst, sel.snd, Cell.State.Red)));
-                return clues.getFirst();
-            }
-            // 8. solo te queda una direccion en la que mirar
-            else if(getNumPossibleDirs(c) == 1)
-            {
-                Pair<Integer, Integer> sel = null;
-                for (Pair<Integer, Integer> d: _dirs) {
-                    if((sel=getPossibleGrowthInDir(c, d))!=null)
-                        break;
-                }
-                clues.addFirst(new Clue(c,"Only one direction remains for this number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
-                return clues.getFirst();
-            }
-            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
-            {
-                Pair<Integer,Integer> sel =  getPossibleNeighs(c);
-                if (sel!=null)
-                {
-                    clues.addFirst(new Clue(c, "Looking further in one direction would exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
-                    return clues.getFirst();
-                }
-            }
-            // 3. 5. y 9.
-
-            Pair<Integer, Integer> obvious = getDirForObviousBlueDot(c);
-            // 3. y 9. hay un punto que tiene que ser clicado si o si
-            if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
-            {
-                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(c._x+obvious.fst,c._y+obvious.snd, Cell.State.Blue)));
-                return clues.getFirst();
-            }
-            // 5. no ve los suficientes
-            else
-            {
-                if(clues.size()>0)
-                    clues.addLast(new Clue(c,"This number can't see enough",null));
-                else
-                    clues.addFirst(new Clue(c,"This number can't see enough",null));
-                continue;
-            }
-            // TODO: 10. ??
-        }
-        // 6. y 7.
-        for (Cell c: isolated) {
-
-            Cell r = new Cell(c._x,c._y, Cell.State.Red);
-            if(c.getState() == Cell.State.Grey)
-            {
-                clues.addFirst(new Clue(c,"This one should be easy...", r));
-                return clues.getFirst();
-            }
-            else if (c.getState() == Cell.State.Blue)
-            {
-                clues.addFirst(new Clue(c,"A blue dot should always see at least one other",r));
-                return clues.getFirst();
-            }
-        }
-
-        return clues.size() >0 ? clues.getFirst() : null;
-    }
 
     private boolean canBeSolved()
     {
-        Cell[][] copy = _cells.clone();
-        boolean solvable = false;
-        int stries = 100;
+        Random r = new Random();
+        boolean solved = false;
 
-        while (--stries > 100)
-        {
-            int tries = 100;
-            while(--tries >0)
-            {
-                Clue c = getTip();
-                if(c!=null)
-                {
-                    System.out.println(c.getMessage());
-                    if(c.getCorrectState() != null)
-                        getCell(c.getCorrectState()._x,c.getCorrectState()._y).setState(c.getCorrectState().getState());
-                    if(getPercentage() == 100)
-                        break;
+        while(!solved){
+            Clue clue = getClue();
+            if(clue == null || clue.getCorrectState() == null){
+                // si no hay pista, añadir una nueva celda gris como locked
+                int rand = r.nextInt(_visibleCells.size());
+                Cell c = _visibleCells.get(rand);
+                c.lock();
+                if(c.getNeigh() > 0)
+                    c.setState(Cell.State.Blue);
+                else c.setState(Cell.State.Red);
+                _visibleCells.remove(rand);
+            }
+            else{
+                // hacerle caso a la pista e intentar resolverlo
+                int x = clue.getCorrectState()._x;
+                int y = clue.getCorrectState()._y;
+                Cell c = getCell(x,y);
+                if(!c.isLocked()){
+                    _visibleCells.remove(c);
+                    c.setState(clue.getCorrectState().getState());
+                }
+                else{
+                    System.err.println("La pista debería ser editable: ");
+                    System.err.println(c._x + " " + c._y);
+                    System.err.println(clue.getMessage());
                 }
 
             }
-            if(getPercentage() == 100){
-                solvable = true;
-                break;
-            }
+            solved = _visibleCells.size() == 0;
         }
 
-
-        _cells = copy.clone();
-        return solvable;
+        return true;
     }
 
     private boolean isIsolated(Cell c)
@@ -296,28 +228,6 @@ public class Grid {
 
     public boolean processClick(int x, int y)
     {
-//        int r = (_lastWidth-_size* PADDING)/(_size*2);
-//        int originX = (PADDING /2);
-//        int originY = _lastHeight/8;
-//        if( y >= originY &&
-//            y <  originY+(600 - (_size*(r+PADDING))) &&
-//            x >= originX &&
-//            x < (400 - PADDING))
-//        {
-//            int xX = (x)/(2*r+PADDING);
-//            int yY = (y-originY)/(2*r+PADDING);
-//
-//            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
-//            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
-//
-//            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
-//            {
-//                clickCell(xX,yY);
-//                return  true;
-//            }
-//            return false;
-//        }
-//        return false;
         int r = (_lastWidth-_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
         int originY = _lastHeight/8;
@@ -344,7 +254,6 @@ public class Grid {
                 clickCell(x/widthEach, y/heightEach);
                 return true;
             }
-
         }
         return  false;
     }
@@ -399,7 +308,9 @@ public class Grid {
         }
 
     }
-    public boolean clickCell(int x, int y){
+
+    public boolean clickCell(int x, int y)
+    {
         Cell c = getCell(x,y);
         undoStack.push(new Pair<>(c,c.getState()));
         return changeState(x, y);
@@ -437,7 +348,7 @@ public class Grid {
         return checkWin();
     }
 
-    // TODO: bruh
+    // TODO: bruh, revisar
     public boolean checkWin(){
         if(_percentage >= 99 && _mistakes == 0){
             return getFixedCells().size() + getIsolatedCells().size() == 0;
@@ -452,6 +363,93 @@ public class Grid {
     }
 
     public int getSize() {return _size; };
+
+    public Clue getClue()
+    {
+        Vector<Cell> fixed = getFixedCells();
+        Collections.shuffle(fixed);
+
+        Vector<Cell> isolated = getIsolatedCells();
+        Collections.shuffle(isolated);
+
+        Deque<Clue> clues = new ArrayDeque<>(fixed.size()+isolated.size());
+
+        for(Cell c : fixed){
+            // TODO: si se optimiza, no hace falta
+            int visibleNeigh = getVisibleNeighs(c);
+            // 4. ve demasiados cells
+            if(visibleNeigh > c.getNeigh()){
+                clues.addFirst(new Clue(c,"This number sees a bit too much", null));
+                return clues.getFirst();
+            }
+            // 1. ya los ve todos
+            else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c)>0){
+                Pair<Integer, Integer> sel = null;
+                for (Pair<Integer, Integer> d: _dirs) {
+                    if((sel=getPossibleGrowthInDir(c, d))!=null)
+                        break;
+                }
+                clues.addFirst(new Clue(c,"This number can see all its dots",new Cell(sel.fst, sel.snd, Cell.State.Red)));
+                return clues.getFirst();
+            }
+            // 8. solo te queda una direccion en la que mirar
+            else if(getNumPossibleDirs(c) == 1)
+            {
+                Pair<Integer, Integer> sel = null;
+                for (Pair<Integer, Integer> d: _dirs) {
+                    if((sel=getPossibleGrowthInDir(c, d))!=null)
+                        break;
+                }
+                clues.addFirst(new Clue(c,"Only one direction remains for this number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
+                return clues.getFirst();
+            }
+            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
+            {
+                Pair<Integer,Integer> sel =  getPossibleNeighs(c);
+                if (sel!=null)
+                {
+                    clues.addFirst(new Clue(c, "Looking further in one direction would exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
+                    return clues.getFirst();
+                }
+            }
+            // 3. 5. y 9.
+
+            Cell obvious = getDirForObviousBlueDot(c);
+            // 3. y 9. hay un punto que tiene que ser clicado si o si
+            if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
+            {
+                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
+                return clues.getFirst();
+            }
+            // 5. no ve los suficientes
+            else
+            {
+                if(clues.size()>0)
+                    clues.addLast(new Clue(c,"This number can't see enough",null));
+                else
+                    clues.addFirst(new Clue(c,"This number can't see enough",null));
+                continue;
+            }
+            // TODO: 10. ??
+        }
+        // 6. y 7.
+        for (Cell c: isolated) {
+
+            Cell r = new Cell(c._x,c._y, Cell.State.Red);
+            if(c.getState() == Cell.State.Grey)
+            {
+                clues.addFirst(new Clue(c,"This one should be easy...", r));
+                return clues.getFirst();
+            }
+            else if (c.getState() == Cell.State.Blue)
+            {
+                clues.addFirst(new Clue(c,"A blue dot should always see at least one other",r));
+                return clues.getFirst();
+            }
+        }
+
+        return clues.size() >0 ? clues.getFirst() : null;
+    }
 
     // devuelve todos los azules ya visibles de una cell
     private int getVisibleNeighInDir(Cell c, Pair<Integer,Integer> d){
@@ -551,7 +549,7 @@ public class Grid {
         return n;
     }
 
-    public Pair<Integer, Integer> getDirForObviousBlueDot(Cell c){
+    public Cell getDirForObviousBlueDot(Cell c){
         Pair <Integer, Integer> dir = null;
 
         int neigh [] = new int[_dirs.size()];
@@ -576,6 +574,16 @@ public class Grid {
 
         max *= 2;
 
+        int numDirs = 0;
+
+        for(i = 0; i < _dirs.size(); i++){
+            if(neigh[i] >= c.getNeigh() - totalVis)
+                numDirs++;
+        }
+
+        if(numDirs > 1)
+            return null;
+
         for(i = 0; i < _dirs.size(); i++){
             max -= neigh[i];
         }
@@ -583,12 +591,23 @@ public class Grid {
         if(max > 0 || max == 0 && (c.getState() == Cell.State.Blue && sum == c.getNeigh() - totalVis))
             dir = _dirs.get(id);
 
-        System.out.println(dir);
-        if(dir!=null)
-            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
+        if(dir == null)
+            return null;
 
-        return dir;
+//        System.out.println(dir);
+//
+//        if(dir!=null)
+//            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
 
+        Cell cell = getCell(c._x + dir.fst, c._y + dir.snd);
+        while(cell != null){
+            if(cell.getState() == Cell.State.Grey)
+                return cell;
+
+            cell = getCell(cell._x + dir.fst, cell._y + dir.snd);
+        }
+
+        return null;
     }
 
     public Vector<Cell> getFixedCells(){
@@ -610,13 +629,13 @@ public class Grid {
         return ret;
     }
 
-
     private Cell[][] _cells;
 
     private Vector<Cell> _fixedCells = new Vector<Cell>();
+    private Vector<Cell> _visibleCells = new Vector<Cell>();
     private Vector<Cell> _isolated = new Vector<Cell>();
 
-    ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
+    public ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
 
     private int _size = 0;
     private int _percentage = 0;

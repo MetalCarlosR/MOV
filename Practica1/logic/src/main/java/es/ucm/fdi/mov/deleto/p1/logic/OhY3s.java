@@ -1,12 +1,6 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
-import com.sun.tools.javac.util.Pair;
-
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
 import java.util.Random;
-import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
@@ -42,7 +36,7 @@ public class OhY3s implements IApplication {
 
     public Clue getTip() {
 //        Vector<Cell> cells = _grid.getTipCells();
-        return _grid.getTip();
+        return _grid.getClue();
     }
 
     public void draw() {
