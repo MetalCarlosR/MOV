@@ -74,8 +74,8 @@ public class Cell {
     }
 
     public int getNeigh() {
-        if(!isLocked())
-            throw new RuntimeException("AAAAAAAAAAAAAAAAAAAA");
+//        if(!isLocked())
+//            throw new RuntimeException("AAAAAAAAAAAAAAAAAAAA");
         return _neigh;
     }
 
@@ -85,6 +85,10 @@ public class Cell {
     public  void lock()
     {
         _locked=true;
+    }
+    public  void unlock()
+    {
+        _locked=false;
     }
     public void setNeigh(int n)
     {

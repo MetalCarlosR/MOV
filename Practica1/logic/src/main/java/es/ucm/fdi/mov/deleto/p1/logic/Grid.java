@@ -4,19 +4,14 @@ import com.sun.tools.javac.util.Pair;
 
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
-import java.sql.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
-
-import javax.print.DocFlavor;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -49,8 +44,16 @@ public class Grid {
         while(--tries>0)
         {
             randomize(size);
-            //if(canBeSolved())
+            if(canBeSolved())
                 break;
+            System.out.println("NOOOOOOOOOOOOOOO");
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    _cells[i][j].setState(Cell.State.Red);
+                    _cells[i][j].setNeigh(0);
+                    _cells[i][j].unlock();
+                }
+            }
         }
         if(tries <= 1) {
             System.err.println("Couldn't generate a new map...\nLoading one from file");
@@ -153,13 +156,225 @@ public class Grid {
                     _fixedCells.add(c);
                 }
                 else {
+                    _visibleCells.add(c);
                     _freeCells++;
                     c.setState(Cell.State.Grey);
                 }
             }
         }
     }
-    public Clue getTip()
+
+    private boolean canBeSolved()
+    {
+        //Cell[][] copy = _cells.clone();
+        Random r = new Random();
+        boolean solved = false;
+
+        while(!solved){
+            Clue clue = getClue();
+            if(clue == null || clue.getCorrectState() == null){
+                // si no hay pista, añadir una nueva celda gris como locked
+                int rand = r.nextInt(_visibleCells.size());
+                Cell c = _visibleCells.get(rand);
+                c.lock();
+                if(c.getNeigh() > 0)
+                    c.setState(Cell.State.Blue);
+                else c.setState(Cell.State.Red);
+                _visibleCells.remove(rand);
+            }
+            else{
+                // hacerle caso a la pista e intentar resolverlo
+                int x = clue.getCorrectState()._x;
+                int y = clue.getCorrectState()._y;
+                Cell c = getCell(x,y);
+                if(!c.isLocked()){
+                    _visibleCells.remove(c);
+                    c.setState(clue.getCorrectState().getState());
+                }
+                else{
+                    System.err.println("La pista debería ser editable: ");
+                    System.err.println(c._x + " " + c._y);
+                    System.err.println(clue.getMessage());
+                }
+
+            }
+            solved = _visibleCells.size() == 0;
+        }
+
+//        int stries = 100;
+//
+//        while (--stries > 100)
+//        {
+//            int tries = 100;
+//            while(--tries >0)
+//            {
+//                Clue c = getTip();
+//                if(c!=null)
+//                {
+//                    System.out.println(c.getMessage());
+//                    if(c.getCorrectState() != null)
+//                        getCell(c.getCorrectState()._x,c.getCorrectState()._y).setState(c.getCorrectState().getState());
+//                    if(getPercentage() == 100)
+//                        break;
+//                }
+//
+//            }
+//            if(getPercentage() == 100){
+//                solvable = true;
+//                break;
+//            }
+//        }
+
+
+        //_cells = copy.clone();
+        return true;
+    }
+
+    private boolean isIsolated(Cell c)
+    {
+        for(Pair<Integer,Integer> d:_dirs)
+        {
+            Cell next = getCell(c._x+d.fst, c._y+d.snd);
+            if(next!=null && next.getState() != Cell.State.Red)
+                return  false;
+        }
+        return true;
+    }
+
+    public int getPercentage(){
+        return _percentage;
+    }
+
+    public boolean processClick(int x, int y)
+    {
+        int r = (400-_size* PADDING)/(_size*2);
+        int originX = (PADDING /2);
+        int originY = 600/8;
+        if( y >= originY &&
+            y <  originY+(600 - (_size*(r+PADDING))) &&
+            x >= originX &&
+            x < (400 - PADDING))
+        {
+            int xX = (x)/(2*r+PADDING);
+            int yY = (y-originY)/(2*r+PADDING);
+
+            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
+            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
+
+            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
+            {
+                clickCell(xX,yY);
+                return  true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    public void draw(IGraphics graphics, IFont font, IImage lock, Cell focus)
+    {
+        int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
+        int originX = (PADDING /2);
+        int originY = graphics.getHeight()/8;
+
+        graphics.setColor(0xFF000000);
+        graphics.fillRect(5,5,10,10);
+        graphics.fillRect(400-5,600-5,10,10);
+
+
+
+        for(int i = 0; i < _size; i++) {
+            int y = (originY+(i)*(r*2)+ PADDING *i)+r;
+            for(int j = 0; j < _size; j++)
+            {
+                Cell cel = getCell(j,i);
+                Cell.State state = cel.getState();
+
+                int x = (originX+(j)*(r*2)+ PADDING *j)+r;
+
+                if(cel == focus)
+                {
+                    int ring = (int)(r*0.15f);
+
+                    graphics.setColor(0xFF000000);
+                    graphics.fillCircle(x,y,(int)(r+ring));
+                }
+                graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+                graphics.fillCircle(x,y,r);
+
+                if(cel.getState() == Cell.State.Blue && cel.isLocked())
+                {
+                    graphics.setColor(0xFFFFFFFF);
+                    graphics.setFont(font);
+                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y);
+                }
+                else if(cel.getState() == Cell.State.Red && cel.isLocked())
+                {
+                    graphics.setOpacity(0.2f);
+                    graphics.drawImage(lock, x,y,0.65f,0.65f);
+                    graphics.setOpacity(1.0f);
+                }
+            }
+        }
+
+    }
+
+    public boolean clickCell(int x, int y)
+    {
+        Cell c = getCell(x,y);
+        undoStack.push(new Pair<>(c,c.getState()));
+        return changeState(x, y);
+    }
+
+    public boolean undoMove(){
+        if(undoStack.empty())
+            return false;
+
+        Pair<Cell, Cell.State> c = undoStack.pop();
+
+        c.fst.setState(c.snd);
+        if(c.snd == Cell.State.Grey)
+            _clicked--;
+        else if(c.snd == Cell.State.Red)
+            _clicked++;
+
+        _percentage =  (100 * _clicked) / _freeCells;
+
+        return  true;
+    }
+
+    public boolean changeState(int x, int y){
+        if(!getCell(x, y).changeState())
+            System.out.println("Couldn't click on " + x + " " + y);
+        else {
+            Cell.State state = getCell(x, y).getState();
+            if(state == Cell.State.Grey)
+                _clicked--;
+            else if(state == Cell.State.Blue) _clicked++;
+
+            _percentage =  (100 * _clicked) / _freeCells;
+        }
+
+        return checkWin();
+    }
+
+    // TODO: bruh, revisar
+    public boolean checkWin(){
+        if(_percentage >= 99 && _mistakes == 0){
+            return getFixedCells().size() + getIsolatedCells().size() == 0;
+        }
+        return false;
+    }
+
+    public Cell getCell(int x, int y){
+        if(x < _size && x >= 0 && y < _size && y >= 0)
+            return _cells[y][x];
+        else return null;
+    }
+
+    public int getSize() {return _size; };
+
+    public Clue getClue()
     {
         Vector<Cell> fixed = getFixedCells();
         Collections.shuffle(fixed);
@@ -209,11 +424,11 @@ public class Grid {
             }
             // 3. 5. y 9.
 
-            Pair<Integer, Integer> obvious = getDirForObviousBlueDot(c);
+            Cell obvious = getDirForObviousBlueDot(c);
             // 3. y 9. hay un punto que tiene que ser clicado si o si
             if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
             {
-                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(c._x+obvious.fst,c._y+obvious.snd, Cell.State.Blue)));
+                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
                 return clues.getFirst();
             }
             // 5. no ve los suficientes
@@ -245,180 +460,6 @@ public class Grid {
 
         return clues.size() >0 ? clues.getFirst() : null;
     }
-
-    private boolean canBeSolved()
-    {
-        Cell[][] copy = _cells.clone();
-        boolean solvable = false;
-        int stries = 100;
-
-        while (--stries > 100)
-        {
-            int tries = 100;
-            while(--tries >0)
-            {
-                Clue c = getTip();
-                if(c!=null)
-                {
-                    System.out.println(c.getMessage());
-                    if(c.getCorrectState() != null)
-                        getCell(c.getCorrectState()._x,c.getCorrectState()._y).setState(c.getCorrectState().getState());
-                    if(getPercentage() == 100)
-                        break;
-                }
-
-            }
-            if(getPercentage() == 100){
-                solvable = true;
-                break;
-            }
-        }
-
-
-        _cells = copy.clone();
-        return solvable;
-    }
-
-    private boolean isIsolated(Cell c)
-    {
-        for(Pair<Integer,Integer> d:_dirs)
-        {
-            Cell next = getCell(c._x+d.fst, c._y+d.snd);
-            if(next!=null && next.getState() != Cell.State.Red)
-                return  false;
-        }
-        return true;
-    }
-
-    public int getPercentage(){
-        return _percentage;
-    }
-
-    public boolean processClick(int x, int y)
-    {
-        int r = (400-_size* PADDING)/(_size*2);
-        int originX = (PADDING /2);
-        int originY = 600/8;
-        if( y >= originY &&
-            y <  originY+(600 - (_size*(r+PADDING))) &&
-            x >= originX &&
-            x < (400 - PADDING))
-        {
-            int xX = (x)/(2*r+PADDING);
-            int yY = (y-originY)/(2*r+PADDING);
-
-            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
-            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
-
-            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
-            {
-                clickCell(xX,yY);
-                return  true;
-            }
-            return false;
-        }
-        return false;
-    }
-
-    public void draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
-        int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
-        int originX = (PADDING /2);
-        int originY = graphics.getHeight()/8;
-
-        graphics.setColor(0xFF000000);
-        graphics.fillRect(5,5,10,10);
-        graphics.fillRect(400-5,600-5,10,10);
-
-
-
-        for(int i = 0; i < _size; i++) {
-            int y = (originY+(i)*(r*2)+ PADDING *i)+r;
-            for(int j = 0; j < _size; j++)
-            {
-                Cell cel = getCell(j,i);
-                Cell.State state = cel.getState();
-
-                int x = (originX+(j)*(r*2)+ PADDING *j)+r;
-
-                if(cel == focus)
-                {
-                    int ring = (int)(r*0.15f);
-
-                    graphics.setColor(0xFF000000);
-                    graphics.fillCircle(x,y,(int)(r+ring));
-                }
-                graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
-                graphics.fillCircle(x,y,r);
-
-                if(cel.getState() == Cell.State.Blue && cel.isLocked())
-                {
-                    graphics.setColor(0xFFFFFFFF);
-                    graphics.setFont(font);
-                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y);
-                }
-                else if(cel.getState() == Cell.State.Red && cel.isLocked())
-                {
-                    graphics.setOpacity(0.2f);
-                    graphics.drawImage(lock, x,y,0.65f,0.65f);
-                    graphics.setOpacity(1.0f);
-                }
-            }
-        }
-
-    }
-    public boolean clickCell(int x, int y){
-        Cell c = getCell(x,y);
-        undoStack.push(new Pair<>(c,c.getState()));
-        return changeState(x, y);
-    }
-
-    public boolean undoMove(){
-        if(undoStack.empty())
-            return false;
-
-        Pair<Cell, Cell.State> c = undoStack.pop();
-
-        c.fst.setState(c.snd);
-        if(c.snd == Cell.State.Grey)
-            _clicked--;
-        else if(c.snd == Cell.State.Red)
-            _clicked++;
-
-        _percentage =  (100 * _clicked) / _freeCells;
-
-        return  true;
-    }
-
-    public boolean changeState(int x, int y){
-        if(!getCell(x, y).changeState())
-            System.out.println("Couldn't click on " + x + " " + y);
-        else {
-            Cell.State state = getCell(x, y).getState();
-            if(state == Cell.State.Grey)
-                _clicked--;
-            else if(state == Cell.State.Blue) _clicked++;
-
-            _percentage =  (100 * _clicked) / _freeCells;
-        }
-
-        return checkWin();
-    }
-
-    // TODO: bruh
-    public boolean checkWin(){
-        if(_percentage >= 99 && _mistakes == 0){
-            return getFixedCells().size() + getIsolatedCells().size() == 0;
-        }
-        return false;
-    }
-
-    public Cell getCell(int x, int y){
-        if(x < _size && x >= 0 && y < _size && y >= 0)
-            return _cells[y][x];
-        else return null;
-    }
-
-    public int getSize() {return _size; };
 
     // devuelve todos los azules ya visibles de una cell
     private int getVisibleNeighInDir(Cell c, Pair<Integer,Integer> d){
@@ -518,7 +559,7 @@ public class Grid {
         return n;
     }
 
-    public Pair<Integer, Integer> getDirForObviousBlueDot(Cell c){
+    public Cell getDirForObviousBlueDot(Cell c){
         Pair <Integer, Integer> dir = null;
 
         int neigh [] = new int[_dirs.size()];
@@ -543,6 +584,16 @@ public class Grid {
 
         max *= 2;
 
+        int numDirs = 0;
+
+        for(i = 0; i < _dirs.size(); i++){
+            if(neigh[i] >= c.getNeigh() - totalVis)
+                numDirs++;
+        }
+
+        if(numDirs > 1)
+            return null;
+
         for(i = 0; i < _dirs.size(); i++){
             max -= neigh[i];
         }
@@ -550,12 +601,23 @@ public class Grid {
         if(max > 0 || max == 0 && (c.getState() == Cell.State.Blue && sum == c.getNeigh() - totalVis))
             dir = _dirs.get(id);
 
-        System.out.println(dir);
-        if(dir!=null)
-            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
+        if(dir == null)
+            return null;
 
-        return dir;
+//        System.out.println(dir);
+//
+//        if(dir!=null)
+//            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
 
+        Cell cell = getCell(c._x + dir.fst, c._y + dir.snd);
+        while(cell != null){
+            if(cell.getState() == Cell.State.Grey)
+                return cell;
+
+            cell = getCell(cell._x + dir.fst, cell._y + dir.snd);
+        }
+
+        return null;
     }
 
     public Vector<Cell> getFixedCells(){
@@ -577,13 +639,13 @@ public class Grid {
         return ret;
     }
 
-
     private Cell[][] _cells;
 
     private Vector<Cell> _fixedCells = new Vector<Cell>();
+    private Vector<Cell> _visibleCells = new Vector<Cell>();
     private Vector<Cell> _isolated = new Vector<Cell>();
 
-    ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
+    public ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
 
     private int _size = 0;
     private int _percentage = 0;
