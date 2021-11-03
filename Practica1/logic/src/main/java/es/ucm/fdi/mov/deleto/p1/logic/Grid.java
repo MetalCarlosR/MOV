@@ -4,16 +4,19 @@ import com.sun.tools.javac.util.Pair;
 
 import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.sql.Array;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Stack;
 import java.util.Vector;
 
-import javax.security.auth.login.LoginException;
+import javax.print.DocFlavor;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -34,27 +37,31 @@ public class Grid {
     {
         _size = size;
         _cells = new Cell[size][size];
-        initializeGrid();
-//        for (int i = 0; i < size; i++) {
-//            for (int j = 0; j < size; j++) {
-//                _cells[i][j] = new Cell(i,j, Cell.State.Grey);
-//            }
-//        }
-//        int tries = 50;
-//        while(--tries>0)
-//        {
-//            randomize(size);
-//            if(canBeSolved())
-//                break;
-//        }
-//        if(tries <= 1)
-//            throw new RuntimeException("AAAAAA");
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                _cells[i][j] = new Cell(j,i, Cell.State.Red);
+            }
+        }
+
+        //loadGridFromFile("./Assets/examples/ex2.txt");
+
+        int tries = 50;
+        while(--tries>0)
+        {
+            randomize(size);
+            //if(canBeSolved())
+                break;
+        }
+        if(tries <= 1) {
+            System.err.println("Couldn't generate a new map...\nLoading one from file");
+            loadGridFromFile("./Assets/examples/ex2.txt");
+        }
     }
 
-    private void initializeGrid() {
+    private void loadGridFromFile(String file) {
         _freeCells = 0;
         _clicked = 0;
-        File inputFile = new File("./Assets/examples/ex2.txt");
+        File inputFile = new File(file);
         try (Scanner reader = new Scanner(inputFile)){
             int i = -1;
             while (reader.hasNextLine() && ++i < _size) {
@@ -96,22 +103,59 @@ public class Grid {
     private void randomize(int size)
     {
         Random r = new Random();
+        int maxBlue = r.nextInt((int)(size*size*0.3)) + (int)(size*size*0.5);
         int numberOfLocked = r.nextInt(size/2)+size;
-        for (int i = 0; i < numberOfLocked; i++) {
-            Cell selected = null;
-            do {
-                int x = r.nextInt(size);
-                int y = r.nextInt(size);
-                selected = getCell(x,y);
-            }while (selected.isLocked());
-            selected.lock();
+        // hacemos esto en un numero aleatorio de veces
+        // primero, elegimos aleatoriamente casillas, y le damos un numero aleatorio de vecinos
+        // tenemos que actualizar los vecinos de las nuevas casillas
+        while(maxBlue > 0){
+            int x = r.nextInt(size);
+            int y = r.nextInt(size);
+            // para que vaya de 1 al max
+            int n = r.nextInt((size-1)*2-1)+1;
+            getCell(x, y).setState(Cell.State.Blue);
+            ArrayList<Pair<Integer, Integer>> list = new ArrayList<>(_dirs);
+            //Collections.shuffle(list);
+            int j = 0;
+            while(n > 0 && j < 4 && maxBlue > 0){
+                int m = 0;
+                if(n > 1)
+                    m = r.nextInt(n-1)+1;
+                else m = 1;
+                Pair<Integer, Integer> dir = list.get(j);
+                int step = 1;
+                while(step <= m){
+                    Cell c = getCell(x+(dir.fst*step), y+(dir.snd * step));
+                    if(c == null)
+                        break;
+                    c.setState(Cell.State.Blue);
+                    step++;
+                    maxBlue--;
+                }
+                j++;
+                n -= (step-1);
+            }
         }
-        for (Cell[] line:_cells) {
-            for (Cell c:line) {
-                if(c.isLocked())
-                    c.setNeigh(r.nextInt(size - 1) + 1);
-                else
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                Cell c = getCell(j, i);
+                if(c.getState() != Cell.State.Red){
+                    int n = getVisibleNeighs(c);
+                    c.setNeigh(n);
+                }
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                Cell c = getCell(j, i);
+                if(r.nextInt(2) % 2 == 0){
+                    c.lock();
+                    _fixedCells.add(c);
+                }
+                else {
+                    _freeCells++;
                     c.setState(Cell.State.Grey);
+                }
             }
         }
     }
@@ -291,7 +335,7 @@ public class Grid {
             int y = (originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
             {
-                Cell cel = _cells[i][j];
+                Cell cel = getCell(j,i);
                 Cell.State state = cel.getState();
 
                 int x = (originX+(j)*(r*2)+ PADDING *j)+r;
@@ -450,7 +494,7 @@ public class Grid {
                 if(ghostCell!=null && ghostCell.getState() == Cell.State.Grey)
                 {
                     n = getVisibleNeighInDir(ghostCell, d);
-                    if(n + visible + i > c.getNeigh())
+                    if(n + visible + 1 > c.getNeigh())
                         return new Pair<Integer, Integer>(ghostCell._x,ghostCell._y);
                     break;
                 }
@@ -477,36 +521,34 @@ public class Grid {
     public Pair<Integer, Integer> getDirForObviousBlueDot(Cell c){
         Pair <Integer, Integer> dir = null;
 
-        ArrayList<Pair<Integer, Integer>> dirs = new ArrayList<>();
-        dirs.add(new Pair<Integer, Integer>(-1,0));
-        dirs.add(new Pair<Integer, Integer>(1,0));
-        dirs.add(new Pair<Integer, Integer>(0,-1));
-        dirs.add(new Pair<Integer, Integer>(0,1));
-
-        int neigh [] = new int[dirs.size()];
+        int neigh [] = new int[_dirs.size()];
+        int totalVis = 0;
         int max = 0;
         int id = 0;
         int sum = 0;
 
         int i = 0;
-        for (Pair<Integer, Integer> d: dirs) {
+        for (Pair<Integer, Integer> d: _dirs) {
+            int vis = getVisibleNeighInDir(c, d);
             neigh[i] = getPossibleNeighInDir(c, d);
+            neigh[i] -= vis;
             if(max < neigh[i]){
                 max = neigh[i];
                 id = i;
             }
+            totalVis += vis;
             sum += neigh[i];
             i++;
         }
 
         max *= 2;
 
-        for(i = 0; i < dirs.size(); i++){
+        for(i = 0; i < _dirs.size(); i++){
             max -= neigh[i];
         }
 
-        if(max > 0 || max == 0 && (c.getState() == Cell.State.Blue && sum == c.getNeigh()))
-            dir = dirs.get(id);
+        if(max > 0 || max == 0 && (c.getState() == Cell.State.Blue && sum == c.getNeigh() - totalVis))
+            dir = _dirs.get(id);
 
         System.out.println(dir);
         if(dir!=null)

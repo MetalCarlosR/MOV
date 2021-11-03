@@ -34,9 +34,9 @@ public class OhY3s implements IApplication {
     }
 
     public void newGame(int size) {
-        if(size > 4)
-            System.err.println("Only Size 4 implemented, sorry bro :C");
-        size = 4;
+//        if(size > 4)
+//            System.err.println("Only Size 4 implemented, sorry bro :C");
+//        size = 4;
         _grid.init(size);
     }
 
