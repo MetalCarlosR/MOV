@@ -8,10 +8,6 @@ public interface IGraphics {
 
     public void setResolution(int x, int y);
 
-    public void translate(int x, int y);
-
-    public void scale(int x, int y);
-
     public void setOpacity(float opacity);
 
     public void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY);
@@ -27,6 +23,8 @@ public interface IGraphics {
     public void fillRect(int x, int y, int w, int h);
 
     public void drawText(String text, int x, int y);
+
+    public void drawText(String text, int x, int y, double scale);
 
     public IImage newImage(String name);
 

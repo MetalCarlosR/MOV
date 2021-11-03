@@ -296,40 +296,73 @@ public class Grid {
 
     public boolean processClick(int x, int y)
     {
-        int r = (400-_size* PADDING)/(_size*2);
+//        int r = (_lastWidth-_size* PADDING)/(_size*2);
+//        int originX = (PADDING /2);
+//        int originY = _lastHeight/8;
+//        if( y >= originY &&
+//            y <  originY+(600 - (_size*(r+PADDING))) &&
+//            x >= originX &&
+//            x < (400 - PADDING))
+//        {
+//            int xX = (x)/(2*r+PADDING);
+//            int yY = (y-originY)/(2*r+PADDING);
+//
+//            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
+//            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
+//
+//            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
+//            {
+//                clickCell(xX,yY);
+//                return  true;
+//            }
+//            return false;
+//        }
+//        return false;
+        int r = (_lastWidth-_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
-        int originY = 600/8;
+        int originY = _lastHeight/8;
         if( y >= originY &&
-            y <  originY+(600 - (_size*(r+PADDING))) &&
+            y <  ((_size*((2*(r+PADDING))))) &&
             x >= originX &&
             x < (400 - PADDING))
         {
-            int xX = (x)/(2*r+PADDING);
-            int yY = (y-originY)/(2*r+PADDING);
+            y-=originY;
 
-            int cX = originX+(xX)*(r*2)+ PADDING *xX+r;
-            int cY = originY+(yY)*(r*2)+ PADDING *yY+r;
+            int widthEach = (_lastWidth/_size);
+            int centerX = (x % widthEach) + r + PADDING;
+            int heightEach = widthEach;
+            int centerY = (y % heightEach)+ r + PADDING;
+            System.out.printf("C{%d,%d}\n",centerX,centerY);
+            System.out.printf("P{%d,%d}\n",x,y);
+            System.out.printf("rP{%d,%d}\n",x/widthEach,y/heightEach);
 
-            if((x-originX < cX+r && x-originX > cX-r) && (y-PADDING < cY + r && y-PADDING> cY-r))
+            //if(centerX > PADDING && centerX < 2*r && centerY > PADDING && centerY < 2*r)
+            if(true)
             {
-                clickCell(xX,yY);
-                return  true;
+                _G.setColor(0xAABBBB00);
+                _G.fillCircle(x,y,2*r);
+                clickCell(x/widthEach, y/heightEach);
+                return true;
             }
-            return false;
+
         }
-        return false;
+        return  false;
     }
 
     public void draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
-        int r = (graphics.getWidth()-_size* PADDING)/(_size*2);
+        _lastWidth = graphics.getWidth();
+        _lastHeight = graphics.getHeight();
+        if(_G==null)
+            _G = graphics;
+
+        int r = (_lastWidth-_size* PADDING)/(_size*2);
+        double textScale = r/((double)(_lastWidth-4* PADDING)/(4*2));
         int originX = (PADDING /2);
-        int originY = graphics.getHeight()/8;
+        int originY = _lastHeight/8;
 
         graphics.setColor(0xFF000000);
         graphics.fillRect(5,5,10,10);
         graphics.fillRect(400-5,600-5,10,10);
-
-
 
         for(int i = 0; i < _size; i++) {
             int y = (originY+(i)*(r*2)+ PADDING *i)+r;
@@ -342,10 +375,10 @@ public class Grid {
 
                 if(cel == focus)
                 {
-                    int ring = (int)(r*0.15f);
+                    int ring = 2;
 
                     graphics.setColor(0xFF000000);
-                    graphics.fillCircle(x,y,(int)(r+ring));
+                    graphics.fillCircle(x,y,(r+ring));
                 }
                 graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
                 graphics.fillCircle(x,y,r);
@@ -354,12 +387,12 @@ public class Grid {
                 {
                     graphics.setColor(0xFFFFFFFF);
                     graphics.setFont(font);
-                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y);
+                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y,textScale);
                 }
                 else if(cel.getState() == Cell.State.Red && cel.isLocked())
                 {
                     graphics.setOpacity(0.2f);
-                    graphics.drawImage(lock, x,y,0.65f,0.65f);
+                    graphics.drawImage(lock, x,y,(float)(0.65f*textScale),(float)(0.65f*textScale));
                     graphics.setOpacity(1.0f);
                 }
             }
@@ -590,6 +623,10 @@ public class Grid {
     private int _freeCells = 0;
     private int _clicked = 0;
     private int _mistakes = 0;
+
+    private int _lastWidth = 0;
+    private int _lastHeight = 0;
+    private IGraphics _G;
 
     private Stack<Pair<Cell, Cell.State>> undoStack = new Stack<>();
 }

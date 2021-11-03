@@ -143,9 +143,9 @@ public class Graphics implements IGraphics {
         return _originY+y * (_endY-_originY)/_refHeight;
     }
 
-    public int refPositionY(int x)
+    public int refPositionY(int y)
     {
-        return (int)((x-_originY)*((double)_refHeight / (_endY-_originY)));
+        return (int)((y-_originY)*((double)_refHeight / (_endY-_originY)));
     }
 
     private  int realLength(int length){
@@ -181,13 +181,6 @@ public class Graphics implements IGraphics {
         _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
         setColor(aux.getRGB());
     }
-    @Override
-    public void translate(int x, int y) {
-    }
-
-    @Override
-    public void scale(int x, int y) {
-    }
 
     @Override
     public void setOpacity(float opacity) {
@@ -220,7 +213,12 @@ public class Graphics implements IGraphics {
 
     @Override
     public void drawText(String text, int x, int y) {
-        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength(_actualFont.getSize())));
+        drawText(text,x,y,1);
+    }
+
+    @Override
+    public void drawText(String text, int x, int y, double scale) {
+        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength((int)(_actualFont.getSize()*scale))));
         FontMetrics fm = _buffer.getFontMetrics();
         int fX = (fm.stringWidth(text))/2;
         int fY = fm.getHeight()/2;
