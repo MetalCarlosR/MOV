@@ -55,7 +55,7 @@ public class OhY3s implements IApplication {
 
         //Draw Grid
         _engine.getGraphics().setFont(_font);
-        _grid.draw(_engine.getGraphics(), _font, image,_cellTip);
+        _grid.draw(_font, image);
 
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
@@ -76,6 +76,7 @@ public class OhY3s implements IApplication {
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
         _engine.getGraphics().setFont(_font);
         _bar.init(_engine.getGraphics());
+        _grid.setGraphics(_engine.getGraphics());
     }
 
     @Override
@@ -149,8 +150,10 @@ public class OhY3s implements IApplication {
                     switch (a){
                         case CLUE:
                             Clue tip = getTip();
+                            _cellTip.focus();
                             _currentTip = tip.getMessage();
                             _cellTip    = tip.getCell();
+                            _cellTip.focus();
                             break;
                         case CLOSE:
                             _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));

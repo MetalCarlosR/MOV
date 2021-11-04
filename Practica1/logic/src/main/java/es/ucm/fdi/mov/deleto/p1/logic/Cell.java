@@ -1,22 +1,31 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import es.ucm.fdi.mov.deleto.p1.engine.IFont;
+import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+
 public class Cell {
+
+    public int getRadius() {
+        return _radius;
+    }
+
+    public double getScale() {
+        return _scale;
+    }
+
+    public void setRadius(int r)
+    {
+        _radius=r;
+    }
+    public void setScale(double s)
+    {
+        _scale = s;
+    }
 
     enum State{ Grey, Blue, Red }
 
-    /**
-     *
-     * @param x logical X coordinate [from 0 to grid size]
-     * @param y logical Y coordinate [from 0 to grid size]
-     * @param n number of neighbours
-     * @param f whether it is locked or not, i.e it's state can be changed by the player
-     */
-    public Cell(int x, int y, int n, boolean f){
-        _x = x;
-        _y = y;
-        _neigh = n;
-        _locked = f;
-    }
+
     public Cell(int x, int y, State s)
     {
         _x=x;
@@ -31,6 +40,33 @@ public class Cell {
         setCell(data);
         _x=x;
         _y=y;
+    }
+
+    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font) {
+        Cell.State state = getState();
+
+        if(_focus)
+        {
+            int ring = 2;
+
+            graphics.setColor(0xFF000000);
+            graphics.fillCircle(x,y,(r+ring));
+        }
+        graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+        graphics.fillCircle(x,y,r);
+
+        if(getState() == Cell.State.Blue && isLocked())
+        {
+            graphics.setColor(0xFFFFFFFF);
+            graphics.setFont(font);
+            graphics.drawText(Integer.toString(getNeigh()), x,y,scale);
+        }
+        else if(getState() == Cell.State.Red && isLocked())
+        {
+            graphics.setOpacity(0.2f);
+            graphics.drawImage(lock, x,y,(float)(0.65f*scale),(float)(0.65f*scale));
+            graphics.setOpacity(1.0f);
+        }
     }
 
     /***
@@ -90,14 +126,20 @@ public class Cell {
     {
         _locked=false;
     }
+    public void focus(){
+        _focus = !_focus;
+    }
     public void setNeigh(int n)
     {
         _neigh=n;
     }
     private int _neigh = 0;
     private boolean _locked = false;
+    private boolean _focus = false;
     int _x = 0;
     int _y = 0;
+    private  int _radius;
+    private double _scale;
 
     private State _state = State.Grey;
 }

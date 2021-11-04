@@ -38,8 +38,6 @@ public class Grid {
             }
         }
 
-        //loadGridFromFile("./Assets/examples/ex2.txt");
-
         int tries = 50;
         while(--tries>0)
         {
@@ -69,6 +67,17 @@ public class Grid {
             }
         }
         _percentage = 0;
+    }
+    public void setGraphics(IGraphics graphics) {
+        _G = graphics;
+        _logicWidth = graphics.getWidth();
+        _logicHeight = graphics.getHeight();
+
+        int r = (_logicWidth -_size* PADDING)/(_size*2);
+        getCell(0,0).setRadius(r);
+        getCell(0,0).setScale(r/((double)(_logicWidth -4* PADDING)/(4*2)));
+        _originX = (PADDING /2);
+        _originY = _logicHeight /8;
     }
 
     private void loadGridFromFile(String file) {
@@ -228,9 +237,9 @@ public class Grid {
 
     public boolean processClick(int x, int y)
     {
-        int r = (_lastWidth-_size* PADDING)/(_size*2);
+        int r = (_logicWidth -_size* PADDING)/(_size*2);
         int originX = (PADDING /2);
-        int originY = _lastHeight/8;
+        int originY = _logicHeight /8;
         if( y >= originY &&
             y <  ((_size*((2*(r+PADDING))))) &&
             x >= originX &&
@@ -238,7 +247,7 @@ public class Grid {
         {
             y-=originY;
 
-            int widthEach = (_lastWidth/_size);
+            int widthEach = (_logicWidth /_size);
             int centerX = (x % widthEach) + r + PADDING;
             int heightEach = widthEach;
             int centerY = (y % heightEach)+ r + PADDING;
@@ -258,52 +267,20 @@ public class Grid {
         return  false;
     }
 
-    public void draw(IGraphics graphics, IFont font, IImage lock, Cell focus){
-        _lastWidth = graphics.getWidth();
-        _lastHeight = graphics.getHeight();
-        if(_G==null)
-            _G = graphics;
+    public void draw(IFont font, IImage lock){
+        int r = getCell(0,0).getRadius();
+        double textScale = getCell(0,0).getScale();
 
-        int r = (_lastWidth-_size* PADDING)/(_size*2);
-        double textScale = r/((double)(_lastWidth-4* PADDING)/(4*2));
-        int originX = (PADDING /2);
-        int originY = _lastHeight/8;
-
-        graphics.setColor(0xFF000000);
-        graphics.fillRect(5,5,10,10);
-        graphics.fillRect(400-5,600-5,10,10);
+        _G.setColor(0xFF000000);
+        _G.fillRect(5,5,10,10);
+        _G.fillRect(_logicWidth -5, _logicHeight -5,10,10);
 
         for(int i = 0; i < _size; i++) {
-            int y = (originY+(i)*(r*2)+ PADDING *i)+r;
+            int y = (_originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
             {
-                Cell cel = getCell(j,i);
-                Cell.State state = cel.getState();
-
-                int x = (originX+(j)*(r*2)+ PADDING *j)+r;
-
-                if(cel == focus)
-                {
-                    int ring = 2;
-
-                    graphics.setColor(0xFF000000);
-                    graphics.fillCircle(x,y,(r+ring));
-                }
-                graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
-                graphics.fillCircle(x,y,r);
-
-                if(cel.getState() == Cell.State.Blue && cel.isLocked())
-                {
-                    graphics.setColor(0xFFFFFFFF);
-                    graphics.setFont(font);
-                    graphics.drawText(Integer.toString(cel.getNeigh()), x,y,textScale);
-                }
-                else if(cel.getState() == Cell.State.Red && cel.isLocked())
-                {
-                    graphics.setOpacity(0.2f);
-                    graphics.drawImage(lock, x,y,(float)(0.65f*textScale),(float)(0.65f*textScale));
-                    graphics.setOpacity(1.0f);
-                }
+                int x = (_originX+(j)*(r*2)+ PADDING *j)+r;
+                getCell(j,i).draw(x,y,r,textScale,_G, lock, font);
             }
         }
 
@@ -412,7 +389,6 @@ public class Grid {
                     return clues.getFirst();
                 }
             }
-            // 3. 5. y 9.
 
             Cell obvious = getDirForObviousBlueDot(c);
             // 3. y 9. hay un punto que tiene que ser clicado si o si
@@ -540,7 +516,6 @@ public class Grid {
     // devuelve el numero de direcciones posibles en las que crecer
     public int getNumPossibleDirs(Cell c){
         int n = 0;
-
         for (Pair<Integer, Integer> d: _dirs) {
             if(getPossibleGrowthInDir(c, d)!=null)
                 n++;
@@ -594,10 +569,6 @@ public class Grid {
         if(dir == null)
             return null;
 
-//        System.out.println(dir);
-//
-//        if(dir!=null)
-//            System.out.printf("Pos:{%d,%d} Dir:{%d,%d}\n", c._x,c._y,dir.fst,dir.snd);
 
         Cell cell = getCell(c._x + dir.fst, c._y + dir.snd);
         while(cell != null){
@@ -643,9 +614,12 @@ public class Grid {
     private int _clicked = 0;
     private int _mistakes = 0;
 
-    private int _lastWidth = 0;
-    private int _lastHeight = 0;
+    private int _logicWidth = 0;
+    private int _logicHeight = 0;
     private IGraphics _G;
+
+    int _originX;
+    int _originY;
 
     private Stack<Pair<Cell, Cell.State>> undoStack = new Stack<>();
 }
