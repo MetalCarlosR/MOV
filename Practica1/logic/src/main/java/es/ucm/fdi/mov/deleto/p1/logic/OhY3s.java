@@ -36,7 +36,10 @@ public class OhY3s implements IApplication {
 
     public Clue getTip() {
 //        Vector<Cell> cells = _grid.getTipCells();
-        return _grid.getClue();
+        Clue c = _grid.getClue();
+        if(c != null && c.getCorrectState() != null)
+            _grid.pito = _grid.getCell(c.getCorrectState()._x, c.getCorrectState()._y);
+        return c;
     }
 
     public void draw() {
@@ -105,6 +108,7 @@ public class OhY3s implements IApplication {
             {
                 _currentTip = "";
                 _cellTip    = null;
+                _grid.pito = null;
                 if(_grid.getPercentage() == 100) {
                     if (_grid.checkWin()) {
                         System.out.println("NEW GAME");
@@ -148,6 +152,7 @@ public class OhY3s implements IApplication {
                 {
                     switch (a){
                         case CLUE:
+                            _grid.pito = null;
                             Clue tip = getTip();
                             _currentTip = tip.getMessage();
                             _cellTip    = tip.getCell();
