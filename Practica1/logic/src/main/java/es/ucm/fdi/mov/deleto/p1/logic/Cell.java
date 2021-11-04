@@ -42,7 +42,7 @@ public class Cell {
         _y=y;
     }
 
-    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font) {
+    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font, int color) {
         Cell.State state = getState();
 
         if(_focus)
@@ -52,7 +52,7 @@ public class Cell {
             graphics.setColor(0xFF000000);
             graphics.fillCircle(x,y,(r+ring));
         }
-        graphics.setColor(state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+        graphics.setColor(color);
         graphics.fillCircle(x,y,r);
 
         if(getState() == Cell.State.Blue && isLocked())
@@ -67,6 +67,12 @@ public class Cell {
             graphics.drawImage(lock, x,y,(float)(0.65f*scale),(float)(0.65f*scale));
             graphics.setOpacity(1.0f);
         }
+    }
+
+    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font) {
+        Cell.State state = getState();
+
+        draw(x,y,r,scale,graphics,lock,font,state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
     }
 
     /***
@@ -126,8 +132,11 @@ public class Cell {
     {
         _locked=false;
     }
+    public void unfocus() {
+        _focus = false;
+    }
     public void focus(){
-        _focus = !_focus;
+        _focus = true;
     }
     public void setNeigh(int n)
     {
