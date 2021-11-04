@@ -19,8 +19,8 @@ public class OhY3s implements IApplication {
     IFont _title;
     IFont _subtitle;
 
-    String _currentTip = "";
-    Cell   _cellTip = null;
+    String _currentMessage = "";
+    Cell _focusedCell = null;
     boolean _newGame = false;
     public OhY3s() {
         _grid = new Grid();
@@ -45,10 +45,10 @@ public class OhY3s implements IApplication {
     public void draw() {
         //Draw Title
         _engine.getGraphics().setColor(0xFF000000);
-        if(!_currentTip.equals(""))
+        if(!_currentMessage.equals(""))
         {
             _engine.getGraphics().setFont(_subtitle);
-            _engine.getGraphics().drawText(_currentTip,(_engine.getGraphics().getWidth())/2,32);
+            _engine.getGraphics().drawText(_currentMessage,(_engine.getGraphics().getWidth())/2,32);
         }
         else
         {
@@ -107,10 +107,10 @@ public class OhY3s implements IApplication {
         {
             if(_grid.processClick(event.get_x(),event.get_y()))
             {
-                _currentTip = "";
-                if(_cellTip!=null)
-                    _cellTip.unfocus();
-                _cellTip    = null;
+                _currentMessage = "";
+                if(_focusedCell !=null)
+                    _focusedCell.unfocus();
+                _focusedCell = null;
                 _grid.pito = null;
                 if(_grid.getPercentage() == 100) {
                     if (_grid.checkWin()) {
@@ -143,8 +143,8 @@ public class OhY3s implements IApplication {
                     } else
                     {
                         Clue t = getTip();
-                        _cellTip = t.getCell();
-                        _currentTip = t.getMessage();
+                        _focusedCell = t.getCell();
+                        _currentMessage = t.getMessage();
                     }
                 }
             }
@@ -157,25 +157,46 @@ public class OhY3s implements IApplication {
                         case CLUE:
                             _grid.pito = null;
                             Clue tip = getTip();
-                            if(_cellTip!=null)
-                                _cellTip.unfocus();
-                            _currentTip = tip.getMessage();
-                            _cellTip    = tip.getCell();
-                            _cellTip.focus();
+                            if(_focusedCell !=null)
+                                _focusedCell.unfocus();
+                            _currentMessage = tip.getMessage();
+                            _focusedCell = tip.getCell();
+                            _focusedCell.focus();
                             break;
                         case CLOSE:
                             _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
                             break;
                         case UNDO:
-                            _grid.undoMove();
+                            Cell undo = _grid.undoMove();
+                            if(undo != null){
+                                _focusedCell = _grid.getCell(undo._x, undo._y);
+                                _focusedCell.focus();
+                                switch (undo.getState()){
+                                    case Grey:
+                                        _currentMessage = "This tile was reversed to its empty state.";
+                                        break;
+                                    case Blue:
+                                        _currentMessage = "This tile was reversed to blue.";
+                                        break;
+                                    case Red:
+                                        _currentMessage = "This tile was reversed to red.";
+                                        break;
+                                    default:
+                                        System.err.println("ERROR UNDO: Invalid cell state given");
+                                        break;
+                                }
+                            }
+                            else {
+                                _currentMessage = "Nothing to undo.";
+                            }
                             break;
                         case NO_ACTION:
                             break;
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + a);
                     }
                 }
             }
         }
     }
-    // TO DO:
-    // private Text _title;
 }

@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
-import java.util.Stack;
+import java.util.Deque;
 import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -71,6 +71,7 @@ public class Grid {
         }
         _percentage = 0;
     }
+
     public void setGraphics(IGraphics graphics) {
         _G = graphics;
         _logicWidth = graphics.getWidth();
@@ -304,25 +305,28 @@ public class Grid {
     public boolean clickCell(int x, int y)
     {
         Cell c = getCell(x,y);
-        undoStack.push(new Pair<>(c,c.getState()));
+        if(undoStack.size() == 0 || undoStack.peekFirst()._x != c._x || undoStack.peekFirst()._y != c._y)
+            undoStack.addFirst(new Cell(c._x, c._y, c.getState()));
         return changeState(x, y);
     }
 
-    public boolean undoMove(){
-        if(undoStack.empty())
-            return false;
+    public Cell undoMove(){
+        if(undoStack.size() == 0)
+            return null;
 
-        Pair<Cell, Cell.State> c = undoStack.pop();
+        Cell c = undoStack.removeFirst();
+        Cell cReal = getCell(c._x, c._y);
 
-        c.fst.setState(c.snd);
-        if(c.snd == Cell.State.Grey)
+        Cell.State s = c.getState();
+        cReal.setState(s);
+        if(s == Cell.State.Grey)
             _clicked--;
-        else if(c.snd == Cell.State.Red)
+        else if(s == Cell.State.Red)
             _clicked++;
 
         _percentage =  (100 * _clicked) / _freeCells;
 
-        return  true;
+        return c;
     }
 
     public boolean changeState(int x, int y){
@@ -561,21 +565,11 @@ public class Grid {
 
         max *= 2;
 
-        int numDirs = 0;
-
-        for(i = 0; i < _dirs.size(); i++){
-            if(neigh[i] >= c.getNeigh() - totalVis)
-                numDirs++;
-        }
-
-        if(numDirs > 1)
-            return null;
-
         for(i = 0; i < _dirs.size(); i++){
             max -= neigh[i];
         }
 
-        if(max > 0 || (max == 0 && sum == c.getNeigh() - totalVis))
+        if((max > 0 && sum / (c.getNeigh()-totalVis) <= 1) || (max == 0 && sum == c.getNeigh()))
             dir = _dirs.get(id);
 
         if(dir == null)
@@ -631,8 +625,8 @@ public class Grid {
 
     int _originX;
     int _originY;
+
     public Cell pito;
 
-
-    private Stack<Pair<Cell, Cell.State>> undoStack = new Stack<>();
+    private Deque<Cell> undoStack = new ArrayDeque<>();
 }
