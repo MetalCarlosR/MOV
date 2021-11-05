@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.Random;
 import java.util.Scanner; // Import the Scanner class to read text files
-import java.util.Deque;
 import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -19,13 +18,15 @@ import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Grid {
 
-    static final int PADDING = 10;
+    static int PADDING = 10;
+    static final int BORDER = 30;
 
     public Grid(){
         _dirs.add(new Pair<Integer, Integer>(-1,0));
         _dirs.add(new Pair<Integer, Integer>(1,0));
         _dirs.add(new Pair<Integer, Integer>(0,-1));
         _dirs.add(new Pair<Integer, Integer>(0,1));
+        _startTransition = false;
     }
 
     public void init(int size)
@@ -77,11 +78,12 @@ public class Grid {
         _logicWidth = graphics.getWidth();
         _logicHeight = graphics.getHeight();
 
-        int r = (_logicWidth -_size* PADDING)/(_size*2);
+        PADDING = 40/_size;
+        int r = ((_logicWidth-BORDER) -_size* PADDING)/(_size*2);
         getCell(0,0).setRadius(r);
         getCell(0,0).setScale(r/((double)(_logicWidth -4* PADDING)/(4*2)));
-        _originX = (PADDING /2);
-        _originY = _logicHeight /8;
+        _originX = (PADDING /2 + BORDER/2);
+        _originY = _logicHeight / 8 + BORDER;
     }
 
     private void loadGridFromFile(String file) {
@@ -284,10 +286,6 @@ public class Grid {
         int r = getCell(0,0).getRadius();
         double textScale = getCell(0,0).getScale();
 
-        _G.setColor(0xFF000000);
-        _G.fillRect(5,5,10,10);
-        _G.fillRect(_logicWidth -5, _logicHeight -5,10,10);
-
         for(int i = 0; i < _size; i++) {
             int y = (_originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
@@ -300,6 +298,27 @@ public class Grid {
             }
         }
 
+    }
+    public void onUpdate(double deltaTime) {
+        double opacity=1;
+        if(_startTransition)
+        {
+            _actualTransitionTime+=deltaTime;
+            opacity = 1 - (_actualTransitionTime/ TRANSITION_TARGET_TIME);
+            if(opacity<= 0)
+            {
+                opacity = 1;
+                _startTransition = false;
+                _onTransition.call();
+                return;
+            }
+        }
+        for(Cell[] fila : _cells)
+            for(Cell c : fila) {
+                c.onUpdate(deltaTime);
+                if(_startTransition)
+                    c.setOpacity(opacity);
+            }
     }
 
     public boolean clickCell(int x, int y)
@@ -331,7 +350,7 @@ public class Grid {
 
     public boolean changeState(int x, int y){
         if(!getCell(x, y).changeState())
-            System.out.println("Couldn't click on " + x + " " + y);
+            getCell(x,y).showLockedGraphics();
         else {
             Cell.State state = getCell(x, y).getState();
             if(state == Cell.State.Grey)
@@ -344,7 +363,6 @@ public class Grid {
         return checkWin();
     }
 
-    // TODO: bruh, revisar
     public boolean checkWin(){
         if(_percentage >= 99 && _mistakes == 0){
             return getFixedCells().size() + getIsolatedCells().size() == 0;
@@ -385,7 +403,7 @@ public class Grid {
                     if((sel=getPossibleGrowthInDir(c, d))!=null)
                         break;
                 }
-                clues.addFirst(new Clue(c,"This number can see all its dots",new Cell(sel.fst, sel.snd, Cell.State.Red)));
+                clues.addFirst(new Clue(c,"This number can see all its dots\n ",new Cell(sel.fst, sel.snd, Cell.State.Red)));
                 return clues.getFirst();
             }
             // 8. solo te queda una direccion en la que mirar
@@ -396,7 +414,7 @@ public class Grid {
                     if((sel=getPossibleGrowthInDir(c, d))!=null)
                         break;
                 }
-                clues.addFirst(new Clue(c,"Only one direction remains for this number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
+                clues.addFirst(new Clue(c,"Only one direction remains for\nthis number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
                 return clues.getFirst();
             }
             // 2. si añades uno, te pasas porque pasa a ver los azules de detras
@@ -404,7 +422,7 @@ public class Grid {
                 Pair<Integer,Integer> sel =  getPossibleNeighs(c);
                 if (sel!=null)
                 {
-                    clues.addFirst(new Clue(c, "Looking further in one direction would exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
+                    clues.addFirst(new Clue(c, "Looking further in one direction\nwould exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
                     return clues.getFirst();
                 }
             }
@@ -413,7 +431,7 @@ public class Grid {
             // 3. y 9. hay un punto que tiene que ser clicado si o si
             if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
             {
-                clues.addFirst(new Clue(c,"One specific dot is included in all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
+                clues.addFirst(new Clue(c,"One specific dot is included\nin all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
                 return clues.getFirst();
             }
             // 5. no ve los suficientes
@@ -626,7 +644,17 @@ public class Grid {
     int _originX;
     int _originY;
 
+
     public Cell pito;
 
     private Deque<Cell> undoStack = new ArrayDeque<>();
+    private final double TRANSITION_TARGET_TIME = 2;//in seconds
+    private double _actualTransitionTime;
+    private boolean _startTransition = false;
+private ICallable _onTransition;
+    public void setTransition(ICallable onTransition) {
+        _startTransition = true;
+        _onTransition = onTransition;
+    }
+
 }

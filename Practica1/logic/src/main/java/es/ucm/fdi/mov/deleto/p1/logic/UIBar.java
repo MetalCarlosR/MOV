@@ -38,19 +38,20 @@ public class UIBar {
         int sH = (int)(_scale * _h);
 
         int x = padding+(sW/2);
-        int y = _g.getHeight()-(sH)+(sW/2);
+        int y = _g.getHeight()-(sH);
+
         _g.drawImage(_close, x, y, _scale, _scale);
+
         posX[0]=x;
         posY[0]=y;
 
         x = ((padding*2)+(sW))  +(sW/2);
-        y = _g.getHeight()-sH+(sW/2);
         _g.drawImage(_undo,x ,y, _scale, _scale);
+
         posX[1]=x;
         posY[1]=y;
 
         x = ((padding*3)+(sW*2))+(sW/2);
-        y = _g.getHeight()-sH+(sW/2);
         _g.drawImage(_clue,  x  , y, _scale, _scale);
         posX[2]=x;
         posY[2]=y;
@@ -71,9 +72,4 @@ public class UIBar {
         }
         return Action.NO_ACTION;
     }
-
-    //TO DO:
-    // private Button
-    // private Button
-    // private Button
 }

@@ -38,10 +38,12 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public void onInit(IEngine engine) {
         _engine = engine;
         IGraphics g = _engine.getGraphics();
+        g.setOpacity(1);
+
         _regular = g.newFont("JosefinSans-Bold.ttf",56,true);
         _title = g.newFont("Molle-Regular.ttf",72,false);
         _title2 = g.newFont("Molle-Regular.ttf",68,false);
-        _title3 = g.newFont("JosefinSans-Bold.ttf",60,false);
+        _title3 = g.newFont("JosefinSans-Bold.ttf",60,true);
 
         _subtitle = g.newFont("JosefinSans-Bold.ttf",38,false);
 
@@ -78,7 +80,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 g.drawImage(_logo,g.getWidth()/2,g.getHeight()-16,0.05f,0.05f);
                 break;
             case SelectSize:
-                int y =(int)(68*0.75f);
+                int y = 46;
                 if(_titleStr == "Oh Yes")
                 {
                     g.setFont(_title2);
@@ -112,7 +114,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     g.drawText(Integer.toString(4+i),xX,yY);
                 }
                 g.setOpacity(0.6f);
-                g.drawImage(_exit,g.getWidth()/2,g.getHeight()-16,1.f,1.f);
+                g.drawImage(_exit,g.getWidth()/2,g.getHeight()-64,1.f,1.f);
                 g.setOpacity(1.f);
                 break;
             default:

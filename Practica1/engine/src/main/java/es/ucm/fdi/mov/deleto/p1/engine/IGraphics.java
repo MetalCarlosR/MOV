@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
+import com.sun.tools.javac.util.Pair;
+
 public interface IGraphics {
 
     public int getWidth();
@@ -22,9 +24,10 @@ public interface IGraphics {
 
     public void fillRect(int x, int y, int w, int h);
 
-    public void drawText(String text, int x, int y);
+    public Pair<Integer, Integer> drawText(String text, int x, int y);
 
-    public void drawText(String text, int x, int y, double scale);
+    // Pair<Integer, Integer>
+    public Pair<Integer, Integer> drawText(String text, int x, int y, double scale);
 
     public IImage newImage(String name);
 

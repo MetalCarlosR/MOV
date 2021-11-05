@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
+import com.sun.tools.javac.util.Pair;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -212,17 +214,32 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public void drawText(String text, int x, int y) {
-        drawText(text,x,y,1);
+    public Pair<Integer, Integer> drawText(String text, int x, int y) {
+        return drawText(text,x,y,1);
     }
 
     @Override
-    public void drawText(String text, int x, int y, double scale) {
+    public Pair<Integer, Integer> drawText(String text, int x, int y, double scale) {
+        String[] splits = text.split("\n");
         _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength((int)(_actualFont.getSize()*scale))));
         FontMetrics fm = _buffer.getFontMetrics();
-        int fX = (fm.stringWidth(text))/2;
         int fY = fm.getHeight()/2;
-        _buffer.drawString(text, realPositionX(x)-fX, realPositionY(y)+fY/2);
+        int i = 0;
+        if(splits.length > 1)
+            fY-= fm.getHeight()/2;
+        int fX=0;
+
+        for(String s : splits)
+        {
+            fY+= (fm.getHeight()+fm.getLeading()+fm.getMaxAscent())*i++;
+
+            fX = (fm.stringWidth(s))/2;
+            _buffer.drawString(s, realPositionX(x)-fX, realPositionY(y)+fY/2);
+        }
+        int xX, yY;
+        xX = realPositionX(x)-fX;
+        yY = realPositionY(y)+fY/2;
+        return new Pair<>(refPositionX(xX+(fm.stringWidth(splits[splits.length-1]))),refPositionY(yY));
     }
 
     @Override

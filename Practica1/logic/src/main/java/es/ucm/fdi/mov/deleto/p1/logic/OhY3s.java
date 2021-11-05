@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import com.sun.tools.javac.util.Pair;
+
 import java.util.Random;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -20,7 +22,11 @@ public class OhY3s implements IApplication {
     IFont _subtitle;
 
     String _currentMessage = "";
+    float _messageScale = 1f;
     Cell _focusedCell = null;
+    Cell.State _clueState;
+    float _focusedOpacity = 1;
+
     boolean _newGame = false;
     public OhY3s() {
         _grid = new Grid();
@@ -37,6 +43,7 @@ public class OhY3s implements IApplication {
     public Clue getTip() {
 //        Vector<Cell> cells = _grid.getTipCells();
         Clue c = _grid.getClue();
+        _messageScale = 0.5f;
         if(c != null && c.getCorrectState() != null)
             _grid.pito = _grid.getCell(c.getCorrectState()._x, c.getCorrectState()._y);
         return c;
@@ -47,13 +54,22 @@ public class OhY3s implements IApplication {
         _engine.getGraphics().setColor(0xFF000000);
         if(!_currentMessage.equals(""))
         {
-            _engine.getGraphics().setFont(_subtitle);
-            _engine.getGraphics().drawText(_currentMessage,(_engine.getGraphics().getWidth())/2,32);
+            _engine.getGraphics().setFont(_title);
+            Pair<Integer, Integer> dot = _engine.getGraphics().drawText(_currentMessage,(_engine.getGraphics().getWidth())/2,46,_messageScale);
+            if(_focusedCell!=null)
+            {
+                _engine.getGraphics().setOpacity(((float)Math.sin(_focusedOpacity)+1)/2);
+                _engine.getGraphics().setColor(_clueState == Cell.State.Blue ?0xFF1CC0E0 : _clueState == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+                final int r = 6;
+                int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == ' '  ? r - r/2:  r+r/2);
+                _engine.getGraphics().fillCircle(dot.fst+ xOff, dot.snd-r,r);
+                _engine.getGraphics().setOpacity(1.f);
+            }
         }
         else
         {
             _engine.getGraphics().setFont(_title);
-            _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,32);
+            _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,46);
         }
 
         //Draw Grid
@@ -63,7 +79,7 @@ public class OhY3s implements IApplication {
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
         _engine.getGraphics().setColor(0xFF777777);
-        _engine.getGraphics().drawText(Integer.toString(_grid.getPercentage())+"%",(_engine.getGraphics().getWidth()/2),540);
+        _engine.getGraphics().drawText(Integer.toString(_grid.getPercentage())+"%",(_engine.getGraphics().getWidth()/2),500);
 
         _bar.Draw();
     }
@@ -75,7 +91,7 @@ public class OhY3s implements IApplication {
         _engine.getGraphics().setColor(0xFFFFFFFF);
         image = _engine.getGraphics().newImage("lock.png");
         _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",64,true);
-        _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",72,true);
+        _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",60,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
         _engine.getGraphics().setFont(_font);
         _bar.init(_engine.getGraphics());
@@ -88,6 +104,10 @@ public class OhY3s implements IApplication {
         {
             newGame(_grid.getSize());
             _newGame = false;
+        }else{
+            _grid.onUpdate(deltaTime);
+            if(_focusedCell != null && _clueState != null)
+                _focusedOpacity+=deltaTime;
         }
     }
 
@@ -139,12 +159,23 @@ public class OhY3s implements IApplication {
                                 "Exceptional",
                                 "Magnificent",
                                 "Yay"};
-                        _engine.changeApp(new Menu(Menu.State.SelectSize,messages[new Random().nextInt(messages.length)] ));
+                        final String selectedTitle = messages[new Random().nextInt(messages.length)];
+                        _currentMessage = selectedTitle;
+                        _messageScale = 1;
+
+                        _grid.setTransition(new ICallable() {
+                            @Override
+                            public void call() {
+                                _engine.changeApp(new Menu(Menu.State.SelectSize, selectedTitle));
+                            }
+                        });
                     } else
                     {
                         Clue t = getTip();
+                        _focusedOpacity = 0;
                         _focusedCell = t.getCell();
                         _currentMessage = t.getMessage();
+                        _clueState = t.getCorrectState().getState();
                     }
                 }
             }
@@ -162,6 +193,8 @@ public class OhY3s implements IApplication {
                             _currentMessage = tip.getMessage();
                             _focusedCell = tip.getCell();
                             _focusedCell.focus();
+                            _clueState = tip.getCorrectState().getState();
+                            _focusedOpacity = 0;
                             break;
                         case CLOSE:
                             _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
@@ -173,7 +206,7 @@ public class OhY3s implements IApplication {
                                 _focusedCell.focus();
                                 switch (undo.getState()){
                                     case Grey:
-                                        _currentMessage = "This tile was reversed to its empty state.";
+                                        _currentMessage = "This tile was reversed to it's\nempty state.";
                                         break;
                                     case Blue:
                                         _currentMessage = "This tile was reversed to blue.";
@@ -182,6 +215,7 @@ public class OhY3s implements IApplication {
                                         _currentMessage = "This tile was reversed to red.";
                                         break;
                                     default:
+                                        _currentMessage = "ERROR UNDO: Invalid cell state given";
                                         System.err.println("ERROR UNDO: Invalid cell state given");
                                         break;
                                 }

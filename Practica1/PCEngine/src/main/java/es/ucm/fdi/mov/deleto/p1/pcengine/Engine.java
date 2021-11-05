@@ -51,6 +51,7 @@ public class Engine implements IEngine {
             _app.onExit();
 
             if (_nextApp != null) {
+                System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 _app = _nextApp;
                 _nextApp = null;
             } else
