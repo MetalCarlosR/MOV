@@ -7,14 +7,15 @@ import java.util.Random;
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
+import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class OhY3s implements IApplication {
 
     IEngine _engine;
-    private Grid _grid;
-    private UIBar _bar;
+    private final Grid _grid;
+    private final UIBar _bar;
 
     IImage image;
     IFont _font;
@@ -27,63 +28,14 @@ public class OhY3s implements IApplication {
     Cell.State _clueState;
     float _focusedOpacity = 1;
 
-    boolean _newGame = false;
-    public OhY3s() {
+    public OhY3s(int size) {
         _grid = new Grid();
         _bar = new UIBar();
+        newGame(size);
     }
-
     public void newGame(int size) {
-//        if(size > 4)
-//            System.err.println("Only Size 4 implemented, sorry bro :C");
-//        size = 4;
         _grid.init(size);
     }
-
-    public Clue getTip() {
-//        Vector<Cell> cells = _grid.getTipCells();
-        Clue c = _grid.getClue();
-        _messageScale = 0.5f;
-        if(c != null && c.getCorrectState() != null)
-            _grid.pito = _grid.getCell(c.getCorrectState()._x, c.getCorrectState()._y);
-        return c;
-    }
-
-    public void draw() {
-        //Draw Title
-        _engine.getGraphics().setColor(0xFF000000);
-        if(!_currentMessage.equals(""))
-        {
-            _engine.getGraphics().setFont(_title);
-            Pair<Integer, Integer> dot = _engine.getGraphics().drawText(_currentMessage,(_engine.getGraphics().getWidth())/2,46,_messageScale);
-            if(_focusedCell!=null)
-            {
-                _engine.getGraphics().setOpacity(((float)Math.sin(_focusedOpacity)+1)/2);
-                _engine.getGraphics().setColor(_clueState == Cell.State.Blue ?0xFF1CC0E0 : _clueState == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
-                final int r = 6;
-                int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == ' '  ? r - r/2:  r+r/2);
-                _engine.getGraphics().fillCircle(dot.fst+ xOff, dot.snd-r,r);
-                _engine.getGraphics().setOpacity(1.f);
-            }
-        }
-        else
-        {
-            _engine.getGraphics().setFont(_title);
-            _engine.getGraphics().drawText(Integer.toString(_grid.getSize())+"x"+Integer.toString(_grid.getSize()),(_engine.getGraphics().getWidth())/2,46);
-        }
-
-        //Draw Grid
-        _engine.getGraphics().setFont(_font);
-        _grid.draw(_font, image);
-
-        //Draw percentage
-        _engine.getGraphics().setFont(_subtitle);
-        _engine.getGraphics().setColor(0xFF777777);
-        _engine.getGraphics().drawText(Integer.toString(_grid.getPercentage())+"%",(_engine.getGraphics().getWidth()/2),500);
-
-        _bar.Draw();
-    }
-
 
     @Override
     public void onInit(IEngine engine) {
@@ -100,137 +52,199 @@ public class OhY3s implements IApplication {
 
     @Override
     public void onUpdate(double deltaTime) {
-        if(_newGame)
-        {
-            newGame(_grid.getSize());
-            _newGame = false;
-        }else{
-            _grid.onUpdate(deltaTime);
-            if(_focusedCell != null && _clueState != null)
-                _focusedOpacity+=deltaTime;
-        }
+        _grid.onUpdate(deltaTime);
+        if(_focusedCell != null && _clueState != null)
+            _focusedOpacity+=deltaTime;
     }
 
     @Override
     public void onRender() {
-        draw();
+        //Draw Title
+        drawTitle();
+
+        //Draw Grid
+        _engine.getGraphics().setFont(_font);
+        _grid.draw(_font, image);
+
+        //Draw percentage
+        _engine.getGraphics().setFont(_subtitle);
+        _engine.getGraphics().setColor(0xFF777777);
+        _engine.getGraphics().drawText(String.format("%d%%", _grid.getPercentage()),(_engine.getGraphics().getWidth()/2),500);
+
+        //Draw bottom UI bar
+        _bar.Draw();
+    }
+
+    /***
+     * Draws the current message (clue or undo) and the little dot of the suggested clue
+     */
+    private void drawTitle()
+    {
+        //Set up title style
+        IGraphics g = _engine.getGraphics();
+        g.setColor(0xFF000000);
+        g.setFont(_title);
+
+        String title = _currentMessage;
+        Pair<Integer, Integer> dot;
+        float scale = _messageScale;
+
+        //If there is no message writes NxN, where N is the current grid size
+        if(_currentMessage.equals("")) {
+            title = String.format("%dx%d",_grid.getSize(),_grid.getSize());
+            scale = 1;
+        }
+
+        //We draw the text and save the dot position in case we need it
+        dot = g.drawText(title,(g.getWidth())/2,46,scale);
+
+        //If we wrote a clue, then we can draw the dot
+        if(!_currentMessage.equals("") && _focusedCell != null)
+            drawDot(g,dot);
+    }
+
+    /***
+     * Draws a blinking dot that indicates the suggested clue state (Red or Blue)
+     * @param g Graphics context
+     * @param dot Dot positon
+     */
+    private void drawDot(IGraphics g, Pair<Integer, Integer>dot)
+    {
+        //Set up dot style
+        g.setOpacity(((float)Math.sin(_focusedOpacity*2)+1)/2);
+        g.setColor(Cell.getColorByState(_clueState));
+        final int r = 6;
+        //This xOffset is needed to center the dot and we change it based on the last character of
+        //the last string. Space character is used so an empty second line is not ignored
+        int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == ' '  ? r - r/2:  r+r/2);
+
+        //Draw and Reset Opacity
+        g.fillCircle(dot.fst+ xOff, dot.snd-r,r);
+        g.setOpacity(1.f);
     }
 
     @Override
     public void onExit() {
-        System.out.println("SALIENDO PAPA");
+        System.out.println("Closing 0hY3s");
     }
 
     @Override
     public void onEvent(TouchEvent event) {
         if(event.get_type() == TouchEvent.EventType.RELEASE)
         {
-            if(_grid.processClick(event.get_x(),event.get_y()))
+            if(clickOnGrid(event) || clickOnBottomBar(event))
             {
-                _currentMessage = "";
-                if(_focusedCell !=null)
-                    _focusedCell.unfocus();
-                _focusedCell = null;
-                _grid.pito = null;
-                if(_grid.getPercentage() == 100) {
-                    if (_grid.checkWin()) {
-                        System.out.println("NEW GAME");
-                        String[] messages = new String[]{
-                                "Wonderful",
-                                "Spectacular",
-                                "Marvelous",
-                                "Outstanding",
-                                "Remarkable",
-                                "Shazam",
-                                "Impressive",
-                                "Great",
-                                "Well done",
-                                "Fabulous",
-                                "Clever",
-                                "Dazzling",
-                                "Fantastic",
-                                "Excellent",
-                                "Nice",
-                                "Super",
-                                "Awesome",
-                                "Ojoo",
-                                "Brilliant",
-                                "Splendid",
-                                "Exceptional",
-                                "Magnificent",
-                                "Yay"};
-                        final String selectedTitle = messages[new Random().nextInt(messages.length)];
-                        _currentMessage = selectedTitle;
-                        _messageScale = 1;
-
-                        _grid.setTransition(new ICallable() {
-                            @Override
-                            public void call() {
-                                _engine.changeApp(new Menu(Menu.State.SelectSize, selectedTitle));
-                            }
-                        });
-                    } else
-                    {
-                        Clue t = getTip();
-                        _focusedOpacity = 0;
-                        _focusedCell = t.getCell();
-                        _currentMessage = t.getMessage();
-                        _clueState = t.getCorrectState().getState();
-                    }
-                }
-            }
-            else
-            {
-                UIBar.Action a = _bar.HandleClick(event.get_x(),event.get_y());
-                if(a!= UIBar.Action.NO_ACTION)
-                {
-                    switch (a){
-                        case CLUE:
-                            _grid.pito = null;
-                            Clue tip = getTip();
-                            if(_focusedCell !=null)
-                                _focusedCell.unfocus();
-                            _currentMessage = tip.getMessage();
-                            _focusedCell = tip.getCell();
-                            _focusedCell.focus();
-                            _clueState = tip.getCorrectState().getState();
-                            _focusedOpacity = 0;
-                            break;
-                        case CLOSE:
-                            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
-                            break;
-                        case UNDO:
-                            Cell undo = _grid.undoMove();
-                            if(undo != null){
-                                _focusedCell = _grid.getCell(undo._x, undo._y);
-                                _focusedCell.focus();
-                                switch (undo.getState()){
-                                    case Grey:
-                                        _currentMessage = "This tile was reversed to it's\nempty state.";
-                                        break;
-                                    case Blue:
-                                        _currentMessage = "This tile was reversed to blue.";
-                                        break;
-                                    case Red:
-                                        _currentMessage = "This tile was reversed to red.";
-                                        break;
-                                    default:
-                                        _currentMessage = "ERROR UNDO: Invalid cell state given";
-                                        System.err.println("ERROR UNDO: Invalid cell state given");
-                                        break;
-                                }
-                            }
-                            else {
-                                _currentMessage = "Nothing to undo.";
-                            }
-                            break;
-                        case NO_ACTION:
-                            break;
-                        default:
-                            throw new IllegalStateException("Unexpected value: " + a);
-                    }
-                }
+                //playUISound() ?
             }
         }
     }
+
+    /***
+     * Game grid tries to handle the event
+     *
+     * @param event touch event to be checked by grid
+     * @return whether the event was produced on grid bounding box
+     */
+    private boolean clickOnGrid(TouchEvent event)
+    {
+        if(_grid.processClick(event.get_x(),event.get_y()))
+        {
+            _currentMessage = "";
+            if(_focusedCell !=null)
+                _focusedCell.unfocus();
+            _focusedCell = null;
+            _grid.pito = null;
+            checkWin();
+            return true;
+        }
+        else
+            return false;
+    }
+
+    /***
+     * On full board: if we win then we set grid state to transition back to menu, otherwise we get a new clue for incorrect state
+     */
+    private void checkWin()
+    {
+        if(_grid.getPercentage() == 100) {
+            if (_grid.checkWin()) {
+                _currentMessage = WIN_MESSAGES[new Random().nextInt(WIN_MESSAGES.length)];
+                _messageScale = 1;
+                _grid.setTransition(new ICallable() {
+                    @Override
+                    public void call() {
+                        _engine.changeApp(new Menu(Menu.State.SelectSize, _currentMessage));
+                    }
+                });
+            } else
+                handleNewClue();
+        }
+    }
+    private  boolean clickOnBottomBar(TouchEvent event)
+    {
+        UIBar.Action action = _bar.HandleClick(event.get_x(),event.get_y());
+        if(action == UIBar.Action.NO_ACTION) {
+            return false;
+        }
+
+        if(_focusedCell !=null)
+            _focusedCell.unfocus();
+
+        switch (action){
+            case CLUE:
+                handleNewClue();
+                break;
+            case UNDO:
+                handleUndo();
+                break;
+            case CLOSE:
+                _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+                break;
+            default:
+                throw new IllegalStateException("Unexpected action returned: " + action);
+        }
+        return  true;
+    }
+
+    private void handleNewClue()
+    {
+        _grid.pito = null;
+        Clue clue = _grid.getClue();
+        if(clue != null)
+        {
+            _currentMessage = clue.getMessage();
+            _messageScale = 0.5f;
+            _focusedCell = clue.getCell();
+            _focusedCell.focus();
+            if(clue.getCorrectState()!=null)
+            {
+                _grid.pito = _grid.getCell(clue.getCorrectState()._x, clue.getCorrectState()._y);
+                _clueState = clue.getCorrectState().getState();
+            }
+            _focusedOpacity = 0;
+        }
+    }
+
+    private void handleUndo()
+    {
+        Cell undo = _grid.undoMove();
+        _messageScale = 0.5f;
+
+        if(undo != null){
+            _focusedCell = _grid.getCell(undo._x, undo._y);
+            _focusedCell.focus();
+            Cell.State state = undo.getState();
+            _currentMessage = String.format("This tile was reversed to %s",
+                    state == Cell.State.Grey ? "it's\nempty state." :
+                            state == Cell.State.Blue ?  "blue.":"red.");
+        }
+        else
+            _currentMessage = "Nothing to undo.";
+    }
+
+    final String[] WIN_MESSAGES = new String[]{"Wonderful","Spectacular","Marvelous","Outstanding",
+                                               "Remarkable","Shazam","Impressive","Great","Well done",
+                                               "Fabulous","Clever","Dazzling","Fantastic","Excellent",
+                                               "Nice","Super","Awesome","Ojoo","Brilliant","Splendid",
+                                               "Exceptional","Magnificent","Yay"};
 }

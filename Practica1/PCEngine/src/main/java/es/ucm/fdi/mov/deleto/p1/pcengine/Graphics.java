@@ -7,6 +7,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -47,6 +49,17 @@ public class Graphics implements IGraphics {
 
     public Graphics(String name, String path) {
         _window = new JFrame(name);
+
+       //If we can, we use the second monitor. Why? Because laptops.
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        if (1 < gs.length)
+            gs[1].setFullScreenWindow(_window);
+        else
+            gs[0].setFullScreenWindow(_window);
+
+        System.setProperty("sun.awt.noerasebackground", "true");
+
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
         _window.setIgnoreRepaint(true);
@@ -135,6 +148,9 @@ public class Graphics implements IGraphics {
     private int realPositionX(int x) {
         return _originX+ (x * (_endX-_originX)/_refWidth);
     }
+    private double realPositionX(double x) {
+        return _originX+ (x * (_endX-_originX)/(double) _refWidth);
+    }
 
     public int refPositionX(int x)
     {
@@ -144,14 +160,17 @@ public class Graphics implements IGraphics {
     private int realPositionY(int y) {
         return _originY+y * (_endY-_originY)/_refHeight;
     }
+    private double realPositionY(double y) {
+        return _originY+y * (_endY-_originY)/(double)_refHeight;
+    }
 
     public int refPositionY(int y)
     {
         return (int)((y-_originY)*((double)_refHeight / (_endY-_originY)));
     }
 
-    private  int realLength(int length){
-        return length * (_endX-_originX)/_refWidth;
+    private  int realLength(double length){
+        return (int)(length * (_endX-_originX)/(double)_refWidth);
     }
 
     public boolean swapBuffers() {
@@ -204,8 +223,8 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public void fillCircle(int x, int y, int r) {
-        _buffer.fillOval(realPositionX(x-r), realPositionY(y-r), realLength(r*2), realLength(r*2));
+    public void fillCircle(int x, int y, double r) {
+        _buffer.fillOval((int)realPositionX(x-r), (int)realPositionY(y-r), realLength(r*2.0), realLength(r*2.0));
     }
 
     @Override

@@ -45,7 +45,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _title2 = g.newFont("Molle-Regular.ttf",68,false);
         _title3 = g.newFont("JosefinSans-Bold.ttf",60,true);
 
-        _subtitle = g.newFont("JosefinSans-Bold.ttf",38,false);
+        _subtitle = g.newFont("JosefinSans-Bold.ttf",24,false);
 
         _exit = g.newImage("close.png");
         _logo = g.newImage("q42.png");
@@ -77,12 +77,13 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 g.drawText("Un juego copiado a Q42", g.getWidth()/2,g.getHeight()-132);
                 g.drawText("Creado por Martin Kool", g.getWidth()/2,g.getHeight()-94);
 
-                g.drawImage(_logo,g.getWidth()/2,g.getHeight()-16,0.05f,0.05f);
+                g.drawImage(_logo,g.getWidth()/2,g.getHeight()-32,0.05f,0.05f);
                 break;
             case SelectSize:
                 int y = 46;
                 if(_titleStr == "Oh Yes")
                 {
+                    y+=10;
                     g.setFont(_title2);
                 }
                 else
@@ -96,7 +97,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 g.setFont(_subtitle);
                 g.drawText("Elija el tamaño a jugar", g.getWidth()/2,y);
 
-                y += 60;
+                y += 100;
                 int padding = 15;
                 int x = (g.getWidth() - ((BUTTON_RAD *3*2)+(padding*3)))/2;
                 for(int i = 0; i<6; i++)
@@ -111,7 +112,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     g.fillCircle(xX,yY, BUTTON_RAD);
                     g.setColor(0xffffffff);
                     g.setFont(_subtitle);
-                    g.drawText(Integer.toString(4+i),xX,yY);
+                    g.drawText(Integer.toString(4+i),xX,yY,1.5);
                 }
                 g.setOpacity(0.6f);
                 g.drawImage(_exit,g.getWidth()/2,g.getHeight()-64,1.f,1.f);
@@ -152,18 +153,14 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                      y < _buttonsY[i]+BUTTON_RAD &&
                      y > _buttonsY[i]-BUTTON_RAD)
                 {
-                    OhY3s a = new OhY3s();
-                    System.out.printf("HAS TOCADO {%d}",4+i);
-                    a.newGame(4+i);
-                    _engine.changeApp(a);
+                    _engine.changeApp(new OhY3s(4+i));
                     break;
                 }
             }
-            int iW = _exit.getWidth();
-            int iH = _exit.getHeight();
-            int iX = (_engine.getGraphics().getWidth()/2) - (iW/2);
-            int iY = (_engine.getGraphics().getHeight()-16) -(iH/2);
-            if(x > iX && x < iX+iW && y> iY && y < iY+iH)
+            int iX = (_engine.getGraphics().getWidth()/2);
+            int iY = (_engine.getGraphics().getHeight()-64);
+            System.out.printf("NO ES UN BOTON DE JUEGO: iPos{%d %d} rPos{%d,%d}\n",iX,iY,x,y);
+            if(x > iX-32 && x < iX+32 && y> iY-32 && y < iY+32)
                 _engine.exit();
         }
     }

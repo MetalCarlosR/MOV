@@ -20,7 +20,7 @@ public interface IGraphics {
 
     public void setFont(IFont font);
 
-    public void fillCircle(int x, int y, int r);
+    public void fillCircle(int x, int y, double r);
 
     public void fillRect(int x, int y, int w, int h);
 

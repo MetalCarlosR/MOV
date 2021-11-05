@@ -23,6 +23,7 @@ public class Cell {
         _scale = s;
     }
 
+    //Si pones el opacity a -1 estás en realidad diciendo que pinte los números e ignore el locked. De nada
     public void setOpacity(double opacity) {
         _opacity=opacity;
     }
@@ -54,30 +55,28 @@ public class Cell {
         {
             _focusTime+=deltaTime;
         }
-        if(_exitedTimer > 0)
+        if(_excitedTimer > 0)
         {
-            _exitedTimer-=deltaTime;
+            _excitedTimer -=deltaTime;
         }
     }
     public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font, int color) {
-        graphics.setOpacity(Math.max((float)_opacity,0));
+        graphics.setOpacity(Math.max(_opacity==-1?1:(float)_opacity,0));
 
         Cell.State state = getState();
-        int radius = r;
-        if(_exitedTimer > 0)
-        {
-            radius+=(((int)((easeInOutCubic(_exitedTimer/EXITED_DURATION))*8))%2)*2;;
-        }
+        double radius = r;
+        if(_excitedTimer > 0)
+            radius+=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;;
         if(_focus)
         {
             radius += (((Math.sin(_focusTime*2)+1)/2)*3);
             graphics.setColor(0xFF000000);
-            graphics.fillCircle(x,y,(radius+ _focusRingSize));
+            graphics.fillCircle(x,y,(radius+ (double) _focusRingSize));
         }
         graphics.setColor(color);
         graphics.fillCircle(x,y,radius);
 
-        boolean gameFinished = _opacity < 1;
+        boolean gameFinished = _opacity < 1 || _opacity == -1;
         if(getState() == Cell.State.Blue && (isLocked()|| gameFinished))
         {
             graphics.setColor(0xFFFFFFFF);
@@ -92,10 +91,13 @@ public class Cell {
             graphics.setOpacity(Math.max((float)_opacity,0));
         }
     }
+    static public int getColorByState(Cell.State state)
+    {
+        return state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE;
+    }
 
     public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font) {
-        Cell.State state = getState();
-        draw(x,y,r,scale,graphics,lock,font,state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE);
+        draw(x,y,r,scale,graphics,lock,font,getColorByState(_state));
     }
 
     /***
@@ -139,13 +141,19 @@ public class Cell {
     }
 
     public int getNeigh() {
-//        if(!isLocked())
-//            throw new RuntimeException("AAAAAAAAAAAAAAAAAAAA");
         return _neigh;
     }
+
+    public void showLockedGraphics()
+    {
+        _showLockedGraphics = !_showLockedGraphics;
+        _excitedTimer = EXCITED_DURATION;
+    }
+
     private double easeInOutCubic(double x) {
         return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     }
+
     public boolean isLocked() {
         return _locked;
     }
@@ -179,14 +187,10 @@ public class Cell {
     double _focusTime = 0;
     double _opacity = 1;
 
-    double _exitedTimer;
-    static final double EXITED_DURATION = 0.75;
+    double _excitedTimer;
+    static final double EXCITED_DURATION = 0.75;
 
     private State _state = State.Grey;
-    public void showLockedGraphics()
-    {
-        _showLockedGraphics = !_showLockedGraphics;
-        _exitedTimer = EXITED_DURATION;
-    }
+
     static private boolean _showLockedGraphics = false;
 }
