@@ -1,12 +1,13 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
-import com.sun.tools.javac.util.Pair;
+
+import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public interface IGraphics {
 
-    public int getWidth();
+    public int getLogicWidth();
 
-    public int getHeight();
+    public int getLogicHeight();
 
     public void setResolution(int x, int y);
 
@@ -24,10 +25,10 @@ public interface IGraphics {
 
     public void fillRect(int x, int y, int w, int h);
 
-    public Pair<Integer, Integer> drawText(String text, int x, int y);
+    public Vec2<Integer> drawText(String text, int x, int y);
 
     // Pair<Integer, Integer>
-    public Pair<Integer, Integer> drawText(String text, int x, int y, double scale);
+    public Vec2<Integer> drawText(String text, int x, int y, double scale);
 
     public IImage newImage(String name);
 

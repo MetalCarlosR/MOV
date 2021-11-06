@@ -1,7 +1,5 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
-import com.sun.tools.javac.util.Pair;
-
 import java.util.Random;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -10,6 +8,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public class OhY3s implements IApplication {
 
@@ -69,7 +68,7 @@ public class OhY3s implements IApplication {
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
         _engine.getGraphics().setColor(0xFF777777);
-        _engine.getGraphics().drawText(String.format("%d%%", _grid.getPercentage()),(_engine.getGraphics().getWidth()/2),500);
+        _engine.getGraphics().drawText(String.format("%d%%", _grid.getPercentage()),(_engine.getGraphics().getLogicWidth()/2),500);
 
         //Draw bottom UI bar
         _bar.Draw();
@@ -86,7 +85,7 @@ public class OhY3s implements IApplication {
         g.setFont(_title);
 
         String title = _currentMessage;
-        Pair<Integer, Integer> dot;
+        Vec2<Integer> dot;
         float scale = _messageScale;
 
         //If there is no message writes NxN, where N is the current grid size
@@ -96,7 +95,7 @@ public class OhY3s implements IApplication {
         }
 
         //We draw the text and save the dot position in case we need it
-        dot = g.drawText(title,(g.getWidth())/2,46,scale);
+        dot = g.drawText(title,(g.getLogicWidth())/2,46,scale);
 
         //If we wrote a clue, then we can draw the dot
         if(!_currentMessage.equals("") && _focusedCell != null)
@@ -106,9 +105,9 @@ public class OhY3s implements IApplication {
     /***
      * Draws a blinking dot that indicates the suggested clue state (Red or Blue)
      * @param g Graphics context
-     * @param dot Dot positon
+     * @param dot Dot position
      */
-    private void drawDot(IGraphics g, Pair<Integer, Integer>dot)
+    private void drawDot(IGraphics g, Vec2<Integer>dot)
     {
         //Set up dot style
         g.setOpacity(((float)Math.sin(_focusedOpacity*2)+1)/2);
@@ -119,7 +118,7 @@ public class OhY3s implements IApplication {
         int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == ' '  ? r - r/2:  r+r/2);
 
         //Draw and Reset Opacity
-        g.fillCircle(dot.fst+ xOff, dot.snd-r,r);
+        g.fillCircle(dot.x()+ xOff, dot.y()-r,r);
         g.setOpacity(1.f);
     }
 

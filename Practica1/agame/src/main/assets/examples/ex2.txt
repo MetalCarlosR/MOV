@@ -1,0 +1,4 @@
+4f 4l 3l 3f
+2f 2l 0f 0f
+0l 0l 2f 2l
+0f 0l 2l 2f

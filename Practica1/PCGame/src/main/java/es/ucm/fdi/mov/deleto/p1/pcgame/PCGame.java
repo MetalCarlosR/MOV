@@ -14,10 +14,8 @@ public class PCGame {
 
         _game = new Menu();
 
-
         Engine engine = new Engine(_game,"Oh Yes","./assets/");
         engine.getGraphics().setResolution(400,600);
-
         engine.run();
     }
 

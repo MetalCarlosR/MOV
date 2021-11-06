@@ -1,6 +1,5 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
-import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -67,17 +66,17 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
             case Initial:
                 g.setFont(_title);
                 g.setColor(0xff000000);
-                g.drawText("Oh Yes", g.getWidth()/2,(int)(72*0.75f));
+                g.drawText("Oh Yes", g.getLogicWidth()/2,(int)(72*0.75f));
 
                 g.setFont(_regular);
-                g.drawText("Jugar", g.getWidth()/2,g.getHeight()/2);
+                g.drawText("Jugar", g.getLogicWidth()/2,g.getLogicHeight()/2);
 
                 g.setFont(_subtitle);
                 g.setColor(0xffc0c0c0);
-                g.drawText("Un juego copiado a Q42", g.getWidth()/2,g.getHeight()-132);
-                g.drawText("Creado por Martin Kool", g.getWidth()/2,g.getHeight()-94);
+                g.drawText("Un juego copiado a Q42", g.getLogicWidth()/2,g.getLogicHeight()-132);
+                g.drawText("Creado por Martin Kool", g.getLogicWidth()/2,g.getLogicHeight()-94);
 
-                g.drawImage(_logo,g.getWidth()/2,g.getHeight()-32,0.05f,0.05f);
+                g.drawImage(_logo,g.getLogicWidth()/2,g.getLogicHeight()-32,0.05f,0.05f);
                 break;
             case SelectSize:
                 int y = 46;
@@ -91,15 +90,15 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     g.setFont(_title3);
                 }
                 g.setColor(0xff000000);
-                g.drawText(_titleStr, g.getWidth()/2,y);
+                g.drawText(_titleStr, g.getLogicWidth()/2,y);
 
                 y+=80;
                 g.setFont(_subtitle);
-                g.drawText("Elija el tamaño a jugar", g.getWidth()/2,y);
+                g.drawText("Elija el tamaño a jugar", g.getLogicWidth()/2,y);
 
                 y += 100;
                 int padding = 15;
-                int x = (g.getWidth() - ((BUTTON_RAD *3*2)+(padding*3)))/2;
+                int x = (g.getLogicWidth() - ((BUTTON_RAD *3*2)+(padding*3)))/2;
                 for(int i = 0; i<6; i++)
                 {
                     int xX = (x+((i%3)* BUTTON_RAD *2)+(padding*(i%3)))+BUTTON_RAD;
@@ -115,13 +114,12 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     g.drawText(Integer.toString(4+i),xX,yY,1.5);
                 }
                 g.setOpacity(0.6f);
-                g.drawImage(_exit,g.getWidth()/2,g.getHeight()-64,1.f,1.f);
+                g.drawImage(_exit,g.getLogicWidth()/2,g.getLogicHeight()-64,1.f,1.f);
                 g.setOpacity(1.f);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + _state);
         }
-
     }
 
     @Override
@@ -136,8 +134,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         if(_state == State.Initial)
         {
             int SIZE = 56;
-            int w = _engine.getGraphics().getWidth();
-            int h = _engine.getGraphics().getHeight();
+            int w = _engine.getGraphics().getLogicWidth();
+            int h = _engine.getGraphics().getLogicHeight();
 
             if(event.get_x() >= w/3 && event.get_x() <= w - w/3 && event.get_y() >= h/2 - SIZE/2 && event.get_y() <= h/2+SIZE/2)
                 _state = State.SelectSize;
@@ -157,8 +155,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                     break;
                 }
             }
-            int iX = (_engine.getGraphics().getWidth()/2);
-            int iY = (_engine.getGraphics().getHeight()-64);
+            int iX = (_engine.getGraphics().getLogicWidth()/2);
+            int iY = (_engine.getGraphics().getLogicHeight()-64);
             System.out.printf("NO ES UN BOTON DE JUEGO: iPos{%d %d} rPos{%d,%d}\n",iX,iY,x,y);
             if(x > iX-32 && x < iX+32 && y> iY-32 && y < iY+32)
                 _engine.exit();

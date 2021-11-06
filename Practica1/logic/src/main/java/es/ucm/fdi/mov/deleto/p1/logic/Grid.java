@@ -73,8 +73,8 @@ public class Grid {
 
     public void setGraphics(IGraphics graphics) {
         _G = graphics;
-        _logicWidth = graphics.getWidth();
-        _logicHeight = graphics.getHeight();
+        _logicWidth = graphics.getLogicWidth();
+        _logicHeight = graphics.getLogicHeight();
 
         PADDING = 40/_size;
         int r = ((_logicWidth-BORDER) -_size* PADDING)/(_size*2);

@@ -31,14 +31,14 @@ public class UIBar {
         _w = 64;
         _h = 64;
         _scale = .5f;
-        int padding = ((_g.getWidth()-(3*(int)(_w * _scale))) / 4);
+        int padding = ((_g.getLogicWidth()-(3*(int)(_w * _scale))) / 4);
         _g.setOpacity(0.8f);
 
         int sW = (int)(_scale * _w);
         int sH = (int)(_scale * _h);
 
         int x = padding+(sW/2);
-        int y = _g.getHeight()-(sH);
+        int y = _g.getLogicHeight()-(sH);
 
         _g.drawImage(_close, x, y, _scale, _scale);
 

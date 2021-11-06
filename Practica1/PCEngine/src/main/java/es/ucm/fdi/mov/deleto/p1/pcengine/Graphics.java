@@ -1,6 +1,5 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
-import com.sun.tools.javac.util.Pair;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -9,9 +8,11 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
@@ -124,12 +125,12 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public int getWidth() {
+    public int getLogicWidth() {
         return _refWidth;
     }
 
     @Override
-    public int getHeight() {
+    public int getLogicHeight() {
         return _refHeight;
     }
 
@@ -220,6 +221,7 @@ public class Graphics implements IGraphics {
         Font f = (Font) font;
         _buffer.setFont(f.getFont());
         _actualFont=f.getFont();
+        System.out.println(_actualFont.getSize());
     }
 
     @Override
@@ -233,12 +235,12 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public Pair<Integer, Integer> drawText(String text, int x, int y) {
+    public Vec2<Integer> drawText(String text, int x, int y) {
         return drawText(text,x,y,1);
     }
 
     @Override
-    public Pair<Integer, Integer> drawText(String text, int x, int y, double scale) {
+    public Vec2<Integer>  drawText(String text, int x, int y, double scale) {
         String[] splits = text.split("\n");
         _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength((int)(_actualFont.getSize()*scale))));
         FontMetrics fm = _buffer.getFontMetrics();
@@ -258,7 +260,7 @@ public class Graphics implements IGraphics {
         int xX, yY;
         xX = realPositionX(x)-fX;
         yY = realPositionY(y)+fY/2;
-        return new Pair<>(refPositionX(xX+(fm.stringWidth(splits[splits.length-1]))),refPositionY(yY));
+        return new Vec2<>(refPositionX(xX+(fm.stringWidth(splits[splits.length-1]))),refPositionY(yY));
     }
 
     @Override

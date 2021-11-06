@@ -28,6 +28,8 @@ public class Font implements IFont {
             return false;
         }
         _font = baseFont.deriveFont(_bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN,_size);
+        System.out.println(_font.getSize());
+
         return true;
     }
 
