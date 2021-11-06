@@ -54,10 +54,11 @@ public class Graphics implements IGraphics {
        //If we can, we use the second monitor. Why? Because laptops.
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
-        if (1 < gs.length)
-            gs[1].setFullScreenWindow(_window);
-        else
-            gs[0].setFullScreenWindow(_window);
+        // pls que no me queme los ojos, gracias
+//        if (1 < gs.length)
+//            gs[1].setFullScreenWindow(_window);
+//        else
+//            gs[0].setFullScreenWindow(_window);
 
         System.setProperty("sun.awt.noerasebackground", "true");
 
