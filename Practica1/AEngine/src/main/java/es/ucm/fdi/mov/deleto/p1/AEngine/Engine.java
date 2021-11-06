@@ -14,6 +14,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 public class Engine implements IEngine, Runnable {
 
     Graphics _graphics;
+    Input _input;
     volatile Boolean _running = true;
     Thread _renderThread = null;
     IApplication _app;
@@ -24,6 +25,7 @@ public class Engine implements IEngine, Runnable {
     public Engine(IApplication app, Context context, String appName, String assetsPath)
     {
         _graphics = new Graphics(context, appName, assetsPath);
+        _input = new Input(_graphics);
         _app = app;
     }
 
@@ -55,14 +57,6 @@ public class Engine implements IEngine, Runnable {
         if (_renderThread != Thread.currentThread()) {
             throw new RuntimeException("run() should not be called directly");
         }
-//        while(_running)
-//        {
-//            _graphics.clear(0xff000000);
-//            _graphics.setColor(0xffff00ff);
-//            _graphics.fillCircle(100,100,100);
-//            _graphics.setColor(0xffffffff);
-//            _graphics.present();
-//        }
         while (true) {
             _running = true;
             _app.onInit(this);
@@ -74,10 +68,10 @@ public class Engine implements IEngine, Runnable {
                 lastFrameTime = currentTime;
                 double elapsedTime = (double) nanoElapsedTime / 1.0E9;
                 _app.onUpdate(elapsedTime);
-                //List<TouchEvent> evs = _input.getTouchEvents();
-//                for (TouchEvent ev : evs) {
-//                    _app.onEvent(ev);
-//                }
+                List<TouchEvent> evs = _input.getTouchEvents();
+                for (TouchEvent ev : evs) {
+                    _app.onEvent(ev);
+                }
                 _graphics.prepareFrame();
                 _graphics.clear(0xFFFFFFFF);
                 _app.onRender();
@@ -96,7 +90,7 @@ public class Engine implements IEngine, Runnable {
 
     @Override
     public void exit() {
-        Log.d("[Engine]", "Finish App");
+        _running = false;
     }
 
     @Override
@@ -106,12 +100,13 @@ public class Engine implements IEngine, Runnable {
 
     @Override
     public IInput getInput() {
-        return null;
+        return _input;
     }
 
     @Override
     public void changeApp(IApplication newApp) {
-
+        _nextApp = newApp;
+        exit();
     }
 
 

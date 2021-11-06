@@ -15,6 +15,7 @@ import java.util.Vector;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public class Grid {
 
@@ -22,10 +23,10 @@ public class Grid {
     static final int BORDER = 30;
 
     public Grid(){
-        _dirs.add(new Pair<Integer, Integer>(-1,0));
-        _dirs.add(new Pair<Integer, Integer>(1,0));
-        _dirs.add(new Pair<Integer, Integer>(0,-1));
-        _dirs.add(new Pair<Integer, Integer>(0,1));
+        _dirs.add(new Vec2<Integer>(-1,0));
+        _dirs.add(new Vec2<Integer>(1,0));
+        _dirs.add(new Vec2<Integer>(0,-1));
+        _dirs.add(new Vec2<Integer>(0,1));
         _startTransition = false;
     }
 
@@ -133,7 +134,7 @@ public class Grid {
             }
             // para que vaya de 1 al max
             int n = r.nextInt(size-1)+1;
-            ArrayList<Pair<Integer, Integer>> list = new ArrayList<>(_dirs);
+            ArrayList<Vec2<Integer>> list = new ArrayList<>(_dirs);
             int j = 0;
             // intenta pintar en las 4 direcciones n azules
             while(n > 0 && j < 4 && maxBlue > 0){
@@ -142,13 +143,13 @@ public class Grid {
                     m = r.nextInt(n-1)+1;
                 }
                 else m = 1;
-                Pair<Integer, Integer> dir = list.get(j);
+                Vec2<Integer> dir = list.get(j);
                 //si cambio en la que estoy... lo jodo?
                 // primero pinta de azul los que necesite
                 int step = 1;
                 while(step <= m){
-                    Cell c = getCell(x+(dir.fst*step), y+(dir.snd * step));
-                    //if(c == null || getCell(c._x + dir.fst, c._y + dir.snd).getNeigh() == size)
+                    Cell c = getCell(x+(dir.x()*step), y+(dir.y() * step));
+                    //if(c == null || getCell(c._x + dir.x(), c._y + dir.y()).getNeigh() == size)
                     if(c != null && tryBlue(c)){
                         step++;
                         maxBlue--;
@@ -182,7 +183,7 @@ public class Grid {
         c.setState(Cell.State.Blue);
         for (int i = 0; i < _dirs.size(); i++) {
             for (int j = 0; j < _size; j++) {
-                Cell ady = getCell(c._x + _dirs.get(i).fst * j, c._y + _dirs.get(i).snd * j);
+                Cell ady = getCell(c._x + _dirs.get(i).x() * j, c._y + _dirs.get(i).y() * j);
                 if(ady != null){
                     if(getVisibleNeighs(ady) > _size){
                         c.setState(Cell.State.Red);
@@ -238,9 +239,9 @@ public class Grid {
 
     private boolean isIsolated(Cell c)
     {
-        for(Pair<Integer,Integer> d:_dirs)
+        for(Vec2<Integer> d:_dirs)
         {
-            Cell next = getCell(c._x+d.fst, c._y+d.snd);
+            Cell next = getCell(c._x+d.x(), c._y+d.y());
             if(next!=null && next.getState() != Cell.State.Red)
                 return  false;
         }
@@ -362,7 +363,6 @@ public class Grid {
 
     public boolean checkWin(){
         if(getClue() == null){
-            System.out.println("OH FUCK");
             return getFixedCells().size() + getIsolatedCells().size() == 0;
         }
         return false;
@@ -396,38 +396,38 @@ public class Grid {
             }
             // 1. ya los ve todos
             else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c)>0){
-                Pair<Integer, Integer> sel = null;
-                for (Pair<Integer, Integer> d: _dirs) {
+                Vec2<Integer> sel = null;
+                for (Vec2<Integer> d: _dirs) {
                     if((sel=getPossibleGrowthInDir(c, d))!=null)
                         break;
                 }
-                clues.addFirst(new Clue(c,"This number can see all its dots\n ",new Cell(sel.fst, sel.snd, Cell.State.Red)));
+                clues.addFirst(new Clue(c,"This number can see all its dots\n ",new Cell(sel.x(), sel.y(), Cell.State.Red)));
                 return clues.getFirst();
             }
             // 8. solo te queda una direccion en la que mirar
             else if(getNumPossibleDirs(c) == 1)
             {
-                Pair<Integer, Integer> sel = null;
-                for (Pair<Integer, Integer> d: _dirs) {
+                Vec2<Integer> sel = null;
+                for (Vec2<Integer> d: _dirs) {
                     if((sel=getPossibleGrowthInDir(c, d))!=null)
                         break;
                 }
-                clues.addFirst(new Clue(c,"Only one direction remains for\nthis number to look in", new Cell(sel.fst,sel.snd, Cell.State.Blue)));
+                clues.addFirst(new Clue(c,"Only one direction remains for\nthis number to look in", new Cell(sel.x(),sel.y(), Cell.State.Blue)));
                 return clues.getFirst();
             }
             // 2. si añades uno, te pasas porque pasa a ver los azules de detras
             {
-                Pair<Integer,Integer> sel =  getPossibleNeighs(c);
+                Vec2<Integer> sel =  getPossibleNeighs(c);
                 if (sel!=null)
                 {
-                    clues.addFirst(new Clue(c, "Looking further in one direction\nwould exceed this number",new Cell(sel.fst,sel.snd, Cell.State.Red)));
+                    clues.addFirst(new Clue(c, "Looking further in one direction\nwould exceed this number",new Cell(sel.x(),sel.y(), Cell.State.Red)));
                     return clues.getFirst();
                 }
             }
 
             Cell obvious = getDirForObviousBlueDot(c);
             // 3. y 9. hay un punto que tiene que ser clicado si o si
-            if(obvious != null )//&& _grid.getCell(c._x+obvious.fst,c._y+obvious.snd).getState()== Cell.State.Grey
+            if(obvious != null )//&& _grid.getCell(c._x+obvious.x(),c._y+obvious.y()).getState()== Cell.State.Grey
             {
                 clues.addFirst(new Clue(c,"One specific dot is included\nin all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
                 return clues.getFirst();
@@ -463,15 +463,15 @@ public class Grid {
     }
 
     // devuelve todos los azules ya visibles de una cell
-    private int getVisibleNeighInDir(Cell c, Pair<Integer,Integer> d){
+    private int getVisibleNeighInDir(Cell c, Vec2<Integer> d){
         int n = 0;
-        int x = c._x+d.fst;
-        int y = c._y+d.snd;
+        int x = c._x+d.x();
+        int y = c._y+d.y();
         while(  getCell(x,y) !=null  &&
                 getCell(x,y).getState()== Cell.State.Blue)
         {
-            x+= d.fst;
-            y+= d.snd;
+            x+= d.x();
+            y+= d.y();
             n++;
         }
 
@@ -479,32 +479,32 @@ public class Grid {
     }
 
     // si pongo todos los grises de una direccion a azul tendria n neighbours
-    private int getPossibleNeighInDir(Cell c, Pair<Integer, Integer> d){
+    private int getPossibleNeighInDir(Cell c, Vec2<Integer> d){
         int n = 0;
-        int x = c._x+d.fst;
-        int y = c._y+d.snd;
+        int x = c._x+d.x();
+        int y = c._y+d.y();
         while(getCell(x,y) != null &&
               getCell(x,y).getState() != Cell.State.Red)
         {
-            x+= d.fst;
-            y+= d.snd;
+            x+= d.x();
+            y+= d.y();
             n++;
         }
         return n;
     }
 
     // devuelve si hay un gris en una direccion, su posición si no devuelve null
-    private Pair<Integer, Integer> getPossibleGrowthInDir(Cell c, Pair<Integer, Integer> d){
-        int x = c._x + d.fst;
-        int y = c._y + d.snd;
+    private Vec2<Integer> getPossibleGrowthInDir(Cell c, Vec2<Integer> d){
+        int x = c._x + d.x();
+        int y = c._y + d.y();
 
         while(getCell(x,y) != null ){
             if(getCell(x,y).getState() == Cell.State.Grey)
-                return  new Pair<Integer, Integer>(x,y);
+                return  new Vec2<Integer>(x,y);
             else if(getCell(x,y).getState() == Cell.State.Red)
                 return  null;
-            x+= d.fst;
-            y+= d.snd;
+            x+= d.x();
+            y+= d.y();
         }
         return null;
     }
@@ -513,29 +513,29 @@ public class Grid {
     // devuelve el numero de cells azules visibles
     public int getVisibleNeighs(Cell c){
         int n = 0;
-        for (Pair<Integer, Integer> d: _dirs) {
+        for (Vec2<Integer> d: _dirs) {
             n+= getVisibleNeighInDir(c, d);
         }
         return n;
     }
 
     // devuelve si en alguna direccion, al añadir uno, superas el numero de vecinos
-    public Pair<Integer, Integer> getPossibleNeighs(Cell c){
+    public Vec2<Integer> getPossibleNeighs(Cell c){
         int n = 0;
         int visible = getVisibleNeighs(c);
         if(c.getState() != Cell.State.Blue)
             return null;
-        for (Pair<Integer, Integer> d: _dirs) {
+        for (Vec2<Integer> d: _dirs) {
             Cell ghostCell = null;
             int i = 1;
             for(;i<_size;i++)
             {
-                ghostCell = getCell(c._x + (d.fst*i), c._y + (d.snd*i));
+                ghostCell = getCell(c._x + (d.x()*i), c._y + (d.y()*i));
                 if(ghostCell!=null && ghostCell.getState() == Cell.State.Grey)
                 {
                     n = getVisibleNeighInDir(ghostCell, d);
                     if(n + visible + 1 > c.getNeigh())
-                        return new Pair<Integer, Integer>(ghostCell._x,ghostCell._y);
+                        return new Vec2<Integer>(ghostCell._x,ghostCell._y);
                     break;
                 }
                 else if(ghostCell!= null && ghostCell.getState()== Cell.State.Red)
@@ -549,7 +549,7 @@ public class Grid {
     // devuelve el numero de direcciones posibles en las que crecer
     public int getNumPossibleDirs(Cell c){
         int n = 0;
-        for (Pair<Integer, Integer> d: _dirs) {
+        for (Vec2<Integer> d: _dirs) {
             if(getPossibleGrowthInDir(c, d)!=null)
                 n++;
         }
@@ -558,7 +558,7 @@ public class Grid {
     }
 
     public Cell getDirForObviousBlueDot(Cell c){
-        Pair <Integer, Integer> dir = null;
+        Vec2<Integer> dir = null;
 
         int neigh [] = new int[_dirs.size()];
         int totalVis = getVisibleNeighs(c);
@@ -567,7 +567,7 @@ public class Grid {
         int sum = 0;
 
         int i = 0;
-        for (Pair<Integer, Integer> d: _dirs) {
+        for (Vec2<Integer> d: _dirs) {
             int vis = getVisibleNeighInDir(c, d);
             neigh[i] = getPossibleNeighInDir(c, d);
             neigh[i] = Math.min(c.getNeigh(), neigh[i]);
@@ -591,12 +591,12 @@ public class Grid {
         if(dir == null)
             return null;
 
-        Cell cell = getCell(c._x + dir.fst, c._y + dir.snd);
+        Cell cell = getCell(c._x + dir.x(), c._y + dir.y());
         while(cell != null){
             if(cell.getState() == Cell.State.Grey)
                 return cell;
 
-            cell = getCell(cell._x + dir.fst, cell._y + dir.snd);
+            cell = getCell(cell._x + dir.x(), cell._y + dir.y());
         }
 
         return null;
@@ -627,7 +627,7 @@ public class Grid {
     private Vector<Cell> _visibleCells = new Vector<Cell>();
     private Vector<Cell> _isolated = new Vector<Cell>();
 
-    public ArrayList<Pair<Integer, Integer>> _dirs = new ArrayList<>();
+    public ArrayList<Vec2<Integer>> _dirs = new ArrayList<>();
 
     private int _size = 0;
     private int _percentage = 0;

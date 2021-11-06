@@ -129,7 +129,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
     @Override
     public void onEvent(TouchEvent event) {
-        if(event.get_type() != TouchEvent.EventType.TOUCH)
+        if(event.get_type() != TouchEvent.EventType.RELEASE)
             return;
         if(_state == State.Initial)
         {
@@ -146,6 +146,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
             int y = event.get_y();
             for(int i = 0; i<_buttonsX.length;i++)
             {
+                System.out.printf("\tBotton [%d,%d] {%d,%d}\n",i%3,i/3,_buttonsX[i],_buttonsY[i]);
                 if(  x < _buttonsX[i]+BUTTON_RAD &&
                      x > _buttonsX[i]-BUTTON_RAD &&
                      y < _buttonsY[i]+BUTTON_RAD &&
@@ -157,7 +158,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
             }
             int iX = (_engine.getGraphics().getLogicWidth()/2);
             int iY = (_engine.getGraphics().getLogicHeight()-64);
-            System.out.printf("NO ES UN BOTON DE JUEGO: iPos{%d %d} rPos{%d,%d}\n",iX,iY,x,y);
+            System.out.printf("NO ES UN BOTON DE JUEGO - Vamos a intentar salir :D BottonDeSalir{%d %d} Event{%d,%d}\n",iX,iY,x,y);
             if(x > iX-32 && x < iX+32 && y> iY-32 && y < iY+32)
                 _engine.exit();
         }

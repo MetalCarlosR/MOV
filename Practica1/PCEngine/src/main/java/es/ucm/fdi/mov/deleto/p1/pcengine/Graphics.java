@@ -136,7 +136,7 @@ public class Graphics implements IGraphics {
 
     @Override
     public void setResolution(int x, int y) {
-        _window.setSize(x+(WINDOW_BORDER *2), (y+ WINDOW_BORDER *2)+ WINDOW_MENU_HEIGHT);
+        _window.setSize(x,y);
 
         _refWidth  = x;
         _refHeight = y;
@@ -221,7 +221,6 @@ public class Graphics implements IGraphics {
         Font f = (Font) font;
         _buffer.setFont(f.getFont());
         _actualFont=f.getFont();
-        System.out.println(_actualFont.getSize());
     }
 
     @Override

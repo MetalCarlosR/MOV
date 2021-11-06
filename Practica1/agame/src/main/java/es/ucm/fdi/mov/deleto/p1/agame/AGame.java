@@ -8,6 +8,8 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+
+import es.ucm.fdi.mov.deleto.p1.AEngine.Input;
 import es.ucm.fdi.mov.deleto.p1.logic.Menu;
 
 public class AGame extends AppCompatActivity {
@@ -27,6 +29,7 @@ public class AGame extends AppCompatActivity {
 
         _engine.getGraphics().setResolution(400,600);
         _engine.getGraphics().setScreenSize(size.x,size.y);
+        ((Input)_engine.getInput()).setScale(_engine.getGraphics().getScale(), _engine.getGraphics().getOffsets().x(),_engine.getGraphics().getOffsets().y());
 
     }
 

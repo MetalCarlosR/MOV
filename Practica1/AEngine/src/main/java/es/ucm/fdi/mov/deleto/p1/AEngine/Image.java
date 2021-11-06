@@ -17,10 +17,8 @@ public class Image implements IImage {
     {
         try {
             _platformImage = BitmapFactory.decodeStream(am.open(path));
-            Log.e("IMAGE", "Image: "+_platformImage);
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("IMAGE", "Image: pITO");
         }
     }
 

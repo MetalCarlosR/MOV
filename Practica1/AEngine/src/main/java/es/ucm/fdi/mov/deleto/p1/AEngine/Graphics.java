@@ -1,9 +1,11 @@
 package es.ucm.fdi.mov.deleto.p1.AEngine;
 
 import android.content.Context;
+import android.graphics.BlendMode;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -26,15 +28,24 @@ public class Graphics extends SurfaceView implements IGraphics {
     float _scale;
     int _translateX;
     int _translateY;
-
+    float _opacity = 1;
 
     public Graphics(Context context, String appName, String assetPath) {
         super(context);
         _currentPaint = new Paint();
         _holder = getHolder();
-        _canvas = _holder.lockCanvas();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            _canvas = _holder.lockHardwareCanvas();
+        }
+        else
+            _canvas = _holder.lockCanvas();
         _assetPath = assetPath;
     }
+
+    public float getScale() {
+        return _scale;
+    }
+    public  Vec2<Integer>getOffsets(){return new Vec2<>(_translateX,_translateY);}
 
 
     public void setScreenSize(int x, int y)
@@ -58,7 +69,6 @@ public class Graphics extends SurfaceView implements IGraphics {
         }
         _translateX=barWidth;
         _translateY=barHeight;
-        Log.e(TAG, String.format("setScreenSize: offsets{%d %d} Scale{%f %f} Real{%d,%d} Expected{%d,%d}",_translateX,_translateY,_scale,_scale, realWidth,realHeight,expectedWidth,expectedHeight));
     }
 
     @Override
@@ -80,7 +90,8 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public void setOpacity(float opacity) {
-        //_currentColor.setAlpha((int)(opacity*255));
+        //_opacity= Math.min(1,Math.max(0,opacity));
+        _opacity = opacity;
     }
 
     @Override
@@ -88,6 +99,8 @@ public class Graphics extends SurfaceView implements IGraphics {
         Image im   = (Image) image;
         int width  = (int) ((im.getWidth()) * scaleX);
         int height = (int) ((im.getHeight())* scaleY);
+
+        _currentPaint.setAlpha((int)(255*_opacity));
         _canvas.drawBitmap(im.getScaled(width, height), (posX)-width/(float)2, (posY)-height/(float)2, _currentPaint);
     }
 
@@ -104,7 +117,10 @@ public class Graphics extends SurfaceView implements IGraphics {
     public void prepareFrame()
     {
         while (!_holder.getSurface().isValid());
-        _canvas = _holder.lockCanvas();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            _canvas = _holder.lockHardwareCanvas();
+        }else
+            _canvas = _holder.lockCanvas();
     }
     public void release(){  };
     public void present()
@@ -125,6 +141,7 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public void fillCircle(int x, int y, double r) {
+        _currentPaint.setAlpha((int)(255*_opacity));
         _canvas.drawCircle(x,y,(int)r, _currentPaint);
     }
 
@@ -140,31 +157,37 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public Vec2<Integer> drawText(String text, int x, int y, double scale) {
+        //_currentPaint.setAlpha((int)(_opacity*255));
 
         Paint.FontMetrics fm = _currentPaint.getFontMetrics();
+
         Rect bounds = new Rect();
         _currentPaint.getTextBounds(text,0,text.length(),bounds);
-//        String[] splits = text.split("\n");
-//
-//        int fY =  bounds.height()/2;
-//        int i = 0;
-//        if(splits.length > 1)
-//            fY-= bounds.height()/2;
-//        int fX=0;
-//
-//        for(String s : splits)
-//        {
-//            fY+= (bounds.height()+fm.leading+fm.ascent*i++);
-//            fX = (bounds.width())/2;
-//            _canvas.drawText(text,fX-bounds.width()/(float)2, fY+bounds.height()/(float)2,_currentColor);
-//        }
-//        int xX = (x)-fX;
-//        int yY = (y)+fY/2;
+        int h =bounds.height();
+        float prev = _currentPaint.getTextSize();
+        _currentPaint.setTextSize(_currentPaint.getTextSize()*(float)scale);
 
-        _canvas.drawText(text,x-bounds.width()/(float)2,y-bounds.height()/(float)2,_currentPaint);
-        Log.e(TAG, "drawText:"+x);
-        Log.e(TAG, "drawText:"+y);
-        return new Vec2<>(0,0);
+        String[] splits = text.split("\n");
+
+        int fY =  bounds.height()/2;
+        int i = 0;
+        if(splits.length > 1)
+            fY-= bounds.height()/2;
+        int fX=0;
+
+        for(String s : splits)
+        {
+            _currentPaint.getTextBounds(s,0,s.length(),bounds);
+            fY+= (h+bounds.height()+fm.leading+fm.ascent)*i++;
+            fX = (bounds.width())/2;
+            _canvas.drawText(s,x-fX, y+fY,_currentPaint);
+        }
+        int xX = (x)+fX;
+        int yY = (y)+fY;
+
+        _currentPaint.setTextSize(prev);
+
+        return new Vec2<>(xX,yY);
     }
 
     @Override
