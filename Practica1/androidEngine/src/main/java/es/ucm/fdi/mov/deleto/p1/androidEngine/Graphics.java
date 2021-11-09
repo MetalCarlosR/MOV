@@ -31,6 +31,8 @@ public class Graphics extends SurfaceView implements IGraphics {
     public Graphics(Context context, String appName, String assetPath) {
         super(context);
         _currentPaint = new Paint();
+        _currentPaint.setFilterBitmap(true);
+        _currentPaint.setAntiAlias(true);
         _holder = getHolder();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             _canvas = _holder.lockHardwareCanvas();
@@ -155,19 +157,17 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public Vec2<Integer> drawText(String text, int x, int y, double scale) {
-        //_currentPaint.setAlpha((int)(_opacity*255));
-
         Paint.FontMetrics fm = _currentPaint.getFontMetrics();
 
         Rect bounds = new Rect();
-        _currentPaint.getTextBounds(text,0,text.length(),bounds);
         int h =bounds.height();
         float prev = _currentPaint.getTextSize();
         _currentPaint.setTextSize(_currentPaint.getTextSize()*(float)scale);
+        _currentPaint.getTextBounds(text,0,text.length(),bounds);
 
         String[] splits = text.split("\n");
 
-        int fY =  bounds.height()/2;
+        int fY =  (int)(fm.leading-fm.ascent)/4;
         int i = 0;
         if(splits.length > 1)
             fY-= bounds.height()/2;
@@ -176,12 +176,12 @@ public class Graphics extends SurfaceView implements IGraphics {
         for(String s : splits)
         {
             _currentPaint.getTextBounds(s,0,s.length(),bounds);
-            fY+= (h+bounds.height()+fm.leading+fm.ascent)*i++;
+            fY+= (h+bounds.height()+fm.leading-fm.ascent)*i++;
             fX = (bounds.width())/2;
-            _canvas.drawText(s,x-fX, y+fY,_currentPaint);
+            _canvas.drawText(s,x-fX, y+fY/2,_currentPaint);
         }
         int xX = (x)+fX;
-        int yY = (y)+fY;
+        int yY = (y)+fY/2;
 
         _currentPaint.setTextSize(prev);
 

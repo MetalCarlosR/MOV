@@ -23,6 +23,7 @@ public class GridGenerator {
                 Cell c = solver._grid.getCell(i, j);
                 if(isIsolated(solver, c)){
                     solver._isolated.add(c);
+                    solver._fixedCells.remove(c);
                 }
                 if(!c.isLocked())
                 {

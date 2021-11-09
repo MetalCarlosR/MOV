@@ -115,7 +115,7 @@ public class OhY3s implements IApplication {
         final int r = 6;
         //This xOffset is needed to center the dot and we change it based on the last character of
         //the last string. Space character is used so an empty second line is not ignored
-        int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == ' '  ? r - r/2:  r+r/2);
+        int xOff =(_currentMessage.charAt(_currentMessage.length()-1) == '-'  ? r - r/2:  r+r/2);
 
         //Draw and Reset Opacity
         g.fillCircle(dot.x()+ xOff, dot.y()-r,r);

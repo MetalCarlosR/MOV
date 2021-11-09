@@ -71,7 +71,7 @@ public class GridSolver {
                 // Already can see all its neighbours and has remaining open paths {1.}
                 int openDirs = openDirections(c, sel);
                 if(visibleNeigh == c.getNeigh() && openDirs>0)
-                    return new Clue(c,"This number can see all its dots\n ",new Cell(sel.x(), sel.y(), Cell.State.Red));
+                    return new Clue(c,"This number can see all its dots\n\01",new Cell(sel.x(), sel.y(), Cell.State.Red));
 
                 //Not enough neighbours and only one direction remains {8.}
                 else if(openDirs == 1)
@@ -196,9 +196,11 @@ public class GridSolver {
         int visible = visibleNeighbours(c);
         for (Vec2<Integer> d: _dirs) {
             int i = 1;
-            Cell ghostCell = _grid.getCell(c._x + (d.x()*i), c._y + (d.y()*i));
-            while (ghostCell != null)
-            {
+            Cell ghostCell = null;
+            do {
+                ghostCell = _grid.getCell(c._x + (d.x()*i), c._y + (d.y()*i));
+                if(ghostCell == null)
+                    break;
                 if(ghostCell.getState() == Cell.State.Grey)
                 {
                     int n = 0;
@@ -207,11 +209,12 @@ public class GridSolver {
                     ghostCell.setState(Cell.State.Grey);
                     if(n + visible + 1 > c.getNeigh())
                         return new Vec2<Integer>(ghostCell._x,ghostCell._y);
+                    break;
                 }
                 else if(ghostCell.getState()== Cell.State.Red)
                     break;
-                ghostCell = _grid.getCell(c._x + (d.x()*i), c._y + (d.y()*i++));
-            }
+                i++;
+            }while (true);
         }
         return null;
     }
