@@ -10,16 +10,17 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Input;
+import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.logic.Menu;
 
-public class AGame extends AppCompatActivity {
+public class AGame extends AppCompatActivity implements  ICallable{
 
     Engine _engine;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.println(Log.INFO,"[MAIN]", "Initializing Android Game Launcher");
-        _engine = new Engine(new Menu(),this, "OhYes","");
+        _engine = new Engine(new Menu(),this, "OhYes","", this);
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(_engine.getGraphics());
@@ -34,6 +35,11 @@ public class AGame extends AppCompatActivity {
     }
 
     @Override
+    public void call() {
+        finish();
+        System.exit(0);
+    }
+    @Override
     protected void onResume()
     {
         super.onResume();
@@ -45,4 +51,6 @@ public class AGame extends AppCompatActivity {
         super.onPause();
         _engine.pause();
     }
+
+
 }

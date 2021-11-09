@@ -157,17 +157,17 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public Vec2<Integer> drawText(String text, int x, int y, double scale) {
-        Paint.FontMetrics fm = _currentPaint.getFontMetrics();
 
         Rect bounds = new Rect();
         int h =bounds.height();
         float prev = _currentPaint.getTextSize();
         _currentPaint.setTextSize(_currentPaint.getTextSize()*(float)scale);
         _currentPaint.getTextBounds(text,0,text.length(),bounds);
+        Paint.FontMetrics fm = _currentPaint.getFontMetrics();
 
         String[] splits = text.split("\n");
 
-        int fY =  (int)(fm.leading-fm.ascent)/4;
+        int fY =  (int)(fm.leading-fm.ascent)/2;
         int i = 0;
         if(splits.length > 1)
             fY-= bounds.height()/2;

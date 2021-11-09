@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
+
 public class CircleButton implements IClickable{
     int _posX;
     int _posY;

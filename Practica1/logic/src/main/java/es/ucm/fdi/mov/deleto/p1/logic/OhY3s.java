@@ -3,6 +3,7 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 import java.util.Random;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
+import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;

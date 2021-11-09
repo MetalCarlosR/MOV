@@ -6,6 +6,7 @@ import android.util.Log;
 import java.util.List;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
+import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
@@ -15,17 +16,19 @@ public class Engine implements IEngine, Runnable {
     Graphics _graphics;
     Input _input;
     volatile Boolean _running = true;
+    volatile Boolean _closeEngine = false;
     Thread _renderThread = null;
     IApplication _app;
     IApplication _nextApp = null;
 
     String _appName;
-
-    public Engine(IApplication app, Context context, String appName, String assetsPath)
+    ICallable _exitFunction;
+    public Engine(IApplication app, Context context, String appName, String assetsPath, ICallable exit)
     {
         _graphics = new Graphics(context, appName, assetsPath);
         _input = new Input(_graphics);
         _app = app;
+        _exitFunction = exit;
     }
 
     public void resume(){
@@ -84,11 +87,16 @@ public class Engine implements IEngine, Runnable {
             } else
                 break;
         }
-        _graphics.release();
+        if(_closeEngine)
+        {
+            _graphics.release();
+            _exitFunction.call();
+        }
     }
 
     @Override
     public void exit() {
+        _closeEngine = true;
         _running = false;
     }
 
@@ -105,7 +113,7 @@ public class Engine implements IEngine, Runnable {
     @Override
     public void changeApp(IApplication newApp) {
         _nextApp = newApp;
-        exit();
+        _running = false;
     }
 
 

@@ -3,6 +3,7 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
