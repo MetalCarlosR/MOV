@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.stream.IntStream;
 
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
@@ -50,82 +52,45 @@ public class GridSolver {
         Vector<Cell> isolated = getIsolatedCells();
         Collections.shuffle(isolated);
 
-        Deque<Clue> clues = new ArrayDeque<>(fixed.size()+isolated.size());
+        Clue worstClue = null;
 
+        Vec2<Integer> sel = new Vec2<>(-1,-1);
         for(Cell c : fixed){
-            // TODO: si se optimiza, no hace falta
             int visibleNeigh = getVisibleNeighs(c);
-            // 4. ve demasiados cells
-            if(visibleNeigh > c.getNeigh()){
-                clues.addFirst(new Clue(c,"This number sees a bit too much", null));
-                return clues.getFirst();
-            }
-            // 1. ya los ve todos
-            else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c)>0){
-                Vec2<Integer> sel = null;
-                for (Vec2<Integer> d: _dirs) {
-                    if((sel=getPossibleGrowthInDir(c, d))!=null)
-                        break;
-                }
-                clues.addFirst(new Clue(c,"This number can see all its dots\n ",new Cell(sel.x(), sel.y(), Cell.State.Red)));
-                return clues.getFirst();
-            }
-            // 8. solo te queda una direccion en la que mirar
-            else if(getNumPossibleDirs(c) == 1)
-            {
-                Vec2<Integer> sel = null;
-                for (Vec2<Integer> d: _dirs) {
-                    if((sel=getPossibleGrowthInDir(c, d))!=null)
-                        break;
-                }
-                clues.addFirst(new Clue(c,"Only one direction remains for\nthis number to look in", new Cell(sel.x(),sel.y(), Cell.State.Blue)));
-                return clues.getFirst();
-            }
-            // 2. si añades uno, te pasas porque pasa a ver los azules de detras
-            {
-                Vec2<Integer> sel =  getPossibleNeighs(c);
-                if (sel!=null)
-                {
-                    clues.addFirst(new Clue(c, "Looking further in one direction\nwould exceed this number",new Cell(sel.x(),sel.y(), Cell.State.Red)));
-                    return clues.getFirst();
-                }
-            }
+            // First mistake, a cell sees too much neighbours {4.}
+            if(visibleNeigh > c.getNeigh())
+                return new Clue(c,"This number sees a bit too much", null);
+            // Already can see all its neighbours and has remaining open paths {1.}
+            else if(visibleNeigh == c.getNeigh() && getNumPossibleDirs(c, sel)>0)
+                return new Clue(c,"This number can see all its dots\n ",new Cell(sel.x(), sel.y(), Cell.State.Red));
+            //Not enough neighbours and only one direction remains {8.}
+            else if(getNumPossibleDirs(c, sel) == 1)
+                return new Clue(c,"Only one direction remains for\nthis number to look in", new Cell(sel.x(),sel.y(), Cell.State.Blue));
+            // Growing in this direction would exceed the cell neighbours {2.}
+            Vec2<Integer> impossibleCell =  getPossibleNeighs(c);
+            if (impossibleCell!=null)
+                return new Clue(c, "Looking further in one direction\nwould exceed this number",new Cell(impossibleCell.x(),impossibleCell.y(), Cell.State.Red));
 
-            Cell obvious = getDirForObviousBlueDot(c);
+            Vec2<Integer> obvious = getDirForObviousBlueDot(c);
             // 3. y 9. hay un punto que tiene que ser clicado si o si
-            if(obvious != null )//&& _grid._grid.getCell(c._x+obvious.x(),c._y+obvious.y()).getState()== Cell.State.Grey
-            {
-                clues.addFirst(new Clue(c,"One specific dot is included\nin all solutions imaginable",new Cell(obvious._x,obvious._y, Cell.State.Blue)));
-                return clues.getFirst();
-            }
-            // 5. no ve los suficientes
-            else
-            {
-                if(clues.size()>0)
-                    clues.addLast(new Clue(c,"This number can't see enough",null));
-                else
-                    clues.addFirst(new Clue(c,"This number can't see enough",null));
-                continue;
-            }
-            // TODO: 10. ??
-        }
-        // 6. y 7.
-        for (Cell c: isolated) {
+            if(obvious != null )
+                return new Clue(c,"One specific dot is included\nin all solutions imaginable",new Cell(obvious.x(),obvious.y(), Cell.State.Blue));
 
+            // Last possible clue, only given in case of player mistake {5.}
+            else worstClue = new Clue(c,"This number can't see enough",null);
+        }
+
+        // Isolated clues can only be red  {6. y 7.}
+        for (Cell c: isolated) {
             Cell r = new Cell(c._x,c._y, Cell.State.Red);
             if(c.getState() == Cell.State.Grey)
-            {
-                clues.addFirst(new Clue(c,"This one should be easy...", r));
-                return clues.getFirst();
-            }
+                return new Clue(c,"This one should be easy...", r);
             else if (c.getState() == Cell.State.Blue)
-            {
-                clues.addFirst(new Clue(c,"A blue dot should always see at least one other",r));
-                return clues.getFirst();
-            }
+                return new Clue(c,"A blue dot should always see at least one other",r);
         }
 
-        return clues.size() >0 ? clues.getFirst() : null;
+        //If no better clue has been found we return one of the errors stored in the worstClue
+        return worstClue;
     }
 
     // devuelve todos los azules ya visibles de una cell
@@ -174,7 +139,7 @@ public class GridSolver {
         return null;
     }
 
-    // TODO: Optimizable
+    // TODO: We can optimize by computing this only once and updating every state change only on afected cells
     // devuelve el numero de cells azules visibles
     public int getVisibleNeighs(Cell c){
         int n = 0;
@@ -212,59 +177,49 @@ public class GridSolver {
     }
 
     // devuelve el numero de direcciones posibles en las que crecer
-    public int getNumPossibleDirs(Cell c){
+    public int getNumPossibleDirs(Cell c, Vec2<Integer>out){
         int n = 0;
-        for (Vec2<Integer> d: _dirs) {
-            if(getPossibleGrowthInDir(c, d)!=null)
-                n++;
-        }
 
+        for (Vec2<Integer> d: _dirs) {
+            Vec2<Integer> p = getPossibleGrowthInDir(c, d);
+            if(p!=null)
+            {
+                if(n == 0 && out!=null)
+                    out.setXY(p.x(),p.y());
+                n++;
+            }
+        }
         return n;
     }
 
-    public Cell getDirForObviousBlueDot(Cell c){
-        Vec2<Integer> dir = null;
-
+    public Vec2<Integer> getDirForObviousBlueDot(Cell c){
         int neigh [] = new int[_dirs.size()];
-        int totalVis = getVisibleNeighs(c);
-        int max = 0;
         int id = 0;
         int sum = 0;
 
-        int i = 0;
-        for (Vec2<Integer> d: _dirs) {
-            int vis = getVisibleNeighInDir(c, d);
-            neigh[i] = getPossibleNeighInDir(c, d);
-            neigh[i] = Math.min(c.getNeigh(), neigh[i]);
-            if(max < neigh[i]){
-                max = neigh[i];
-                id = i;
-            }
+        Vec2<Integer>obvious = new Vec2<>(-1,-1);
+
+        //We save all the possible neighbours we can get in each dir in an local array.
+        //accumulate the sum of all and save the direction with the largest amount of possible neighs.
+        for (int i = 0; i<_dirs.size();i++) {
+            neigh[i] = Math.min(c.getNeigh(),getPossibleNeighInDir(c, _dirs.get(i)));
             sum += neigh[i];
-            i++;
+            if(neigh[id] < neigh[i]){ id = i; }
         }
 
-        max *= 2;
-
-        for(i = 0; i < _dirs.size(); i++){
-            max -= neigh[i];
+        //We subtract all the possible neighbours to the max direction.
+        // (Times 2 because we will subtract it from it self in the next loop)
+        int max = neigh[id]*2;
+        for(int v: neigh){
+            max -= v;
         }
 
-        if((max > 0 && sum / (c.getNeigh()-totalVis) <= 1) || (max == 0 && sum == c.getNeigh()))
-            dir = _dirs.get(id);
-
-        if(dir == null)
+        //We return the max direction only if it has neighs and won't exceed the maximum
+        if((max >= 0 && sum <= (c.getNeigh()-getVisibleNeighs(c))))
+            return getPossibleGrowthInDir(c,_dirs.get(id));
+            //If we make getPossibleNeighInDir take an out parameter and save it this search could be optimized out
+        else
             return null;
-
-        Cell cell = _grid.getCell(c._x + dir.x(), c._y + dir.y());
-        while(cell != null){
-            if(cell.getState() == Cell.State.Grey)
-                return cell;
-
-            cell = _grid.getCell(cell._x + dir.x(), cell._y + dir.y());
-        }
-
-        return null;
     }
 
     public Vector<Cell> getFixedCells(){
@@ -277,7 +232,6 @@ public class GridSolver {
         return  ret;
     }
 
-    //5:35 AM - Si peta de repente el mapa -> if(c.getState() != Cell.State.Red))
     public Vector<Cell> getIsolatedCells(){
         Vector<Cell> ret = new Vector<Cell>();
         for(Cell c : _isolated){
@@ -285,8 +239,6 @@ public class GridSolver {
         }
         return ret;
     }
-
-
 
 
     public boolean isIsolated(Cell c)
