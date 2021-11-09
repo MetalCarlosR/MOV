@@ -147,10 +147,13 @@ public class Grid {
         Cell c = getCell(x,y);
         if(c!=null)
         {
-            undoStack.addFirst(new Cell(c._x, c._y, c.getState()));
-            if(!getCell(x, y).changeState())
+            if(getCell(x, y).isLocked())
                 getCell(x,y).showLockedGraphics();
             else {
+                Cell first = undoStack.peekFirst();
+                if (first == null || first._x != x || first._y != y)
+                    undoStack.addFirst(new Cell(c._x, c._y, c.getState()));
+                getCell(x,y).changeState();
                 Cell.State state = getCell(x, y).getState();
                 if(state == Cell.State.Grey)
                     _clicked--;

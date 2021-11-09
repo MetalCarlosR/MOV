@@ -208,20 +208,26 @@ public class OhY3s implements IApplication {
 
     private void handleNewClue()
     {
-        _grid.debugCell = null;
-        Clue clue = _grid.getClue();
-        if(clue != null)
-        {
-            _currentMessage = clue.getMessage();
-            _messageScale = 0.5f;
-            _focusedCell = clue.getCell();
-            _focusedCell.focus();
-            if(clue.getCorrectState()!=null)
-            {
-                _grid.debugCell = _grid.getCell(clue.getCorrectState()._x, clue.getCorrectState()._y);
-                _clueState = clue.getCorrectState().getState();
+        if(_focusedCell != null){
+            _currentMessage = "";
+            _focusedCell.unfocus();
+            _focusedCell = null;
+            _grid.debugCell = null;
+        }
+        else {
+            _grid.debugCell = null;
+            Clue clue = _grid.getClue();
+            if (clue != null) {
+                _currentMessage = clue.getMessage();
+                _messageScale = 0.5f;
+                _focusedCell = clue.getCell();
+                _focusedCell.focus();
+                if (clue.getCorrectState() != null) {
+                    _grid.debugCell = _grid.getCell(clue.getCorrectState()._x, clue.getCorrectState()._y);
+                    _clueState = clue.getCorrectState().getState();
+                }
+                _focusedOpacity = 0;
             }
-            _focusedOpacity = 0;
         }
     }
 
