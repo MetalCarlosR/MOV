@@ -8,7 +8,6 @@ java {
 }
 
 dependencies {
-    implementation project(path: ':logic')
     implementation project(path: ':engine')
-    implementation project(path: ':pcEngine')
 }
+

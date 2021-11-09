@@ -121,6 +121,7 @@ public class Grid {
         }
 
     }
+
     public void onUpdate(double deltaTime) {
         double opacity=1;
         if(_startTransition)
@@ -151,8 +152,7 @@ public class Grid {
             }
     }
 
-    public void clickCell(int x, int y)
-    {
+    public void clickCell(int x, int y) {
         Cell c = getCell(x,y);
         if(c!=null)
         {
