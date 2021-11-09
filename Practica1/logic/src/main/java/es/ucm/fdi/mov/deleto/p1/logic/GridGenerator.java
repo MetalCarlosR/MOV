@@ -21,7 +21,7 @@ public class GridGenerator {
         for (int i = 0; i < solver._grid.getSize(); i++) {
             for (int j = 0; j < solver._grid.getSize(); j++) {
                 Cell c = solver._grid.getCell(i, j);
-                if(solver.isIsolated(c)){
+                if(isIsolated(solver, c)){
                     solver._isolated.add(c);
                 }
                 if(!c.isLocked())
@@ -90,7 +90,7 @@ public class GridGenerator {
             for (int j = 0; j < size; j++) {
                 Cell c = solver._grid.getCell(j, i);
                 if(c.getState() != Cell.State.Red){
-                    int n = solver.getVisibleNeighs(c);
+                    int n = solver.visibleNeighbours(c);
                     c.setNeigh(n);
                 }
             }
@@ -111,7 +111,7 @@ public class GridGenerator {
             for (int j = 0; j < solver._grid.getSize(); j++) {
                 Cell ady = solver._grid.getCell(c._x + solver._dirs.get(i).x() * j, c._y + solver._dirs.get(i).y() * j);
                 if(ady != null){
-                    if(solver.getVisibleNeighs(ady) > solver._grid.getSize()){
+                    if(solver.visibleNeighbours(ady) > solver._grid.getSize()){
                         c.setState(Cell.State.Red);
                         return false;
                     }
@@ -191,5 +191,15 @@ public class GridGenerator {
             System.err.println("Generating one by default\n");
             throw new RuntimeException("Map generation not implemented yet");
         }
+    }
+    private static boolean isIsolated(GridSolver solver, Cell c)
+    {
+        for(Vec2<Integer> d:solver._dirs)
+        {
+            Cell next = solver._grid.getCell(c._x+d.x(), c._y+d.y());
+            if(next!=null && next.getState() != Cell.State.Red)
+                return  false;
+        }
+        return true;
     }
 }

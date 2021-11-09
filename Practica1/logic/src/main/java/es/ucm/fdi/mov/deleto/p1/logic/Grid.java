@@ -1,21 +1,11 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
-import com.sun.tools.javac.util.Pair;
-
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
-import java.util.Random;
-import java.util.Scanner; // Import the Scanner class to read text files
-import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
-import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public class Grid {
 
@@ -33,7 +23,7 @@ public class Grid {
     int _originX;
     int _originY;
 
-    public Cell pito;
+    public Cell debugCell;
 
     private  GridSolver _gridSolver;
 
@@ -113,7 +103,7 @@ public class Grid {
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
-                if(getCell(j,i) == pito)
+                if(getCell(j,i) == debugCell)
                     getCell(j,i).draw(_G, lock, font, 0xffc0c0c0);
                 else
                     getCell(j,i).draw(_G, lock, font);
@@ -195,10 +185,7 @@ public class Grid {
 
 
     public boolean checkWin(){
-        if(getClue() == null){
-            return _gridSolver.getFixedCells().size() + _gridSolver.getIsolatedCells().size() == 0;
-        }
-        return false;
+        return _gridSolver.solved();
     }
 
     public Cell getCell(int x, int y){
