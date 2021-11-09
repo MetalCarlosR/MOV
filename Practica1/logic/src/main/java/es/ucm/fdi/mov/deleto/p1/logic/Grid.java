@@ -165,7 +165,7 @@ public class Grid {
                     _clicked--;
                 else if(state == Cell.State.Blue) _clicked++;
 
-                _percentage =  (100 * _clicked) / _gridSolver.getFreeCells();
+                _percentage =  (100 * _clicked) / _gridSolver._freeCells;
             }
         }
     }
@@ -188,7 +188,7 @@ public class Grid {
         else if(s == Cell.State.Red)
             _clicked++;
 
-        _percentage =  (100 * _clicked) / _gridSolver.getFreeCells();
+        _percentage =  (100 * _clicked) / _gridSolver._freeCells;
 
         return c;
     }
