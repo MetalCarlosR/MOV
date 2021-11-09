@@ -2,7 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MOV.iml" filepath="$PROJECT_DIR$/.idea/MOV.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Practica1-0hY3s.iml" filepath="$PROJECT_DIR$/.idea/modules/Practica1-0hY3s.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AEngine/Practica1-0hY3s.AEngine.iml" filepath="$PROJECT_DIR$/.idea/modules/AEngine/Practica1-0hY3s.AEngine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/PCEngine/Practica1-0hY3s.PCEngine.iml" filepath="$PROJECT_DIR$/.idea/modules/PCEngine/Practica1-0hY3s.PCEngine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/PCGame/Practica1-0hY3s.PCGame.iml" filepath="$PROJECT_DIR$/.idea/modules/PCGame/Practica1-0hY3s.PCGame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/agame/Practica1-0hY3s.agame.iml" filepath="$PROJECT_DIR$/.idea/modules/agame/Practica1-0hY3s.agame.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/engine/Practica1-0hY3s.engine.iml" filepath="$PROJECT_DIR$/.idea/modules/engine/Practica1-0hY3s.engine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/logic/Practica1-0hY3s.logic.iml" filepath="$PROJECT_DIR$/.idea/modules/logic/Practica1-0hY3s.logic.iml" />
     </modules>
   </component>
 </project>

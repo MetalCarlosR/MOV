@@ -74,15 +74,22 @@ public class Grid {
 
     public void setGraphics(IGraphics graphics) {
         _G = graphics;
-        _logicWidth = graphics.getLogicWidth();
-        _logicHeight = graphics.getLogicHeight();
+        int logicWidth = graphics.getLogicWidth();
+        int logicHeight = graphics.getLogicHeight();
 
         PADDING = 40/_size;
-        int r = ((_logicWidth-BORDER) -_size* PADDING)/(_size*2);
-        getCell(0,0).setRadius(r);
-        getCell(0,0).setScale(r/((double)(_logicWidth -4* PADDING)/(4*2)));
+        int r = ((logicWidth -BORDER) -_size* PADDING)/(_size*2);
         _originX = (PADDING /2 + BORDER/2);
-        _originY = _logicHeight / 8 + BORDER;
+        _originY = logicHeight / 8 + BORDER;
+
+        for(int i = 0; i < _size; i++) {
+            int y = (_originY+(i)*(r*2)+ PADDING *i)+r;
+            for(int j = 0; j < _size; j++)
+            {
+                int x = (_originX+(j)*(r*2)+ PADDING *j)+r;
+                getCell(j,i).setTransform(x,y,r,r/((double)(logicWidth -4* PADDING)/(4*2)));
+            }
+        }
     }
 
     private void loadGridFromFile(String file) {
@@ -254,41 +261,33 @@ public class Grid {
 
     public boolean processClick(int x, int y)
     {
-        int r = getCell(0,0).getRadius();
+        int r = getCell(0,0).getRad();
 
         if( y >= _originY &&
             y <  _originY+(_size*(2*(r+PADDING))) &&
             x >= _originX &&
             x < (400 - (PADDING+BORDER)/2))
         {
-            y-=_originY;
-            x-= _originX;
             int widthEach = (2*r)+PADDING;
-            int localX = (x % widthEach);// + r + PADDING/2;
             int heightEach = widthEach;
-            int localY = (y % heightEach);//+ r + PADDING/2;
+            int arrayX = (x - _originX)/widthEach;
+            int arrayY = (y - _originY)/heightEach;
 
-            if( localX > PADDING && localX < 2*r &&
-                localY > PADDING && localY < 2*r )
-                    clickCell(x/widthEach, y/heightEach);
+            if (getCell(arrayX,arrayY).clicked(x ,y))
+                    clickCell(arrayX,arrayY);
             return true;
         }
         return  false;
     }
 
     public void draw(IFont font, IImage lock){
-        int r = getCell(0,0).getRadius();
-        double textScale = getCell(0,0).getScale();
-
         for(int i = 0; i < _size; i++) {
-            int y = (_originY+(i)*(r*2)+ PADDING *i)+r;
             for(int j = 0; j < _size; j++)
             {
-                int x = (_originX+(j)*(r*2)+ PADDING *j)+r;
                 if(getCell(j,i) == pito)
-                    getCell(j,i).draw(x,y,r,textScale,_G, lock, font, 0xffc0c0c0);
+                    getCell(j,i).draw(_G, lock, font, 0xffc0c0c0);
                 else
-                    getCell(j,i).draw(x,y,r,textScale,_G, lock, font);
+                    getCell(j,i).draw(_G, lock, font);
             }
         }
 
@@ -298,11 +297,15 @@ public class Grid {
         if(_startTransition)
         {
             _actualTransitionTime+=deltaTime;
+            //in seconds
+            double TRANSITION_TARGET_DELAY = 1;
             if(_actualTransitionTime < TRANSITION_TARGET_DELAY)
                 opacity = -1;
             else
             {
-                opacity = 1 - ((_actualTransitionTime-TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
+                //in seconds
+                double TRANSITION_TARGET_TIME = 2;
+                opacity = 1 - ((_actualTransitionTime- TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
                 if(opacity<= 0)
                 {
                     _startTransition = false;
@@ -325,7 +328,16 @@ public class Grid {
         if(c!=null)
         {
             undoStack.addFirst(new Cell(c._x, c._y, c.getState()));
-            changeState(x, y);
+            if(!getCell(x, y).changeState())
+                getCell(x,y).showLockedGraphics();
+            else {
+                Cell.State state = getCell(x, y).getState();
+                if(state == Cell.State.Grey)
+                    _clicked--;
+                else if(state == Cell.State.Blue) _clicked++;
+
+                _percentage =  (100 * _clicked) / _freeCells;
+            }
         }
     }
 
@@ -348,18 +360,6 @@ public class Grid {
         return c;
     }
 
-    public void changeState(int x, int y){
-        if(!getCell(x, y).changeState())
-            getCell(x,y).showLockedGraphics();
-        else {
-            Cell.State state = getCell(x, y).getState();
-            if(state == Cell.State.Grey)
-                _clicked--;
-            else if(state == Cell.State.Blue) _clicked++;
-
-            _percentage =  (100 * _clicked) / _freeCells;
-        }
-    }
 
     public boolean checkWin(){
         if(getClue() == null){
@@ -623,9 +623,9 @@ public class Grid {
 
     private Cell[][] _cells;
 
-    private Vector<Cell> _fixedCells = new Vector<Cell>();
-    private Vector<Cell> _visibleCells = new Vector<Cell>();
-    private Vector<Cell> _isolated = new Vector<Cell>();
+    private final Vector<Cell> _fixedCells = new Vector<Cell>();
+    private final Vector<Cell> _visibleCells = new Vector<Cell>();
+    private final Vector<Cell> _isolated = new Vector<Cell>();
 
     public ArrayList<Vec2<Integer>> _dirs = new ArrayList<>();
 
@@ -633,10 +633,7 @@ public class Grid {
     private int _percentage = 0;
     private int _freeCells = 0;
     private int _clicked = 0;
-    private int _mistakes = 0;
 
-    private int _logicWidth = 0;
-    private int _logicHeight = 0;
     private IGraphics _G;
 
     int _originX;
@@ -645,9 +642,7 @@ public class Grid {
 
     public Cell pito;
 
-    private Deque<Cell> undoStack = new ArrayDeque<>();
-    private final double TRANSITION_TARGET_TIME = 2;//in seconds
-    private final double TRANSITION_TARGET_DELAY = 1;//in seconds
+    private final Deque<Cell> undoStack = new ArrayDeque<>();
 
     private double _actualTransitionTime;
     private boolean _startTransition = false;

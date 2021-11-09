@@ -4,23 +4,18 @@ import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
-public class Cell {
-
-    public int getRadius() {
-        return _radius;
-    }
+public class Cell extends CircleButton{
 
     public double getScale() {
         return _scale;
     }
 
-    public void setRadius(int r)
+    public void setTransform(int x, int y, int r, double scale)
     {
-        _radius=r;
-    }
-    public void setScale(double s)
-    {
-        _scale = s;
+        _posX = x;
+        _posY = y;
+        _rad = r;
+        _scale = scale;
     }
 
     //Si pones el opacity a -1 estás en realidad diciendo que pinte los números e ignore el locked. De nada
@@ -28,12 +23,12 @@ public class Cell {
         _opacity=opacity;
     }
 
-
     enum State{ Grey, Blue, Red }
 
 
     public Cell(int x, int y, State s)
     {
+        super(null);
         _x=x;
         _y=y;
         _locked=false;
@@ -44,6 +39,7 @@ public class Cell {
 
     public Cell(String data, int x, int y)
     {
+        super(null);
         setCell(data);
         _x=x;
         _y=y;
@@ -60,34 +56,36 @@ public class Cell {
             _excitedTimer -=deltaTime;
         }
     }
-    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font, int color) {
+    public void draw(IGraphics graphics, IImage lock, IFont font, int color) {
         graphics.setOpacity(Math.max(_opacity==-1?1:(float)_opacity,0));
 
         Cell.State state = getState();
-        double radius = r;
+
+        double radius = _rad;
+
         if(_excitedTimer > 0)
             radius+=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;;
         if(_focus)
         {
             radius += (((Math.sin(_focusTime*2)+1)/2)*3);
             graphics.setColor(0xFF000000);
-            graphics.fillCircle(x,y,(radius+ (double) _focusRingSize));
+            graphics.fillCircle(_posX,_posY,(radius+ (double) _focusRingSize));
         }
         graphics.setColor(color);
-        graphics.fillCircle(x,y,radius);
+        graphics.fillCircle(_posX,_posY,radius);
 
         boolean gameFinished = _opacity < 1 || _opacity == -1;
         if(getState() == Cell.State.Blue && (isLocked()|| gameFinished))
         {
             graphics.setColor(0xFFFFFFFF);
             graphics.setFont(font);
-            graphics.drawText(Integer.toString(getNeigh()), x,y,(scale));
+            graphics.drawText(Integer.toString(getNeigh()), _posX,_posY,(_scale));
         }
         else if(_showLockedGraphics && getState() == Cell.State.Red && isLocked())
         {
             graphics.setOpacity((float)Math.max(Math.min(_opacity,0.2),0));
 
-            graphics.drawImage(lock, x,y,(float)(0.65f*scale),(float)(0.65f*scale));
+            graphics.drawImage(lock, _posX,_posY,(float)(0.65f*_scale),(float)(0.65f*_scale));
             graphics.setOpacity(Math.max((float)_opacity,0));
         }
     }
@@ -96,8 +94,8 @@ public class Cell {
         return state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE;
     }
 
-    public void draw(int x, int y, int r, double scale, IGraphics graphics, IImage lock, IFont font) {
-        draw(x,y,r,scale,graphics,lock,font,getColorByState(_state));
+    public void draw(IGraphics graphics, IImage lock, IFont font) {
+        draw(graphics,lock,font,getColorByState(_state));
     }
 
     /***
@@ -180,7 +178,6 @@ public class Cell {
     private boolean _focus = false;
     int _x = 0;
     int _y = 0;
-    private  int _radius;
     private double _scale;
 
     int _focusRingSize = 2;
