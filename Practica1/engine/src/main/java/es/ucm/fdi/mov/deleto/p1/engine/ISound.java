@@ -7,10 +7,10 @@ public interface ISound {
     /**
      * Plays the sound
      */
-    public void play();
+    void play();
 
     /**
      * Stops the sound
      */
-    public void stop();
+    void stop();
 }

@@ -11,11 +11,11 @@ public interface IAudio {
      * @param filePath path to sound file
      * @return
      */
-    public ISound newSound(String filePath);
+    ISound newSound(String filePath);
 
     /**
      * Creates as in newSound but plays immediately, use this for small sound effects
      * @param filePath path to sound file
      */
-    public void createAndPlay(String filePath);
+    void createAndPlay(String filePath);
 }

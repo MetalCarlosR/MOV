@@ -73,12 +73,14 @@ public interface IGraphics {
     void fillRect(int x, int y, int w, int h);
 
     /**
-     * Draws given string with currently selected font
+     * Draws given string with currently selected font.
+     * Will split text on new line characters '\n'
+     *
      * @param text string to render
      * @param x horizontal center
      * @param y vertical center
      * @param scale scale to apply to currently selected font
-     * @return the last character drawn position in logical coordinates
+     * @return where a next character would be placed in logical coordinates
      */
     Vec2<Integer> drawText(String text, int x, int y, double scale);
 

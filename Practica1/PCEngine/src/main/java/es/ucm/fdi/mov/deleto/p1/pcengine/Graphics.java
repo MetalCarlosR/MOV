@@ -6,9 +6,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferStrategy;
@@ -21,56 +20,69 @@ import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
+
 public class Graphics implements IGraphics {
 
-    int _refWidth;
-    int _refHeight;
+    /*********************
+     * Stuff for scaling *
+     *********************/
+
+    static int WINDOW_MENU_HEIGHT = 23;
+    static int WINDOW_BORDER = 8;
+
+    int    _refWidth;
+    int    _refHeight;
     double _refFactor;
 
-    int _originX;
-    int _originY;
+    int _originX=0;
+    int _originY=0;
 
-    int _endX;
-    int _endY;
+    int _endX=0;
+    int _endY=0;
 
     Dimension _size;
-    String _path;
-    java.awt.Font _actualFont;
 
+    /******************
+     * Renderer State *
+     ******************/
+
+    String _assetsPath;
+    java.awt.Font _actualFont;
+    Color _actualColor = new Color(0);
 
     JFrame _window;
     BufferStrategy _strategy;
     java.awt.Graphics _buffer;
 
-    Color _color;
+    /**
+     * Sets up window and configures rendering
+     * @param name title of the window
+     * @param assetPath directory where assets will be fetched from
+     * @param width window initial width
+     * @param height window initial height
+     */
+    public Graphics(String name, String assetPath, int width, int height) {
 
-    static int WINDOW_MENU_HEIGHT = 23;
-    static int WINDOW_BORDER = 8;
-
-    public Graphics(String name, String path) {
+         //Setting up window
         _window = new JFrame(name);
-
-       //If we can, we use the second monitor. Why? Because laptops.
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice[] gs = ge.getScreenDevices();
-        // pls que no me queme los ojos, gracias
-//        if (1 < gs.length)
-//            gs[1].setFullScreenWindow(_window);
-//        else
-//            gs[0].setFullScreenWindow(_window);
-
-        System.setProperty("sun.awt.noerasebackground", "true");
+        _window.setSize(width, height);
 
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
+
         _window.setIgnoreRepaint(true);
+        Toolkit.getDefaultToolkit().setDynamicLayout(false);
 
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
 
-        _path = path;
+        _assetsPath = assetPath;
         _size = new Dimension();
 
+         //Create and get buffer strategy
         while (true) {
             try {
                 _window.createBufferStrategy(2);
@@ -82,11 +94,7 @@ public class Graphics implements IGraphics {
         _strategy = _window.getBufferStrategy();
         _buffer = _strategy.getDrawGraphics();
 
-        _originX=0;
-        _originY=0;
-
-        _color = new Color(0x041326);
-
+         //Set up resize callback to compute new scaling factors and offsets
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
                 int actualW = _window.getWidth();
@@ -118,110 +126,10 @@ public class Graphics implements IGraphics {
             }
         });
     }
-    public void release()
-    {
-        _window.setVisible(false);
-        _window.dispose();
-    }
 
-    @Override
-    public int getLogicWidth() {
-        return _refWidth;
-    }
-
-    @Override
-    public int getLogicHeight() {
-        return _refHeight;
-    }
-
-    @Override
-    public void setResolution(int width, int height) {
-        _window.setSize(width, height);
-
-        _refWidth  = width;
-        _refHeight = height;
-
-        _refFactor = (double) width /(double) height;
-
-    }
-    public JFrame getWindow(){return  _window;};
-
-    private int realPositionX(int x) {
-        return _originX+ (x * (_endX-_originX)/_refWidth);
-    }
-    private double realPositionX(double x) {
-        return _originX+ (x * (_endX-_originX)/(double) _refWidth);
-    }
-
-    public int refPositionX(int x)
-    {
-        return (int)((x-_originX)*((double)_refWidth / (_endX-_originX)));
-    }
-
-    private int realPositionY(int y) {
-        return _originY+y * (_endY-_originY)/_refHeight;
-    }
-    private double realPositionY(double y) {
-        return _originY+y * (_endY-_originY)/(double)_refHeight;
-    }
-
-    public int refPositionY(int y)
-    {
-        return (int)((y-_originY)*((double)_refHeight / (_endY-_originY)));
-    }
-
-    private  int realLength(double length){
-        return (int)(length * (_endX-_originX)/(double)_refWidth);
-    }
-
-    public boolean swapBuffers() {
-        //debug
-        setColor(0xFFFFFF00);
-        _buffer.fillRect(_endX-10,_endY+10,10,10);
-        _buffer.setColor(_color);
-        //debug
-
-        _buffer.dispose();
-        _buffer = _strategy.getDrawGraphics();
-        //Enable antialiasing for the new buffer
-        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-
-        //Check if resize was applied during rendering, if so then repaint
-        boolean repeat = !_size.equals(_window.getSize());
-        if(!repeat)
-            _strategy.show();
-        return repeat;
-    }
-
-    public void clear(int color) {
-        _size = _window.getSize();
-        Color aux = _color;
-        setColor(color);
-        _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
-        setColor(aux.getRGB());
-    }
-
-    @Override
-    public void setOpacity(float opacity) {
-        ((Graphics2D) _buffer).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-    }
-
-
-    @Override
-    public void setColor(int color) {
-        _color = new Color(color, true);
-        _buffer.setColor(_color);
-    }
-
-    @Override
-    public void setFont(IFont font) {
-        Font f = (Font) font;
-        _buffer.setFont(f.getFont());
-        _actualFont=f.getFont();
-    }
-
+    /**************************
+     * Interface draw methods *
+     **************************/
     @Override
     public void fillCircle(int x, int y, double r) {
         _buffer.fillOval((int)realPositionX(x-r), (int)realPositionY(y-r), realLength(r*2.0), realLength(r*2.0));
@@ -237,6 +145,9 @@ public class Graphics implements IGraphics {
         return drawText(text,x,y,1);
     }
 
+    /**
+     * As explained in the interface, splits newlines and centers text to given coordinates.
+     */
     @Override
     public Vec2<Integer>  drawText(String text, int x, int y, double scale) {
         String[] splits = text.split("\n");
@@ -269,15 +180,139 @@ public class Graphics implements IGraphics {
         _buffer.drawImage(im.getImage(), realPositionX(posX)-width/2, realPositionY(posY)-height/2,width,height, null);
     }
 
+
+    /**********************
+     * Render and present *
+     **********************/
+
+    public boolean swapBuffers() {
+        //debug
+        setColor(0xFFFFFF00);
+        _buffer.fillRect(_endX-10,_endY+10,10,10);
+        _buffer.setColor(_actualColor);
+        //debug
+
+        _buffer.dispose();
+        _buffer = _strategy.getDrawGraphics();
+        //Enable antialiasing for the new buffer
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+
+        //Check if resize was applied during rendering, if so then repaint
+        boolean repeat = !_size.equals(_window.getSize());
+        if(!repeat)
+        {
+            _strategy.show();
+        }
+        return repeat;
+    }
+
+    public void clear(int color) {
+        _size = _window.getSize();
+        Color aux = _actualColor;
+        setColor(color);
+        _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
+        setColor(aux.getRGB());
+    }
+
+    /*******************
+     * Factory Methods *
+     *******************/
+
     @Override
     public IImage newImage(String name) {
-        return new Image(_path + "sprites/" + name);
+        return new Image(_assetsPath + "sprites/" + name);
     }
 
     @Override
     public IFont newFont(String fileName, int size, boolean isBold) {
-        Font ret = new Font(_path + "fonts/"+fileName, size, isBold);
+        Font ret = new Font(_assetsPath + "fonts/"+fileName, size, isBold);
         ret.init();
         return ret;
     }
+
+    /**
+     * Swing needs to release it's resources on close
+     */
+    public void release()
+    {
+        _window.setVisible(false);
+        _window.dispose();
+    }
+
+
+    /*******************
+     * Scaling Methods *
+     *******************/
+
+
+
+    private int realPositionX(int x) {
+        return _originX+ (x * (_endX-_originX)/_refWidth);
+    }
+
+    private double realPositionX(double x) {
+        return _originX+ (x * (_endX-_originX)/(double) _refWidth);
+    }
+
+    public int refPositionX(int x)
+    {
+        return (int)((x-_originX)*((double)_refWidth / (_endX-_originX)));
+    }
+
+    private int realPositionY(int y) {
+        return _originY+y * (_endY-_originY)/_refHeight;
+    }
+    private double realPositionY(double y) {
+        return _originY+y * (_endY-_originY)/(double)_refHeight;
+    }
+
+    protected int refPositionY(int y)
+    {
+        return (int)((y-_originY)*((double)_refHeight / (_endY-_originY)));
+    }
+
+    private  int realLength(double length){
+        return (int)(length * (_endX-_originX)/(double)_refWidth);
+    }
+
+    @Override
+    public void setOpacity(float opacity) {
+        ((Graphics2D) _buffer).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+    }
+
+
+    @Override
+    public void setColor(int color) {
+        _actualColor = new Color(color, true);
+        _buffer.setColor(_actualColor);
+    }
+
+    @Override
+    public void setFont(IFont font) {
+        Font f = (Font) font;
+        _buffer.setFont(f.getFont());
+        _actualFont=f.getFont();
+    }
+
+
+    @Override
+    public int getLogicWidth() {
+        return _refWidth;
+    }
+
+    @Override
+    public int getLogicHeight() {
+        return _refHeight;
+    }
+
+    @Override
+    public void setResolution(int width, int height) {
+        _refWidth  = width;
+        _refHeight = height;
+        _refFactor = (double) width /(double) height;
+    }
+
+    public JFrame getWindow(){return  _window;};
 }

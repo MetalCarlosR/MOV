@@ -113,7 +113,7 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     public void prepareFrame()
     {
-        while (!_holder.getSurface().isValid());
+        while (!_holder.getSurface().isValid()){};
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             _canvas = _holder.lockHardwareCanvas();
         }else

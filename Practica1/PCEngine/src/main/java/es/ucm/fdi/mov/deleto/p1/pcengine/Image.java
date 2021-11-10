@@ -2,6 +2,10 @@ package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
+
 public class Image implements IImage {
 
     java.awt.Image _image;

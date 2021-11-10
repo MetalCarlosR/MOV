@@ -13,53 +13,92 @@ import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
+
 public class Engine implements IEngine {
+    /**
+     * Reference to the corresponding platform interface implementations
+     */
     Graphics _graphics;
     Input _input;
     Audio _audio;
 
+    /**
+     * Current running application
+     */
     IApplication _app;
+
+    /**
+     * Next application, to switch between application states and abstract different states
+     *                   more easily
+     */
     IApplication _nextApp = null;
 
-    boolean running = false;
+    /**
+     * Signals if we need to exit the current main loop
+     */
+    boolean running = true;
 
-    public Engine(IApplication app, String appName, String assetsPath) {
+    /**
+     *  Constructor, simply calls new on every platform engine
+     * @param app the app to initiate.
+     * @param appName name of the window to create
+     * @param assetsPath path where assets will be located
+     * @param width window initial width
+     * @param height window initial height
+     */
+    public Engine(IApplication app, String appName, String assetsPath, int width, int height) {
         _app = app;
-        _graphics = new Graphics(appName,assetsPath);
+
+        _graphics = new Graphics(appName, assetsPath, width, height);
         _audio = new Audio(assetsPath);
         _input = new Input(_graphics);
     }
 
+    /**
+     * Main loop will execute until exit() is called
+     */
     public void run() {
 
-        while (true) {
-            running = true;
-            _app.onInit(this);
+        /**
+         * Outer loop needed for app switching
+         */
+        while (running) {
 
+            //Init app and start measuring time
+            _app.onInit(this);
             long lastFrameTime = System.nanoTime();
+
             while (running) {
+                //Get delta time and call update
                 long currentTime = System.nanoTime();
                 long nanoElapsedTime = currentTime - lastFrameTime;
                 lastFrameTime = currentTime;
                 double elapsedTime = (double) nanoElapsedTime / 1.0E9;
                 _app.onUpdate(elapsedTime);
+
+                //Synchronized call to get events and forward to application
                 List<TouchEvent> evs = _input.getTouchEvents();
                 for (TouchEvent ev : evs) {
                     _app.onEvent(ev);
                 }
+                //We try to render in a loop because swing's swap buffer can fail
                 do {
                     _graphics.clear(0xFFFFFFFF);
                     _app.onRender();
                 }while(_graphics.swapBuffers());
-
             }
+            //running has been set to false, either we
             _app.onExit();
 
+            //if we have a requested next app, then set running to true and switch to it
             if (_nextApp != null) {
                 _app = _nextApp;
                 _nextApp = null;
-            } else
-                break;
+                running = true;
+            }
         }
         _graphics.release();
     }
@@ -67,20 +106,6 @@ public class Engine implements IEngine {
     @Override
     public void exit() {
         running = false;
-    }
-
-    @Override
-    public IGraphics getGraphics() {
-        return _graphics;
-    }
-
-    public Input getInput() {
-        return _input;
-    }
-
-    @Override
-    public IAudio getAudio() {
-        return _audio;
     }
 
     @Override
@@ -94,12 +119,25 @@ public class Engine implements IEngine {
         if (Desktop.isDesktopSupported()) {
             try {
                 Desktop.getDesktop().browse(new URI(url));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         }
         else System.err.println("Could not open url: "+url);
+    }
+
+
+    /***********
+     * Getters *
+     ***********/
+
+    @Override
+    public IGraphics getGraphics() {
+        return _graphics;
+    }
+
+    @Override
+    public IAudio getAudio() {
+        return _audio;
     }
 }

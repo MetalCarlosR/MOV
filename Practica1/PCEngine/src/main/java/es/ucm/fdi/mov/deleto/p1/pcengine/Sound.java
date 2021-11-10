@@ -13,21 +13,22 @@ import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 
 public class Sound implements ISound {
 
+    /**
+     * Internal javax.sound clip
+     */
     Clip _clip = null;
+
+    /**
+     * Tries to create a sound via filepath
+     * @param file the path where the sound file should be contained
+     */
     public Sound(String file) {
         AudioInputStream inputStream = null;
         try {
             inputStream = AudioSystem.getAudioInputStream(new File(file).getAbsoluteFile());
             _clip = AudioSystem.getClip();
             _clip.open(inputStream);
-        } catch (UnsupportedAudioFileException e) {
-            System.err.println("Couldn't load audio file " + file);
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.err.println("Couldn't load audio file " + file);
-            e.printStackTrace();
-        }
-        catch (LineUnavailableException e) {
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             System.err.println("Couldn't load audio file " + file);
             e.printStackTrace();
         }
