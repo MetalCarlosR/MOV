@@ -134,7 +134,7 @@ public class GridGenerator {
         for (int i = 0; i < solver._dirs.size(); i++) {
             // and search if adding to blue the cell, will exceed the neighbours of one of its neighbours
             for (int j = 0; j < solver._grid.getSize(); j++) {
-                Cell ady = solver._grid.getCell(c._x + solver._dirs.get(i).x() * j, c._y + solver._dirs.get(i).y() * j);
+                Cell ady = solver._grid.getCell(c._col + solver._dirs.get(i).x() * j, c._row + solver._dirs.get(i).y() * j);
                 if(ady != null){
                     // if one of them exceeds the maximum, the cell is reset
                     if(solver.visibleNeighbours(ady) > solver._grid.getSize()){
@@ -175,8 +175,8 @@ public class GridGenerator {
             }
             else{
                 // if there are still clues, keep following them until the game is over or there isnt any
-                int x = clue.getCorrectState()._x;
-                int y = clue.getCorrectState()._y;
+                int x = clue.getCorrectState()._col;
+                int y = clue.getCorrectState()._row;
                 Cell c = solver._grid.getCell(x,y);
                 if(!c.isLocked()){
                     solver._visibleCells.remove(c);
@@ -185,7 +185,7 @@ public class GridGenerator {
                 else{
                     // if the clue returns a locked cell to edit
                     System.err.println("La pista debería ser editable: ");
-                    System.err.println(c._x + " " + c._y);
+                    System.err.println(c._col + " " + c._row);
                     System.err.println(clue.getMessage());
                 }
 
@@ -245,7 +245,7 @@ public class GridGenerator {
     {
         for(Vec2<Integer> d:solver._dirs)
         {
-            Cell next = solver._grid.getCell(c._x+d.x(), c._y+d.y());
+            Cell next = solver._grid.getCell(c._col +d.x(), c._row +d.y());
             if(next!=null && next.getState() != Cell.State.Red)
                 return  false;
         }

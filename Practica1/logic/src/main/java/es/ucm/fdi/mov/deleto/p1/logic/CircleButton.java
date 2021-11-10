@@ -6,15 +6,14 @@ public class CircleButton implements IClickable{
     int _posX;
     int _posY;
     int _rad;
-    ICallable _callback;
 
-    public  CircleButton(ICallable callback){
-        _callback = callback;
-    }
+    public  CircleButton(){}
 
     public int getRad() {
         return _rad;
     }
+
+    public void onClick(){}
 
     @Override
     public boolean clicked(int x, int y) {
@@ -23,8 +22,7 @@ public class CircleButton implements IClickable{
         double mag = (Math.sqrt((dX*dX) + (dY*dY)));
 
         if(_rad >= mag) {
-            if(_callback != null)
-                _callback.call();
+            onClick();
             return  true;
         }
         else

@@ -8,7 +8,6 @@ import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
-import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
@@ -35,7 +34,7 @@ public class OhY3s implements IApplication {
     float _dotAlpha = 1;
     Cell.State _dotState;
 
-    //Debug only
+    //The current cell we are focused on
     Cell _focusedCell = null;
 
     //Random messages to show on level correctly completed
@@ -236,6 +235,7 @@ public class OhY3s implements IApplication {
             return false;
         }
 
+        //Whether we click on a clue or undo, last focused cell must be reset
         if(_focusedCell !=null)
             _focusedCell.unfocus();
 
@@ -276,7 +276,7 @@ public class OhY3s implements IApplication {
                 _focusedCell = clue.getCell();
                 _focusedCell.focus();
                 if (clue.getCorrectState() != null) {
-                    _grid.debugCell = _grid.getCell(clue.getCorrectState()._x, clue.getCorrectState()._y);
+                    _grid.debugCell = _grid.getCell(clue.getCorrectState()._col, clue.getCorrectState()._row);
                     _dotState = clue.getCorrectState().getState();
                 }
                 _dotAlpha = 0;
@@ -294,7 +294,7 @@ public class OhY3s implements IApplication {
         _messageScale = 0.5f;
 
         if(undo != null){
-            _focusedCell = _grid.getCell(undo._x, undo._y);
+            _focusedCell = _grid.getCell(undo._col, undo._row);
             _focusedCell.focus();
             Cell.State state = undo.getState();
             _currentMessage = String.format("This tile was reversed to %s",

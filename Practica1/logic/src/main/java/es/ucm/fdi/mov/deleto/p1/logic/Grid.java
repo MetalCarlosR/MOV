@@ -9,13 +9,11 @@ import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Grid {
-
-
     /*********
      * Logic *
      *********/
     //Grid internal representation
-    private Cell[][] _cells;
+    private final Cell[][] _cells;
 
     //Size of puzzle, mount of cells will be _size*_size because its always a square
     private int _size = 0;
@@ -105,13 +103,17 @@ public class Grid {
         _originX = (_padding /2 + BORDER/2);
         _originY = logicHeight / 8 + BORDER;
 
+        //Set common scale and opacity for this set of cells
+        Cell.setScale(r/((double)(logicWidth -4* _padding)/(4*2)));
+        Cell.setOpacity(1);
+
         //We compute the position for each cell only once on logic coordinates
         for(int i = 0; i < _size; i++) {
             int y = (_originY+(i)*(r*2)+ _padding *i)+r;
             for(int j = 0; j < _size; j++)
             {
                 int x = (_originX+(j)*(r*2)+ _padding *j)+r;
-                getCell(j,i).setTransform(x,y,r,r/((double)(logicWidth -4* _padding)/(4*2)));
+                getCell(j,i).setTransform(x,y,r);
             }
         }
     }
@@ -162,33 +164,27 @@ public class Grid {
      *
      * @param x the x axis position of the cell to click
      * @param y the y axis position of the cell to click
-     * @return whether we clicked on a free cell a locked cell or outside its radius
+     * @return whether we clicked on a free cell a locked cell or a free one
      */
     public ClickResult clickCell(int x, int y) {
         Cell c = getCell(x,y);
-        if(c!=null)
-        {
-            //If we clicked on a locked cell, we animated it and report back
-            if(getCell(x, y).isLocked()){
-                getCell(x,y).showLockedGraphics();
-                return  ClickResult.LOCKED;
-            }
-            //If it wasn't locked we update de undo stack and then te cell and percentage
-            else {
-                Cell first = undoStack.peekFirst();
-                if (first == null || first._x != x || first._y != y)
-                    undoStack.addFirst(new Cell(c._x, c._y, c.getState()));
-                getCell(x,y).changeState();
-                Cell.State state = getCell(x, y).getState();
-                if(state == Cell.State.Grey)
-                    _clicked--;
-                else if(state == Cell.State.Blue) _clicked++;
-
-                _percentage =  (100 * _clicked) / _gridSolver._freeCells;
-                return ClickResult.FREE;
-            }
+        if(getCell(x, y).isLocked()){
+            return  ClickResult.LOCKED;
         }
-        return ClickResult.MISSED;
+        //If it wasn't locked we update de undo stack and then te cell and percentage
+        else {
+            Cell first = undoStack.peekFirst();
+            if (first == null || first._col != x || first._row != y)
+                undoStack.addFirst(new Cell(c._col, c._row, c.getPreviousState()));
+
+            Cell.State state = getCell(x, y).getState();
+            if(state == Cell.State.Grey)
+                _clicked--;
+            else if(state == Cell.State.Blue) _clicked++;
+
+            _percentage =  (100 * _clicked) / _gridSolver._freeCells;
+            return ClickResult.FREE;
+        }
     }
 
     /**
@@ -241,6 +237,7 @@ public class Grid {
                 //We compute how far into the transition we are, and get the opacity by inverting it
                 double TRANSITION_TARGET_TIME = 2;
                 opacity = 1 - ((_actualTransitionTime- TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
+                Cell.setOpacity(opacity);
                 //On transition completed we call the transition callback
                 if(opacity<= 0)
                 {
@@ -250,12 +247,10 @@ public class Grid {
                 }
             }
         }
-        //Forward call so each cell can update it's animations
+        //Forward call so each cell can update its animations
         for(Cell[] line : _cells)
             for(Cell c : line) {
                 c.onUpdate(deltaTime);
-                if(_startTransition)
-                    c.setOpacity(opacity);
             }
     }
 
@@ -277,7 +272,7 @@ public class Grid {
             return null;
 
         Cell c = undoStack.removeFirst();
-        Cell cReal = getCell(c._x, c._y);
+        Cell cReal = getCell(c._col, c._row);
 
         Cell.State s = c.getState();
         cReal.setState(s);

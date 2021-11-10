@@ -1,7 +1,11 @@
 package es.ucm.fdi.mov.deleto.p1.androidEngine;
 
 import android.content.Context;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
@@ -51,22 +55,20 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     public void setScreenSize(int x, int y)
     {
-        int realWidth = x;
-        int realHeight = y;
         //We try width, then height
-        int expectedHeight = (int)((_logicH *realWidth)/ (float)_logicW);
-        int expectedWidth  = (int)((_logicW *realHeight)/ (float)_logicH);
+        int expectedHeight = (int)((_logicH * x)/ (float)_logicW);
+        int expectedWidth  = (int)((_logicW * y)/ (float)_logicH);
 
         int barWidth = 0;
         int barHeight = 0;
 
-        if(realHeight >= expectedHeight) {
-            barHeight = (realHeight - expectedHeight) / 2;
-            _scale = realWidth/(float)_logicW;
+        if(y >= expectedHeight) {
+            barHeight = (y - expectedHeight) / 2;
+            _scale = x /(float)_logicW;
         }
         else {
-            barWidth = (realWidth - expectedWidth) / 2;
-            _scale = realHeight/(float)_logicH;
+            barWidth = (x - expectedWidth) / 2;
+            _scale = y /(float)_logicH;
         }
         _translateX=barWidth;
         _translateY=barHeight;
@@ -80,18 +82,17 @@ public class Graphics extends SurfaceView implements IGraphics {
     @Override
     public int getLogicWidth()
     {
-        return 400;
+        return _logicW;
     }
 
     @Override
     public int getLogicHeight()
     {
-        return  600;
+        return  _logicH;
     }
 
     @Override
     public void setOpacity(float opacity) {
-        //_opacity= Math.min(1,Math.max(0,opacity));
         _opacity = opacity;
     }
 
