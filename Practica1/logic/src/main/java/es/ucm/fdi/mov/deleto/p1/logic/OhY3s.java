@@ -241,11 +241,9 @@ public class OhY3s implements IApplication {
 
         switch (action){
             case CLUE:
-                _engine.getAudio().createAndPlay("Clue.wav");
                 handleNewClue();
                 break;
             case UNDO:
-                _engine.getAudio().createAndPlay("Undo.wav");
                 handleUndo();
                 break;
             case CLOSE:
@@ -282,6 +280,7 @@ public class OhY3s implements IApplication {
                     _dotState = clue.getCorrectState().getState();
                 }
                 _dotAlpha = 0;
+                _engine.getAudio().createAndPlay("Clue.wav");
             }
         }
     }
@@ -301,10 +300,14 @@ public class OhY3s implements IApplication {
             _currentMessage = String.format("This tile was reversed to %s",
                     state == Cell.State.Grey ? "it's\nempty state." :
                             state == Cell.State.Blue ?  "blue.":"red.");
+
             _dotState = state;
+            _engine.getAudio().createAndPlay("Undo.wav");
         }
-        else
+        else{
             _currentMessage = "Nothing to undo.";
+            _engine.getAudio().createAndPlay("ClueFail.wav");
+        }
     }
 
 

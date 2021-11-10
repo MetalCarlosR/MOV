@@ -16,6 +16,7 @@ public class Engine implements IEngine, Runnable {
 
     Graphics _graphics;
     Input _input;
+    Audio _audio;
 
 
     volatile Boolean _running = true;
@@ -29,6 +30,7 @@ public class Engine implements IEngine, Runnable {
     {
         _graphics = new Graphics(context, assetsPath);
         _input = new Input(_graphics);
+        _audio = new Audio(context.getAssets(),assetsPath);
         _app = app;
         _exitFunction = exit;
     }
@@ -114,7 +116,7 @@ public class Engine implements IEngine, Runnable {
 
     @Override
     public IAudio getAudio() {
-        return null;
+        return _audio;
     }
 
     @Override

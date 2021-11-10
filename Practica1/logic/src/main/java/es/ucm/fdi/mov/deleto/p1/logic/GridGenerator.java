@@ -2,7 +2,6 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -10,18 +9,27 @@ import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public class GridGenerator {
 
+    /**
+     * Creates a new grid randomly, and if its not able, loads one from file
+     * @param solver
+     */
     public static void Generate(GridSolver solver){
-        randomize(solver);
-        if(!canBeSolved(solver)){
+        // generates the grid
+        AddRandomBlueCells(solver);
+        if(!CanBeSolved(solver)){
+            // if its not able, load it from file
             solver.reset();
             System.err.println("Couldn't generate a new map...\nLoading one from file");
-            loadGridFromFile("./Assets/examples/ex2.txt",solver);
+            LoadGridFromFile("./Assets/examples/ex2.txt",solver);
         }
+
+        // once its created
         solver._freeCells = 0;
+        // sets the cells to the states and arrays they belong
         for (int i = 0; i < solver._grid.getSize(); i++) {
             for (int j = 0; j < solver._grid.getSize(); j++) {
                 Cell c = solver._grid.getCell(i, j);
-                if(isIsolated(solver, c)){
+                if(IsIsolated(c, solver)){
                     solver._isolated.add(c);
                     solver._fixedCells.remove(c);
                 }
@@ -32,6 +40,7 @@ public class GridGenerator {
                 }
             }
         }
+        // cleans the isolated cells from the algorithm and sets them free
         for(Cell is : solver._isolated){
             if(is.isLocked()){
                 is.unlock();
@@ -41,52 +50,58 @@ public class GridGenerator {
         }
     }
 
-    private static void randomize(GridSolver solver)
+    /**
+     * Adds blue dots randomly into the grid,
+     * following the rules from the game, such as no cell will see more than size blue cells
+     * At the end, there won't be any locked cells yet, only the neighbours of each cell
+     * @param solver must be intialized all cells to red
+     */
+    private static void AddRandomBlueCells(GridSolver solver)
     {
         int size = solver._grid.getSize();
         Random r = new Random();
-        int maxBlue = r.nextInt((int)(size*size*0.3)) + (int)(size*size*0.5);
-//        int maxBlue = r.nextInt(size*size - 2*size);
-        // hacemos esto en un numero aleatorio de veces
-        // primero, elegimos aleatoriamente casillas, y le damos un numero aleatorio de vecinos
-        // tenemos que actualizar los vecinos de las nuevas casillas
+        int maxBlue = (int)((r.nextFloat()*0.3f + 0.5)*size*size);
 
-        // pinta maxBlue de azules
+        // paint maxBlue cells of blue
         while(maxBlue > 0){
             int x = r.nextInt(size);
             int y = r.nextInt(size);
             Cell originalCell = solver._grid.getCell(x, y);
-            if(!tryBlue(originalCell,solver)) {
+            // try setting blue the cell you are on
+            if(!TryBlue(originalCell,solver)) {
                 continue;
             }
-            // para que vaya de 1 al max
-            int n = r.nextInt(size-1)+1;
-            ArrayList<Vec2<Integer>> list = new ArrayList<>(solver._dirs);
+            // number of neighbours of this cell
+            int totalNeighOfCell = r.nextInt(size-1)+1;
+            int initialTotalNeighs = totalNeighOfCell;
             int j = 0;
-            // intenta pintar en las 4 direcciones n azules
-            while(n > 0 && j < 4 && maxBlue > 0){
-                int m = 0;
-                if(n > 1) {
-                    m = r.nextInt(n-1)+1;
+            // try painting in blue a random number of cells in each direction
+            while(totalNeighOfCell > 0 && j < 4 && maxBlue > 0){
+                int totalNeighsInDir = 0;
+                if(totalNeighOfCell > 1) {
+                    totalNeighsInDir = r.nextInt(totalNeighOfCell-1)+1;
                 }
-                else m = 1;
-                Vec2<Integer> dir = list.get(j);
-                //si cambio en la que estoy... lo jodo?
-                // primero pinta de azul los que necesite
+                else totalNeighsInDir = 1;
+                Vec2<Integer> dir = solver._dirs.get(j);
                 int step = 1;
-                while(step <= m){
+                while(step <= totalNeighsInDir){
                     Cell c = solver._grid.getCell(x+(dir.x()*step), y+(dir.y() * step));
-                    //if(c == null || getCell(c._x + dir.x(), c._y + dir.y()).getNeigh() == size)
-                    if(c != null && tryBlue(c,solver)){
+                    // if its able to change to blue, do it, and try again
+                    if(c != null && TryBlue(c,solver)){
                         step++;
                         maxBlue--;
                     }
+                    // if not, this direction is not longer an option
                     else break;
                 }
                 j++;
-                n -= (step-1);
+                totalNeighOfCell -= (step-1);
             }
+            // if it couldn't add any neighbour, reset the cell
+            if(initialTotalNeighs == totalNeighOfCell)
+                originalCell.setState(Cell.State.Red);
         }
+        // after setting the state of each cell, we must update the neighbour of every cell
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 Cell c = solver._grid.getCell(j, i);
@@ -96,6 +111,7 @@ public class GridGenerator {
                 }
             }
         }
+        // and we need to reset the visible cells to a grey state for the next step
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 Cell c = solver._grid.getCell(j, i);
@@ -106,12 +122,21 @@ public class GridGenerator {
         }
     }
 
-    private static boolean tryBlue(Cell c, GridSolver solver){
+    /**
+     * Try setting one cell to blue if its neighbours allow it
+     * @param c the cell that will be tested
+     * @param solver the grid to chek if it can be blue
+     * @return
+     */
+    private static boolean TryBlue(Cell c, GridSolver solver){
         c.setState(Cell.State.Blue);
+        // searches in all 4 directions
         for (int i = 0; i < solver._dirs.size(); i++) {
+            // and search if adding to blue the cell, will exceed the neighbours of one of its neighbours
             for (int j = 0; j < solver._grid.getSize(); j++) {
                 Cell ady = solver._grid.getCell(c._x + solver._dirs.get(i).x() * j, c._y + solver._dirs.get(i).y() * j);
                 if(ady != null){
+                    // if one of them exceeds the maximum, the cell is reset
                     if(solver.visibleNeighbours(ady) > solver._grid.getSize()){
                         c.setState(Cell.State.Red);
                         return false;
@@ -122,15 +147,22 @@ public class GridGenerator {
         return true;
     }
 
-    public static boolean canBeSolved(GridSolver solver)
+    /**
+     * Checks if a puzzle can be solved, following the tips a player would receive
+     * @param solver
+     * @return
+     */
+    public static boolean CanBeSolved(GridSolver solver)
     {
         Random r = new Random();
         boolean solved = false;
 
+        // while the game isn't solved yet
         while(!solved){
             Clue clue = solver.getClue();
+            // see if there is any clue remaining
             if(clue == null || clue.getCorrectState() == null){
-                // si no hay pista, añadir una nueva celda gris como locked
+                // if there is not any new clue, add a new grey cell as locked
                 int rand = r.nextInt(solver._visibleCells.size());
                 Cell c = solver._visibleCells.get(rand);
                 c.lock();
@@ -142,7 +174,7 @@ public class GridGenerator {
                 solver._fixedCells.add(c);
             }
             else{
-                // hacerle caso a la pista e intentar resolverlo
+                // if there are still clues, keep following them until the game is over or there isnt any
                 int x = clue.getCorrectState()._x;
                 int y = clue.getCorrectState()._y;
                 Cell c = solver._grid.getCell(x,y);
@@ -151,6 +183,7 @@ public class GridGenerator {
                     c.setState(clue.getCorrectState().getState());
                 }
                 else{
+                    // if the clue returns a locked cell to edit
                     System.err.println("La pista debería ser editable: ");
                     System.err.println(c._x + " " + c._y);
                     System.err.println(clue.getMessage());
@@ -164,8 +197,16 @@ public class GridGenerator {
         return c == null || c.getCorrectState() == null;
     }
 
-
-    private static void loadGridFromFile(String file, GridSolver solver) {
+    /**
+     * Loads a grid from file
+     * The file format must be a size number of lines which contains the information for each cell
+     * separated by spaces.
+     * Each cell will be formated like:
+     * "3f" or "2l" the number representing the neighbours and the f to indicate if its free, and l if its locked
+     * @param file file name with the puzzle
+     * @param solver grid in which it will be stored
+     */
+    private static void LoadGridFromFile(String file, GridSolver solver) {
         File inputFile = new File(file);
         try (Scanner reader = new Scanner(inputFile)){
             int i = -1;
@@ -193,7 +234,14 @@ public class GridGenerator {
             throw new RuntimeException("Map generation not implemented yet");
         }
     }
-    private static boolean isIsolated(GridSolver solver, Cell c)
+
+    /**
+     * Checks if a cell is isolated from the rest, meaning, no other cell is able to see it
+     * @param c The cell to check
+     * @param solver The rest of the grid
+     * @return
+     */
+    private static boolean IsIsolated(Cell c, GridSolver solver)
     {
         for(Vec2<Integer> d:solver._dirs)
         {
