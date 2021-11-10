@@ -8,11 +8,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
@@ -21,6 +19,7 @@ import javax.swing.WindowConstants;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
 public class Graphics implements IGraphics {
 
@@ -136,13 +135,13 @@ public class Graphics implements IGraphics {
     }
 
     @Override
-    public void setResolution(int x, int y) {
-        _window.setSize(x,y);
+    public void setResolution(int width, int height) {
+        _window.setSize(width, height);
 
-        _refWidth  = x;
-        _refHeight = y;
+        _refWidth  = width;
+        _refHeight = height;
 
-        _refFactor = (double)x/(double)y;
+        _refFactor = (double) width /(double) height;
 
     }
     public JFrame getWindow(){return  _window;};
@@ -196,7 +195,6 @@ public class Graphics implements IGraphics {
         return repeat;
     }
 
-    @Override
     public void clear(int color) {
         _size = _window.getSize();
         Color aux = _color;

@@ -1,10 +1,5 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
-import java.io.IOException;
-
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 
@@ -17,11 +12,11 @@ public class Audio implements IAudio {
     }
 
     @Override
-    public ISound newSound(String file){
-        return new Sound(_path +"audio/"+ file);
+    public ISound newSound(String filePath){
+        return new Sound(_path +"audio/"+ filePath);
     }
 
-    public void createAndPlay(String file){
-        newSound(file).play();
+    public void createAndPlay(String filePath){
+        newSound(filePath).play();
     }
 }

@@ -16,12 +16,12 @@ public class Audio implements IAudio {
     }
 
     @Override
-    public ISound newSound(String file) {
-        return new Sound(_am,_path +"audio/"+ file);
+    public ISound newSound(String filePath) {
+        return new Sound(_am,_path +"audio/"+ filePath);
     }
 
     @Override
-    public void createAndPlay(String file) {
-        newSound(file).play();
+    public void createAndPlay(String filePath) {
+        newSound(filePath).play();
     }
 }

@@ -1,5 +1,9 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
+/**
+ * Simple Vec2 class that contains 2 numbers
+ * @param <T> number type to hold
+ */
 public class Vec2 <T extends Number> {
 
     private T _x;

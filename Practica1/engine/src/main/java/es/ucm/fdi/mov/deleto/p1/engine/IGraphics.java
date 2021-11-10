@@ -1,36 +1,105 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
-
-import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
-
+/**
+ * Graphics Engine interface for platform independent simple rendering needs
+ */
 public interface IGraphics {
 
-    public int getLogicWidth();
+    /**
+     * Our graphics engine will be given a "logic" canvas size that the application will use
+     * independent of real coordinates. We will scale to fit application with margins either up and
+     * down or left and right, based on which fits best.
+     */
 
-    public int getLogicHeight();
+    /**
+     * Sets the logic canvas size
+     * @param width width of the canvas
+     * @param height height of the canvas
+     */
+    void setResolution(int width, int height);
 
-    public void setResolution(int x, int y);
+    /**
+     * Getters for width and height
+     */
+    int getLogicHeight();
+    int getLogicWidth();
 
-    public void setOpacity(float opacity);
 
-    public void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY);
+    /**
+     * Sets the opacity for all subsequent rendering requests
+     * @param opacity a value between 0 and 1, where 0 means fully transparent and 1 fully opaque
+     */
+    void setOpacity(float opacity);
 
-    public void clear(int color);
+    /**
+     * Draws an image on the position given with specified scale factors
+     * undefined behaviour if scale = 0
+     *
+     * @param image image to draw
+     * @param posX x canvas coordinate
+     * @param posY y canvas coordinate
+     * @param scaleX horizontal scale factor
+     * @param scaleY vertical scale factor
+     */
+    void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY);
 
-    public void setColor(int color);
+    /**
+     * Sets color for subsequent rendering calls
+     * @param color
+     */
+    void setColor(int color);
 
-    public void setFont(IFont font);
+    /**
+     * Sets the font for subsequent draw text calls
+     * @param font
+     */
+    void setFont(IFont font);
 
-    public void fillCircle(int x, int y, double r);
+    /**
+     * Draws a circle filled with the actual color
+     * @param x horizontal coordinate of circle's center
+     * @param y vertical coordinate of circle's center
+     * @param r circle's radius
+     */
+    void fillCircle(int x, int y, double r);
 
-    public void fillRect(int x, int y, int w, int h);
+    /**
+     * Draws a rectangle filled with the actual color
+     * @param x horizontal coordinate of rectangle's center
+     * @param y vertical coordinate of rectangle's center
+     * @param w width of whole rectangle
+     * @param h height of whole rectangle
+     */
+    void fillRect(int x, int y, int w, int h);
 
-    public Vec2<Integer> drawText(String text, int x, int y);
+    /**
+     * Draws given string with currently selected font
+     * @param text string to render
+     * @param x horizontal center
+     * @param y vertical center
+     * @param scale scale to apply to currently selected font
+     * @return the last character drawn position in logical coordinates
+     */
+    Vec2<Integer> drawText(String text, int x, int y, double scale);
 
-    // Pair<Integer, Integer>
-    public Vec2<Integer> drawText(String text, int x, int y, double scale);
+    /**
+     * Same as drawText but with 1.0 scale
+     */
+    Vec2<Integer> drawText(String text, int x, int y);
 
-    public IImage newImage(String name);
+    /**
+     * Factory method to create an Image object
+     * @param name path to requested image
+     * @return an IImage interface object
+     */
+    IImage newImage(String name);
 
-    public IFont newFont(String fileName, int size, boolean isBold);
+    /**
+     * Factory method to create a Font object
+     * @param fileName path to requested font
+     * @param size size in ppt of font to load
+     * @param isBold whether the font should be created in bold form or not
+     * @return an IImage IFont object
+     */
+    IFont newFont(String fileName, int size, boolean isBold);
 }

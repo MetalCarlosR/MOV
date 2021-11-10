@@ -1,12 +1,21 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
-import java.io.IOException;
-
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
+/**
+ * Audio Engine interface for platform independent simple audio playing needs
+ */
 public interface IAudio {
-    public ISound newSound(String file);
 
-    public void createAndPlay(String file);
+    /**
+     * Constructs a sound from given path.
+     * Use this, for example, for pre-loading large music files on application init.
+     * @param filePath path to sound file
+     * @return
+     */
+    public ISound newSound(String filePath);
+
+    /**
+     * Creates as in newSound but plays immediately, use this for small sound effects
+     * @param filePath path to sound file
+     */
+    public void createAndPlay(String filePath);
 }

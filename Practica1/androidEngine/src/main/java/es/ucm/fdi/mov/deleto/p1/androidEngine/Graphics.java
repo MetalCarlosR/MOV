@@ -1,11 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.androidEngine;
 
 import android.content.Context;
-import android.graphics.BlendMode;
-import android.graphics.BlendModeColorFilter;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
@@ -75,9 +71,9 @@ public class Graphics extends SurfaceView implements IGraphics {
     }
 
     @Override
-    public void setResolution(int x, int y) {
-        _logicW = x;
-        _logicH = y;
+    public void setResolution(int width, int height) {
+        _logicW = width;
+        _logicH = height;
     }
     @Override
     public int getLogicWidth()
@@ -106,7 +102,6 @@ public class Graphics extends SurfaceView implements IGraphics {
         _canvas.drawBitmap(im.getScaled(width, height), (posX)-width/(float)2, (posY)-height/(float)2, _currentPaint);
     }
 
-    @Override
     public void clear(int color) {
         int prev = _currentPaint.getColor();
         _currentPaint.setColor(color);

@@ -168,7 +168,7 @@ public class OhY3s implements IApplication {
         //We ignore all types different than release.
         //Possible improvement: process both click and release and act accordingly on each,
         //animate click and act on release
-        if(event.get_type() == TouchEvent.EventType.RELEASE)
+        if(event.type() == TouchEvent.EventType.RELEASE)
         {
             if(clickOnGrid(event))
                 return;
@@ -184,7 +184,7 @@ public class OhY3s implements IApplication {
      */
     private boolean clickOnGrid(TouchEvent event)
     {
-        Grid.ClickResult res = _grid.processClick(event.get_x(),event.get_y());
+        Grid.ClickResult res = _grid.processClick(event.x(),event.y());
         if(res != Grid.ClickResult.MISSED)
         {
             _currentMessage = "";
@@ -204,7 +204,7 @@ public class OhY3s implements IApplication {
      */
     private void checkWin()
     {
-        if(_grid.getPercentage() == 100) {
+        if(_grid.getPercentage() >= 100) {
             if (_grid.checkWin()) {
                 _currentMessage = WIN_MESSAGES[new Random().nextInt(WIN_MESSAGES.length)];
                 _messageScale = 1;
@@ -230,7 +230,7 @@ public class OhY3s implements IApplication {
 
     private  boolean clickOnBottomBar(TouchEvent event)
     {
-        UIBar.Action action = _bar.HandleClick(event.get_x(),event.get_y());
+        UIBar.Action action = _bar.HandleClick(event.x(),event.y());
         if(action == UIBar.Action.NO_ACTION) {
             return false;
         }

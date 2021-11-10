@@ -6,10 +6,9 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
-public class Input implements IInput {
+public class Input  {
     ArrayList<TouchEvent> _events;
     float _scale = 1;
     int _offX;
@@ -34,14 +33,12 @@ public class Input implements IInput {
         _offY=offY;
     }
 
-    @Override
     public synchronized List<TouchEvent> getTouchEvents() {
         List<TouchEvent> events = new ArrayList<>(_events);
         _events.clear();
         return events;
     }
 
-    @Override
     public synchronized void newTouchEvent(TouchEvent event) {
         _events.add(event);
     }

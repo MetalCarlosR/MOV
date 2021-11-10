@@ -81,7 +81,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _creditButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()-132,200,36) {
             @Override
             protected void clickCallback() {
-                _engine.openWeb("https://github.com/MetalCarlosR/MOV/tree/main/Practica1");
+                _engine.openURL("https://github.com/MetalCarlosR/MOV/tree/main/Practica1");
             }
         };
 
@@ -116,11 +116,11 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public void onEvent(TouchEvent event) {
         //We ignore all non release buttons
         //Possible improvements adding hover, click and release callbacks to buttons
-        if(event.get_type() != TouchEvent.EventType.RELEASE)
+        if(event.type() != TouchEvent.EventType.RELEASE)
             return;
 
-        int x = event.get_x();
-        int y = event.get_y();
+        int x = event.x();
+        int y = event.y();
 
         //On Initial state check the 'Start Game' and 'Credit button'
         if(_state == State.Initial)

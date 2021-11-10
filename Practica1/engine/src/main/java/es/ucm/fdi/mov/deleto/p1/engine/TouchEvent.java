@@ -1,5 +1,8 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
+/**
+ * Simple touch event that encapsulates both computer clicks and touch-devices taps
+ */
 public class TouchEvent {
 
     public enum EventType {
@@ -7,6 +10,8 @@ public class TouchEvent {
         RELEASE,
         SLIDE
     }
+    // Type of event
+    EventType _type;
 
     // Position in screen
     int _x;
@@ -14,10 +19,7 @@ public class TouchEvent {
 
     // Id of the button ( or finger) used
     int _id;
-
-    // Type of event
-    EventType _type;
-
+    
     public TouchEvent(EventType type, int x, int y, int id){
         _type = type;
         _x = x;
@@ -25,19 +27,22 @@ public class TouchEvent {
         _id = id;
     }
 
-    public EventType get_type() {
+    /***********
+     * Getters *
+     ***********/
+    public EventType type() {
         return _type;
     }
 
-    public int get_x() {
+    public int x() {
         return _x;
     }
 
-    public int get_y() {
+    public int y() {
         return _y;
     }
 
-    public int get_id() {
+    public int id() {
         return _id;
     }
 }

@@ -60,7 +60,7 @@ public class GridGenerator {
     {
         int size = solver._grid.getSize();
         Random r = new Random();
-        int maxBlue = (int)((r.nextFloat()*0.3f + 0.5)*size*size);
+        int maxBlue = (int)(0.8*size*size);
 
         // paint maxBlue cells of blue
         while(maxBlue > 0){

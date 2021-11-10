@@ -6,13 +6,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import javax.swing.JFrame;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
-import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Engine implements IEngine {
@@ -76,8 +74,7 @@ public class Engine implements IEngine {
         return _graphics;
     }
 
-    @Override
-    public IInput getInput() {
+    public Input getInput() {
         return _input;
     }
 
@@ -93,7 +90,7 @@ public class Engine implements IEngine {
     }
 
     @Override
-    public void openWeb(String url) {
+    public void openURL(String url) {
         if (Desktop.isDesktopSupported()) {
             try {
                 Desktop.getDesktop().browse(new URI(url));

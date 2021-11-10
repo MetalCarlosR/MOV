@@ -11,7 +11,6 @@ import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
-import es.ucm.fdi.mov.deleto.p1.engine.IInput;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Engine implements IEngine, Runnable {
@@ -40,7 +39,7 @@ public class Engine implements IEngine, Runnable {
     }
 
     @Override
-    public void openWeb(String url) {
+    public void openURL(String url) {
         _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
@@ -118,8 +117,7 @@ public class Engine implements IEngine, Runnable {
         return _graphics;
     }
 
-    @Override
-    public IInput getInput() {
+    public Input getInput() {
         return _input;
     }
 
