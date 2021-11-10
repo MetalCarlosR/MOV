@@ -34,6 +34,12 @@ public class Grid {
     private boolean _startTransition = false;
     private ICallable _onTransition;
 
+    public enum ClickResult{
+        MISSED,
+        FREE,
+        LOCKED
+    }
+
     public Grid(){
         _startTransition = false;
         _gridSolver = new GridSolver(this);
@@ -79,7 +85,7 @@ public class Grid {
         return _percentage;
     }
 
-    public boolean processClick(int x, int y)
+    public ClickResult processClick(int x, int y)
     {
         int r = getCell(0,0).getRad();
 
@@ -92,12 +98,11 @@ public class Grid {
             int heightEach = widthEach;
             int arrayX = (x - _originX)/widthEach;
             int arrayY = (y - _originY)/heightEach;
-
-            if (getCell(arrayX,arrayY).clicked(x ,y))
-                    clickCell(arrayX,arrayY);
-            return true;
+            Cell c = getCell(arrayX,arrayY);
+            if (c != null && c.clicked(x ,y))
+                   return clickCell(arrayX,arrayY);
         }
-        return  false;
+        return ClickResult.MISSED;
     }
 
     public void draw(IFont font, IImage lock){
@@ -143,12 +148,14 @@ public class Grid {
             }
     }
 
-    public void clickCell(int x, int y) {
+    public ClickResult clickCell(int x, int y) {
         Cell c = getCell(x,y);
         if(c!=null)
         {
-            if(getCell(x, y).isLocked())
+            if(getCell(x, y).isLocked()){
                 getCell(x,y).showLockedGraphics();
+                return  ClickResult.LOCKED;
+            }
             else {
                 Cell first = undoStack.peekFirst();
                 if (first == null || first._x != x || first._y != y)
@@ -160,8 +167,10 @@ public class Grid {
                 else if(state == Cell.State.Blue) _clicked++;
 
                 _percentage =  (100 * _clicked) / _gridSolver._freeCells;
+                return ClickResult.FREE;
             }
         }
+        return ClickResult.MISSED;
     }
 
     public Clue getClue(){

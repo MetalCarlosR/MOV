@@ -8,5 +8,7 @@ public interface IEngine {
 
     public IInput getInput();
 
+    public IAudio getAudio();
+
     public void changeApp(IApplication newApp);
 }

@@ -8,6 +8,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
@@ -21,6 +22,7 @@ public class OhY3s implements IApplication {
     IFont _font;
     IFont _title;
     IFont _subtitle;
+    ISound _click;
 
     String _currentMessage = "";
     float _messageScale = 1f;
@@ -45,6 +47,7 @@ public class OhY3s implements IApplication {
         _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",64,true);
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",60,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
+        _click = _engine.getAudio().newSound("Click.wav");
         _engine.getGraphics().setFont(_font);
         _bar.init(_engine.getGraphics());
         _grid.setGraphics(_engine.getGraphics());
@@ -132,10 +135,9 @@ public class OhY3s implements IApplication {
     public void onEvent(TouchEvent event) {
         if(event.get_type() == TouchEvent.EventType.RELEASE)
         {
-            if(clickOnGrid(event) || clickOnBottomBar(event))
-            {
-                //playUISound() ?
-            }
+            if(clickOnGrid(event))
+                return;
+            clickOnBottomBar(event);
         }
     }
 
@@ -147,18 +149,19 @@ public class OhY3s implements IApplication {
      */
     private boolean clickOnGrid(TouchEvent event)
     {
-        if(_grid.processClick(event.get_x(),event.get_y()))
+        Grid.ClickResult res = _grid.processClick(event.get_x(),event.get_y());
+        if(res != Grid.ClickResult.MISSED)
         {
             _currentMessage = "";
             if(_focusedCell !=null)
                 _focusedCell.unfocus();
             _focusedCell = null;
             _grid.debugCell = null;
+            _engine.getAudio().createAndPlay(res == Grid.ClickResult.FREE ? "Click.wav" : "ClickLock.wav");
             checkWin();
             return true;
         }
-        else
-            return false;
+        return false;
     }
 
     /***
@@ -176,8 +179,11 @@ public class OhY3s implements IApplication {
                         _engine.changeApp(new Menu(Menu.State.SelectSize, _currentMessage));
                     }
                 });
-            } else
+                _engine.getAudio().createAndPlay("Win.wav");
+            } else {
+                _engine.getAudio().createAndPlay("ClueFail.wav");
                 handleNewClue();
+            }
         }
     }
     private  boolean clickOnBottomBar(TouchEvent event)
@@ -192,9 +198,11 @@ public class OhY3s implements IApplication {
 
         switch (action){
             case CLUE:
+                _engine.getAudio().createAndPlay("Clue.wav");
                 handleNewClue();
                 break;
             case UNDO:
+                _engine.getAudio().createAndPlay("Undo.wav");
                 handleUndo();
                 break;
             case CLOSE:

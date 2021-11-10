@@ -5,6 +5,7 @@ import java.util.List;
 import javax.swing.JFrame;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
+import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IInput;
@@ -13,6 +14,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 public class Engine implements IEngine {
     Graphics _graphics;
     Input _input;
+    Audio _audio;
 
     IApplication _app;
     IApplication _nextApp = null;
@@ -22,6 +24,7 @@ public class Engine implements IEngine {
     public Engine(IApplication app, String appName, String assetsPath) {
         _app = app;
         _graphics = new Graphics(appName,assetsPath);
+        _audio = new Audio(assetsPath);
         _input = new Input(_graphics);
     }
 
@@ -72,6 +75,11 @@ public class Engine implements IEngine {
     @Override
     public IInput getInput() {
         return _input;
+    }
+
+    @Override
+    public IAudio getAudio() {
+        return _audio;
     }
 
     @Override

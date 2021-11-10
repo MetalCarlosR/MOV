@@ -6,6 +6,7 @@ import android.util.Log;
 import java.util.List;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
+import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IInput;
@@ -15,6 +16,8 @@ public class Engine implements IEngine, Runnable {
 
     Graphics _graphics;
     Input _input;
+
+
     volatile Boolean _running = true;
     volatile Boolean _closeEngine = false;
     Thread _renderThread = null;
@@ -108,6 +111,11 @@ public class Engine implements IEngine, Runnable {
     @Override
     public IInput getInput() {
         return _input;
+    }
+
+    @Override
+    public IAudio getAudio() {
+        return null;
     }
 
     @Override
