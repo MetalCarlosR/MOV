@@ -28,17 +28,18 @@ public class Graphics extends SurfaceView implements IGraphics {
     int _translateY;
     float _opacity = 1;
 
-    public Graphics(Context context, String appName, String assetPath) {
+    public Graphics(Context context, String assetPath) {
         super(context);
         _currentPaint = new Paint();
         _currentPaint.setFilterBitmap(true);
         _currentPaint.setAntiAlias(true);
+        _currentPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
         _holder = getHolder();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             _canvas = _holder.lockHardwareCanvas();
         }
         else
-            _canvas = _holder.lockCanvas();
+        _canvas = _holder.lockCanvas();
         _assetPath = assetPath;
     }
 

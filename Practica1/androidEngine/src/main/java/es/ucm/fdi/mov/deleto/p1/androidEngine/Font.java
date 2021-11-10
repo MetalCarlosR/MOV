@@ -18,7 +18,7 @@ public class Font implements IFont {
         _bold = bold;
     }
     public android.graphics.Typeface getFont(){return _font;};
-    public boolean isBold(){return _bold;}
+
     @Override
     public int getSize() {
         return _size;

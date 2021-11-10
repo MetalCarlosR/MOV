@@ -24,11 +24,10 @@ public class Engine implements IEngine, Runnable {
     IApplication _app;
     IApplication _nextApp = null;
 
-    String _appName;
     ICallable _exitFunction;
-    public Engine(IApplication app, Context context, String appName, String assetsPath, ICallable exit)
+    public Engine(IApplication app, Context context, String assetsPath, ICallable exit)
     {
-        _graphics = new Graphics(context, appName, assetsPath);
+        _graphics = new Graphics(context, assetsPath);
         _input = new Input(_graphics);
         _app = app;
         _exitFunction = exit;

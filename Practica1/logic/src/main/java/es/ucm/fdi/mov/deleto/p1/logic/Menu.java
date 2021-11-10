@@ -22,8 +22,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public enum State{Initial, SelectSize}
     State _state = State.Initial;
 
-    int _buttonsX[];
-    int _buttonsY[];
+    int[] _buttonsX;
+    int[] _buttonsY;
 
     IEngine _engine;
     public Menu(){

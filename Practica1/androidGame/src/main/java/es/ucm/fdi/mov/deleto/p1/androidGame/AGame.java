@@ -20,7 +20,7 @@ public class AGame extends AppCompatActivity implements  ICallable{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.println(Log.INFO,"[MAIN]", "Initializing Android Game Launcher");
-        _engine = new Engine(new Menu(),this, "OhYes","", this);
+        _engine = new Engine(new Menu(),this, "", this);
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(_engine.getGraphics());

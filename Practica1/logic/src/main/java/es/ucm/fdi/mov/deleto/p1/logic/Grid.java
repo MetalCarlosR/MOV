@@ -10,152 +10,170 @@ import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Grid {
 
-    static int PADDING = 10;
-    static final int BORDER = 30;
 
+    /*********
+     * Logic *
+     *********/
+    //Grid internal representation
     private Cell[][] _cells;
 
+    //Size of puzzle, mount of cells will be _size*_size because its always a square
     private int _size = 0;
+    //Solution percentage
     private int _percentage = 0;
+    //Amount of clicked cells
     private int _clicked = 0;
 
-    private IGraphics _G;
-
-    int _originX;
-    int _originY;
-
-    public Cell debugCell;
-
-    private  GridSolver _gridSolver;
-
+    //GirdSolver is the one in charge of generating clues and a solvable puzzle
+    private final GridSolver _gridSolver;
     private final Deque<Cell> undoStack = new ArrayDeque<>();
 
-    private double _actualTransitionTime;
-    private boolean _startTransition = false;
-    private ICallable _onTransition;
 
+    //Enum for result reporting on grid clicks
     public enum ClickResult{
         MISSED,
         FREE,
         LOCKED
     }
 
-    public Grid(){
+    /************
+     * Graphics *
+     ************/
+
+    //Graphic object for rendering
+    private IGraphics _G;
+
+    //Constants for Cell drawing
+    static final int BORDER = 30;
+    static final int BASE_PADDING = 40; //Based on a 4x4 grid
+    static int _padding = 0;            //Will be set based on grid size
+
+
+    //Image for cells to show locked graphic
+    private IImage _cellLockImage;
+
+    //Where we start rendering the grid buttons
+    int _originX;
+    int _originY;
+
+    //This debug cell helps us indicate where the last clue was generated
+    public Cell debugCell;
+
+    //Transition variables, transition is the animation at the end of each level completion
+    private double _actualTransitionTime;
+    private boolean _startTransition = false;
+    private ICallable _transitionCallback;
+
+
+    /**
+     * Construct a puzzle of size^2 cells. With the help of the gridSolver helper class we ensure
+     * the puzzle to be solvable
+     *
+     * @param size number of cells on each side of the square grid
+     */
+    public Grid(int size){
         _startTransition = false;
         _gridSolver = new GridSolver(this);
-    }
-
-    public void init(int size)
-    {
         _size = size;
         _cells = new Cell[size][size];
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
                 _cells[i][j] = new Cell(j,i, Cell.State.Red);
-            }
-        }
 
-        _gridSolver.init();
-
+        _gridSolver.generateLevel();
         _percentage = 0;
     }
 
-    public void setGraphics(IGraphics graphics) {
+    /**
+     * Sets up all the graphics attributes, loads resources and calculates the transform of each cell.
+     * With transform we mean it's position and scale in logic coordinates. The scale changes between
+     * different board size because we have smaller cells on larger grids.
+     *
+     * @param graphics Abstract engine interface that allows to generate resources and draw in all
+     *                 supported platforms
+     */
+    public void init(IGraphics graphics) {
         _G = graphics;
+        _cellLockImage = graphics.newImage("lock.png");
+
         int logicWidth = graphics.getLogicWidth();
         int logicHeight = graphics.getLogicHeight();
 
-        PADDING = 40/_size;
-        int r = ((logicWidth -BORDER) -_size* PADDING)/(_size*2);
-        _originX = (PADDING /2 + BORDER/2);
+        //compute grid starting position, cell padding and radius based on grid size
+        _padding = BASE_PADDING /_size;
+        int r = ((logicWidth -BORDER) -_size* _padding)/(_size*2);
+        _originX = (_padding /2 + BORDER/2);
         _originY = logicHeight / 8 + BORDER;
 
+        //We compute the position for each cell only once on logic coordinates
         for(int i = 0; i < _size; i++) {
-            int y = (_originY+(i)*(r*2)+ PADDING *i)+r;
+            int y = (_originY+(i)*(r*2)+ _padding *i)+r;
             for(int j = 0; j < _size; j++)
             {
-                int x = (_originX+(j)*(r*2)+ PADDING *j)+r;
-                getCell(j,i).setTransform(x,y,r,r/((double)(logicWidth -4* PADDING)/(4*2)));
+                int x = (_originX+(j)*(r*2)+ _padding *j)+r;
+                getCell(j,i).setTransform(x,y,r,r/((double)(logicWidth -4* _padding)/(4*2)));
             }
         }
     }
 
-
+    /**
+     * Percentage getter
+     * @return the amount of free cells that have been clicked in percentage
+     */
     public int getPercentage(){
         return _percentage;
     }
 
+    /**
+     * We try to process the click to change the state of a cell
+     * @param x the x logical coordinate where the click was produced
+     * @param y the y logical coordinate where the click was produced
+     * @return whether we clicked on a free cell a locked cell or we missed all cells
+     */
     public ClickResult processClick(int x, int y)
     {
         int r = getCell(0,0).getRad();
 
+        //We first check if the click was within the gird
         if( y >= _originY &&
-            y <  _originY+(_size*(2*(r+PADDING))) &&
+            y <  _originY+(_size*(2*(r+ _padding))) &&
             x >= _originX &&
-            x < (400 - (PADDING+BORDER)/2))
+            x < (_G.getLogicWidth() - (_padding +BORDER)/2))
         {
-            int widthEach = (2*r)+PADDING;
-            int heightEach = widthEach;
+            //We get the x and y that would relate to the click if our cells where squares
+            int widthEach = (2*r)+ _padding;
             int arrayX = (x - _originX)/widthEach;
-            int arrayY = (y - _originY)/heightEach;
+            int arrayY = (y - _originY)/widthEach;
+
+
+
+            //We try to click it and let it handle its bounding box.
             Cell c = getCell(arrayX,arrayY);
             if (c != null && c.clicked(x ,y))
                    return clickCell(arrayX,arrayY);
         }
+        //In case we don't click inside the grid
         return ClickResult.MISSED;
     }
 
-    public void draw(IFont font, IImage lock){
-        for(int i = 0; i < _size; i++) {
-            for(int j = 0; j < _size; j++)
-            {
-                if(getCell(j,i) == debugCell)
-                    getCell(j,i).draw(_G, lock, font, 0xffc0c0c0);
-                else
-                    getCell(j,i).draw(_G, lock, font);
-            }
-        }
-
-    }
-
-    public void onUpdate(double deltaTime) {
-        double opacity=1;
-        if(_startTransition)
-        {
-            _actualTransitionTime+=deltaTime;
-            //in seconds
-            double TRANSITION_TARGET_DELAY = 1;
-            if(_actualTransitionTime < TRANSITION_TARGET_DELAY)
-                opacity = -1;
-            else
-            {
-                //in seconds
-                double TRANSITION_TARGET_TIME = 2;
-                opacity = 1 - ((_actualTransitionTime- TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
-                if(opacity<= 0)
-                {
-                    _startTransition = false;
-                    _onTransition.call();
-                    return;
-                }
-            }
-        }
-        for(Cell[] fila : _cells)
-            for(Cell c : fila) {
-                c.onUpdate(deltaTime);
-                if(_startTransition)
-                    c.setOpacity(opacity);
-            }
-    }
-
+    /**
+     * We try to change the state of {x,y} cell while keeping the stack of undo changes properly
+     * updated
+     *
+     * @param x the x axis position of the cell to click
+     * @param y the y axis position of the cell to click
+     * @return whether we clicked on a free cell a locked cell or outside its radius
+     */
     public ClickResult clickCell(int x, int y) {
         Cell c = getCell(x,y);
         if(c!=null)
         {
+            //If we clicked on a locked cell, we animated it and report back
             if(getCell(x, y).isLocked()){
                 getCell(x,y).showLockedGraphics();
                 return  ClickResult.LOCKED;
             }
+            //If it wasn't locked we update de undo stack and then te cell and percentage
             else {
                 Cell first = undoStack.peekFirst();
                 if (first == null || first._x != x || first._y != y)
@@ -173,10 +191,87 @@ public class Grid {
         return ClickResult.MISSED;
     }
 
+    /**
+     * Call draw on every cell
+     * @param font the font to render the fixed numbers with
+     */
+    public void draw(IFont font){
+        for(int i = 0; i < _size; i++) {
+            for(int j = 0; j < _size; j++)
+            {
+                if(getCell(j,i) == debugCell)
+                    getCell(j,i).draw(_G, _cellLockImage, font, 0xffc0c0c0);
+                else
+                    getCell(j,i).draw(_G, _cellLockImage, font);
+            }
+        }
+
+    }
+
+    /**
+     * Starts the transition, blocks all the cells and saves the callback
+     * @param onTransition callback to be executed once the transition is completed
+     */
+    public void setTransition(ICallable onTransition) {
+        _startTransition = true;
+        _transitionCallback = onTransition;
+
+        for (Cell[] line: _cells) {
+            for (Cell c:line) {
+                c.lock();
+            }
+        }
+    }
+
+
+    /**
+     * We update the all the animations
+     * @param deltaTime the ms since the previous update
+     */
+    public void onUpdate(double deltaTime) {
+        double opacity=1;
+        if(_startTransition)
+        {
+            _actualTransitionTime+=deltaTime;
+            //The transition has a second delay where it doesn't start the fade but cells are locked.
+            //So we wait.
+            double TRANSITION_TARGET_DELAY = 1;
+            if(_actualTransitionTime > TRANSITION_TARGET_DELAY)
+            {
+                //We compute how far into the transition we are, and get the opacity by inverting it
+                double TRANSITION_TARGET_TIME = 2;
+                opacity = 1 - ((_actualTransitionTime- TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
+                //On transition completed we call the transition callback
+                if(opacity<= 0)
+                {
+                    _startTransition = false;
+                    _transitionCallback.call();
+                    return;
+                }
+            }
+        }
+        //Forward call so each cell can update it's animations
+        for(Cell[] line : _cells)
+            for(Cell c : line) {
+                c.onUpdate(deltaTime);
+                if(_startTransition)
+                    c.setOpacity(opacity);
+            }
+    }
+
+
+    /**
+     * Forwards petition to grid solver to get a Clue on the current grid state adn returns it
+     * @return a clue for the current grid state
+     */
     public Clue getClue(){
         return  _gridSolver.getClue();
     }
 
+    /**
+     * Undoes the last change the player made
+     * @return the cell we reestablished
+     */
     public Cell undoMove(){
         if(undoStack.size() == 0)
             return null;
@@ -196,28 +291,40 @@ public class Grid {
         return c;
     }
 
-
+    /**
+     * Check whether the current puzzle is completed and correct
+     * @return true on correct grid
+     */
     public boolean checkWin(){
         return _gridSolver.solved();
     }
 
+    /**
+     * Getter for cells
+     * @param x the X coordinate, from 0..Size
+     * @param y the Y coordinate, from 0..Size
+     * @return the requested cell or null if outside of range
+     */
     public Cell getCell(int x, int y){
         if(x < _size && x >= 0 && y < _size && y >= 0)
             return _cells[y][x];
         else return null;
     }
 
+    /**
+     * Set the given cell to the position given in the grid
+     * @param cell the cell to save
+     * @param x the X coordinate, from 0..Size
+     * @param y the Y coordinate, from 0..Size
+     */
     public void setCell(Cell cell, int x, int y){
         if(x < _size && x >= 0 && y < _size && y >= 0)
             _cells[y][x] = cell;
     }
 
-    public int getSize() {return _size; };
-
-
-    public void setTransition(ICallable onTransition) {
-        _startTransition = true;
-        _onTransition = onTransition;
-    }
-
+    /**
+     * size getter
+     * @return the amount of cells a side of the grid has
+     */
+    public int getSize() { return _size; };
 }

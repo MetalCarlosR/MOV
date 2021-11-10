@@ -6,10 +6,6 @@ import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 public class Cell extends CircleButton{
 
-    public double getScale() {
-        return _scale;
-    }
-
     public void setTransform(int x, int y, int r, double scale)
     {
         _posX = x;
@@ -74,8 +70,7 @@ public class Cell extends CircleButton{
         graphics.setColor(color);
         graphics.fillCircle(_posX,_posY,radius);
 
-        boolean gameFinished = _opacity < 1 || _opacity == -1;
-        if(getState() == Cell.State.Blue && (isLocked()|| gameFinished))
+        if(getState() == Cell.State.Blue && isLocked())
         {
             graphics.setColor(0xFFFFFFFF);
             graphics.setFont(font);

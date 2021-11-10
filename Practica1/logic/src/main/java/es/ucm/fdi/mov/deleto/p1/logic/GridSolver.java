@@ -32,7 +32,7 @@ public class GridSolver {
     /**
      * Generates the grid using this solver to guarantee its possible to solve it
      */
-    public void init(){
+    public void generateLevel(){
         GridGenerator.Generate(this);
     }
 
@@ -289,7 +289,7 @@ public class GridSolver {
 
     /**
      * Isolated cell getter, only used to find clues so we filter out correct isolated cells
-     * @return
+     * @return filtered isolated cells
      */
     private Vector<Cell> filterIsolatedCells(){
         Vector<Cell> ret = new Vector<Cell>();
