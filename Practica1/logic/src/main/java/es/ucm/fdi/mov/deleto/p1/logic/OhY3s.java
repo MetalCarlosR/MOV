@@ -22,7 +22,6 @@ public class OhY3s implements IApplication {
     IFont _font;
     IFont _title;
     IFont _subtitle;
-    ISound _click;
 
     String _currentMessage = "";
     float _messageScale = 1f;
@@ -47,7 +46,6 @@ public class OhY3s implements IApplication {
         _font = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",64,true);
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",60,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
-        _click = _engine.getAudio().newSound("Click.wav");
         _engine.getGraphics().setFont(_font);
         _bar.init(_engine.getGraphics());
         _grid.setGraphics(_engine.getGraphics());
@@ -198,11 +196,9 @@ public class OhY3s implements IApplication {
 
         switch (action){
             case CLUE:
-                _engine.getAudio().createAndPlay("Clue.wav");
                 handleNewClue();
                 break;
             case UNDO:
-                _engine.getAudio().createAndPlay("Undo.wav");
                 handleUndo();
                 break;
             case CLOSE:
@@ -235,6 +231,7 @@ public class OhY3s implements IApplication {
                     _clueState = clue.getCorrectState().getState();
                 }
                 _focusedOpacity = 0;
+                _engine.getAudio().createAndPlay("Clue.wav");
             }
         }
     }
@@ -251,9 +248,12 @@ public class OhY3s implements IApplication {
             _currentMessage = String.format("This tile was reversed to %s",
                     state == Cell.State.Grey ? "it's\nempty state." :
                             state == Cell.State.Blue ?  "blue.":"red.");
+            _engine.getAudio().createAndPlay("Undo.wav");
         }
-        else
+        else{
             _currentMessage = "Nothing to undo.";
+            _engine.getAudio().createAndPlay("ClueFail.wav");
+        }
     }
 
     final String[] WIN_MESSAGES = new String[]{"Wonderful","Spectacular","Marvelous","Outstanding",
