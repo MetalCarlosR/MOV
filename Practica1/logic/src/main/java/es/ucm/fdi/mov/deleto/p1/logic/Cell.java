@@ -90,10 +90,10 @@ public class Cell extends CircleButton{
     }
 
     /**
-     * Method to be called on successful click, defined by circlebutton super class
+     * Method to be called on successful click, defined by CircleButton super class
      */
     @Override
-    public void onClick(){
+    public void clickCallback(){
         if(!_locked)
             _state = _state == State.Blue ? State.Red : _state == State.Red ? State.Grey : State.Blue;
         else

@@ -11,4 +11,6 @@ public interface IEngine {
     public IAudio getAudio();
 
     public void changeApp(IApplication newApp);
+
+    public void  openWeb(String url);
 }

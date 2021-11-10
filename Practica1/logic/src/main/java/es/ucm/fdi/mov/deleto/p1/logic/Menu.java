@@ -7,114 +7,209 @@ import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
-    IFont _title;
-    IFont _title2;
-    IFont _title3;
-    IFont _subtitle;
+
+    /**
+     * State
+     */
+    public enum State{Initial, SelectSize}
+    State _state = State.Initial;
+    String _titleStr = "Oh Yes";
+
+    static final int BUTTON_RAD = 35;
+    IEngine _engine;
+
+    /**
+     * Resources
+     */
+    IFont _titleFont;
+    IFont _winMessageFont;
     IFont _regular;
 
     IImage _logo;
     IImage _exit;
 
-    static final int BUTTON_RAD = 35;
-    String _titleStr = null;
+    /**
+     * Buttons
+     */
+    CircleButton[] _sizeButtons;
+    RectangleButton _startGameButton;
+    RectangleButton _exitButton;
+    RectangleButton _creditButton;
 
-    public enum State{Initial, SelectSize}
-    State _state = State.Initial;
 
-    int[] _buttonsX;
-    int[] _buttonsY;
+    //Default constructor
+    public Menu(){}
 
-    IEngine _engine;
-    public Menu(){
-        _titleStr = "Oh Yes";
-    }
+    //Constructor called by game when the puzzle is completed or on back button pressed
     public Menu(State state, String titleStr){
         _state = state;
         _titleStr = titleStr;
     }
+
+    /**
+     * Resource creation
+     * @param engine interface to create platform depending resources
+     */
     @Override
     public void onInit(IEngine engine) {
         _engine = engine;
         IGraphics g = _engine.getGraphics();
         g.setOpacity(1);
 
-        _regular = g.newFont("JosefinSans-Bold.ttf",56,true);
-        _title = g.newFont("Molle-Regular.ttf",72,false);
-        _title2 = g.newFont("Molle-Regular.ttf",68,false);
-        _title3 = g.newFont("JosefinSans-Bold.ttf",60,true);
+        _titleFont = g.newFont("Molle-Regular.ttf",72,false);
+        _winMessageFont = g.newFont("JosefinSans-Bold.ttf",60,true);
 
-        _subtitle = g.newFont("JosefinSans-Bold.ttf",24,false);
+        _regular = g.newFont("JosefinSans-Bold.ttf",24,false);
 
         _exit = g.newImage("close.png");
         _logo = g.newImage("q42.png");
 
-        _buttonsX = new int[6];
-        _buttonsY = new int[6];
+        _startGameButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()/2,56,56) {
+            @Override
+            protected void clickCallback() {
+                _state = State.SelectSize;
+            }
+        };
+
+        _exitButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()-_exit.getHeight(),_exit.getWidth(),_exit.getHeight()) {
+            @Override
+            protected void clickCallback() {
+                _engine.exit();
+            }
+        };
+
+        _creditButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()-132,200,36) {
+            @Override
+            protected void clickCallback() {
+                _engine.openWeb("https://github.com/MetalCarlosR/MOV/tree/main/Practica1");
+            }
+        };
+
+        _sizeButtons = new CircleButton[6];
+
+        /**
+         * Create centered 'Select Size' buttons
+         */
+        final int padding = 20;
+        final int offset = padding+(g.getLogicWidth()/3)-BUTTON_RAD*3;
+        final int margin = (g.getLogicWidth() - offset*2 - BUTTON_RAD*2)/2;
+        for (int i = 0; i < 6; i++) {
+            final int size = 4+i;
+            final int x = margin+ offset*(i%3) + BUTTON_RAD*(i%3);
+            final int y = 240 + offset*(i/3)+ BUTTON_RAD*(i/3);
+            _sizeButtons[i] = new CircleButton(x,y,BUTTON_RAD) {
+                @Override
+                protected void clickCallback() {
+                    _engine.changeApp(new OhY3s(size));
+                }
+            };
+        }
     }
 
+
+
+    /**
+     * Check if any button can handle the event
+     * @param event the event to handle
+     */
     @Override
-    public void onUpdate(double deltaTime) {
+    public void onEvent(TouchEvent event) {
+        //We ignore all non release buttons
+        //Possible improvements adding hover, click and release callbacks to buttons
+        if(event.get_type() != TouchEvent.EventType.RELEASE)
+            return;
 
+        int x = event.get_x();
+        int y = event.get_y();
+
+        //On Initial state check the 'Start Game' and 'Credit button'
+        if(_state == State.Initial)
+        {
+            if(_startGameButton.click(x,y))
+                return;
+            _creditButton.click(x,y);
+        }
+        else if(_state == State.SelectSize)
+        {
+            //We try to click on every select size button
+            for(IClickable button : _sizeButtons)
+                if(button.click(x,y))
+                    return;
+
+            //If no other button was clicked, then check if exit button was pressed
+            _exitButton.click(x,y);
+        }
     }
 
+
+    /**
+     * Draws all menu elements based on menu state
+     */
     @Override
     public void onRender() {
         IGraphics g = _engine.getGraphics();
+
+        /**
+         * We always draw the title independent of state
+         */
+        int y = 46;
+        if(_titleStr.equals("Oh Yes"))
+        {
+            y+=8;
+            g.setFont(_titleFont);
+        }
+        else
+            g.setFont(_winMessageFont);
+        g.setColor(0xff000000);
+
+        //Draw title and increase y by returned last drawn y position
+        y+=g.drawText(_titleStr, g.getLogicWidth()/2,y).y();
+
+        //Rest of texts use this font
+        g.setFont(_regular);
+
+        //Draw rest based on state
         switch (_state)
         {
+            /**
+             * Draw the play button and credits
+             */
             case Initial:
-                g.setFont(_title);
-                g.setColor(0xff000000);
-                g.drawText("Oh Yes", g.getLogicWidth()/2,(int)(72*0.75f));
+                //Draw play button
+                g.drawText("Play", _startGameButton._posX, _startGameButton._posY, 2.5);
 
-                g.setFont(_regular);
-                g.drawText("Jugar", g.getLogicWidth()/2,g.getLogicHeight()/2);
-
-                g.setFont(_subtitle);
+                //Draw bottom credits
+                g.setColor(0xffa0a0e0);
+                g.drawText("Deleto Studios copy of a Q42", g.getLogicWidth()/2,g.getLogicHeight()-132);
                 g.setColor(0xffc0c0c0);
-                g.drawText("Un juego copiado a Q42", g.getLogicWidth()/2,g.getLogicHeight()-132);
-                g.drawText("Creado por Martin Kool", g.getLogicWidth()/2,g.getLogicHeight()-94);
+                g.drawText("game made by Martin Kool",     g.getLogicWidth()/2,g.getLogicHeight()-94);
 
                 g.drawImage(_logo,g.getLogicWidth()/2,g.getLogicHeight()-32,0.05f,0.05f);
                 break;
+            /**
+             * Draws subtitle, select size buttons and exit button
+             */
             case SelectSize:
-                int y = 46;
-                if(_titleStr == "Oh Yes")
-                {
-                    y+=10;
-                    g.setFont(_title2);
-                }
-                else
-                {
-                    g.setFont(_title3);
-                }
-                g.setColor(0xff000000);
-                g.drawText(_titleStr, g.getLogicWidth()/2,y);
+                //Draw subtitle
+                g.drawText("Choose a size to play", g.getLogicWidth()/2,y);
 
-                y+=80;
-                g.setFont(_subtitle);
-                g.drawText("Elija el tamaño a jugar", g.getLogicWidth()/2,y);
-
-                y += 100;
-                int padding = 15;
-                int x = (g.getLogicWidth() - ((BUTTON_RAD *3*2)+(padding*3)))/2;
+                //Draw select size buttons
                 for(int i = 0; i<6; i++)
                 {
-                    int xX = (x+((i%3)* BUTTON_RAD *2)+(padding*(i%3)))+BUTTON_RAD;
-                    int yY = (y+(i/3* BUTTON_RAD *2)+(padding*(i/3)))+BUTTON_RAD;
+                    int btX = _sizeButtons[i]._posX; int btY = _sizeButtons[i]._posY;
 
-                    _buttonsX[i]=xX;
-                    _buttonsY[i]=yY;
-
+                    //Draw circle button with alternating color
                     g.setColor(i%2==0 ? 0xFF1CC0E0 : 0xFFFF384B);
-                    g.fillCircle(xX,yY, BUTTON_RAD);
+                    g.fillCircle(btX,btY, BUTTON_RAD);
                     g.setColor(0xffffffff);
-                    g.setFont(_subtitle);
-                    g.drawText(Integer.toString(4+i),xX,yY,1.5);
+
+                    //Draw number on circle center
+                    g.drawText(Integer.toString(4+i),btX,btY,1.5);
                 }
+
+                //Draw exit button
                 g.setOpacity(0.6f);
-                g.drawImage(_exit,g.getLogicWidth()/2,g.getLogicHeight()-64,1.f,1.f);
+                g.drawImage(_exit, _exitButton._posX, _exitButton._posY, 1.f,1.f);
                 g.setOpacity(1.f);
                 break;
             default:
@@ -122,45 +217,15 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         }
     }
 
+    /**
+     * No need for update, we don't have animations on menu
+     */
     @Override
-    public void onExit() {
+    public void onUpdate(double deltaTime) {}
 
-    }
-
+    /**
+     * No need for exit
+     */
     @Override
-    public void onEvent(TouchEvent event) {
-        if(event.get_type() != TouchEvent.EventType.RELEASE)
-            return;
-        if(_state == State.Initial)
-        {
-            int SIZE = 56;
-            int w = _engine.getGraphics().getLogicWidth();
-            int h = _engine.getGraphics().getLogicHeight();
-
-            if(event.get_x() >= w/3 && event.get_x() <= w - w/3 && event.get_y() >= h/2 - SIZE/2 && event.get_y() <= h/2+SIZE/2)
-                _state = State.SelectSize;
-        }
-        else
-        {
-            int x = event.get_x();
-            int y = event.get_y();
-            for(int i = 0; i<_buttonsX.length;i++)
-            {
-                System.out.printf("\tBotton [%d,%d] {%d,%d}\n",i%3,i/3,_buttonsX[i],_buttonsY[i]);
-                if(  x < _buttonsX[i]+BUTTON_RAD &&
-                     x > _buttonsX[i]-BUTTON_RAD &&
-                     y < _buttonsY[i]+BUTTON_RAD &&
-                     y > _buttonsY[i]-BUTTON_RAD)
-                {
-                    _engine.changeApp(new OhY3s(4+i));
-                    break;
-                }
-            }
-            int iX = (_engine.getGraphics().getLogicWidth()/2);
-            int iY = (_engine.getGraphics().getLogicHeight()-64);
-            System.out.printf("NO ES UN BOTON DE JUEGO - Vamos a intentar salir :D BottonDeSalir{%d %d} Event{%d,%d}\n",iX,iY,x,y);
-            if(x > iX-32 && x < iX+32 && y> iY-32 && y < iY+32)
-                _engine.exit();
-        }
-    }
+    public void onExit() {}
 }

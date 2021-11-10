@@ -1,6 +1,8 @@
 package es.ucm.fdi.mov.deleto.p1.androidEngine;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class Engine implements IEngine, Runnable {
     Thread _renderThread = null;
     IApplication _app;
     IApplication _nextApp = null;
+    Context _context;
 
     ICallable _exitFunction;
     public Engine(IApplication app, Context context, String assetsPath, ICallable exit)
@@ -33,6 +36,12 @@ public class Engine implements IEngine, Runnable {
         _audio = new Audio(context.getAssets(),assetsPath);
         _app = app;
         _exitFunction = exit;
+        _context = context;
+    }
+
+    @Override
+    public void openWeb(String url) {
+        _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
     public void resume(){
@@ -124,6 +133,8 @@ public class Engine implements IEngine, Runnable {
         _nextApp = newApp;
         _running = false;
     }
+
+
 
 
 }

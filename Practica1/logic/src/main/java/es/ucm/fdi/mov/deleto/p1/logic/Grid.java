@@ -151,7 +151,7 @@ public class Grid {
 
             //We try to click it and let it handle its bounding box.
             Cell c = getCell(arrayX,arrayY);
-            if (c != null && c.clicked(x ,y))
+            if (c != null && c.click(x ,y))
                    return clickCell(arrayX,arrayY);
         }
         //In case we don't click inside the grid

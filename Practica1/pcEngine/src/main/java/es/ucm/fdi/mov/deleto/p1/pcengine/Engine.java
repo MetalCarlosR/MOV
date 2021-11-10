@@ -1,5 +1,9 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -86,5 +90,19 @@ public class Engine implements IEngine {
     public void changeApp(IApplication newApp) {
         _nextApp = newApp;
         exit();
+    }
+
+    @Override
+    public void openWeb(String url) {
+        if (Desktop.isDesktopSupported()) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+        else System.err.println("Could not open url: "+url);
     }
 }

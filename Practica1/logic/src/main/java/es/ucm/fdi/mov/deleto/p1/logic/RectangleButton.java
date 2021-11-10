@@ -3,44 +3,38 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 /**
  * Button class to abstract the handling of application clicks
  */
-public abstract class CircleButton implements IClickable{
+public abstract class RectangleButton implements IClickable{
     /**
      * Position and radius of circle
      */
     int _posX;
     int _posY;
-    int _rad;
+    int _width;
+    int _height;
 
-    public CircleButton(int x, int y, int buttonRad) {
+    protected abstract void clickCallback();
+
+    public RectangleButton(int x, int y, int w, int h){
         _posX=x;
         _posY=y;
-        _rad = buttonRad;
-    }
-
-    protected CircleButton() {
+        _width=w;
+        _height=h;
     }
 
     /**
      * Overridable click callback
      */
-    protected abstract void clickCallback();
-
     @Override
     public boolean click(int x, int y) {
-        int dX = x - _posX;
-        int dY = y - _posY;
-        double mag = (Math.sqrt((dX*dX) + (dY*dY)));
+        int dX = Math.abs(x - _posX);
+        int dY = Math.abs(y - _posY);
 
-        if(_rad >= mag) {
+        if( dX <= _width && dY <=_height) {
             clickCallback();
             return  true;
         }
         else
             return false;
-    }
-
-    public int getRad() {
-        return _rad;
     }
 
 }
