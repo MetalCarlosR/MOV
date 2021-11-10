@@ -174,6 +174,9 @@ public class OhY3s implements IApplication {
                 return;
             clickOnBottomBar(event);
         }
+        else if(event.type() == TouchEvent.EventType.CLOSE_REQUEST){
+            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+        }
     }
 
     /**

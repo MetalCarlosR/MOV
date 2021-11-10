@@ -116,6 +116,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public void onEvent(TouchEvent event) {
         //We ignore all non release buttons
         //Possible improvements adding hover, click and release callbacks to buttons
+        if(event.type() == TouchEvent.EventType.CLOSE_REQUEST)
+            _engine.exit();
         if(event.type() != TouchEvent.EventType.RELEASE)
             return;
 

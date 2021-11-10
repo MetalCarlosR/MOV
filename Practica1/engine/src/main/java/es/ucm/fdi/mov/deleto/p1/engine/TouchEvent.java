@@ -8,7 +8,8 @@ public class TouchEvent {
     public enum EventType {
         TOUCH,
         RELEASE,
-        SLIDE
+        SLIDE,
+        CLOSE_REQUEST
     }
     // Type of event
     EventType _type;

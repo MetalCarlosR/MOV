@@ -1,6 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.androidGame;
 
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Engine;
 
@@ -11,6 +12,7 @@ import android.view.WindowManager;
 
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Input;
 import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
+import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.logic.Menu;
 
 public class AGame extends AppCompatActivity implements  ICallable{
@@ -52,5 +54,8 @@ public class AGame extends AppCompatActivity implements  ICallable{
         _engine.pause();
     }
 
-
+    @Override
+    public void onBackPressed() {
+        _engine.getInput().newTouchEvent(new TouchEvent(TouchEvent.EventType.CLOSE_REQUEST,0,0,1));
+    }
 }
