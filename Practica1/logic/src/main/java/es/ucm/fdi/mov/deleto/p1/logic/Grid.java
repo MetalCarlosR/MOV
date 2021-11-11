@@ -274,9 +274,11 @@ public class Grid {
         Cell c = undoStack.removeFirst();
         Cell cReal = getCell(c._col, c._row);
 
+        Cell.State prev = cReal.getState();
+
         Cell.State s = c.getState();
         cReal.setState(s);
-        if(s == Cell.State.Grey)
+        if(s == Cell.State.Grey && s!=prev)
             _clicked--;
         else if(s == Cell.State.Red)
             _clicked++;
