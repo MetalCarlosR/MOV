@@ -10,6 +10,8 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
@@ -68,7 +70,6 @@ public class Graphics implements IGraphics {
 
          //Setting up window
         _window = new JFrame(name);
-        _window.setSize(width, height);
 
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
@@ -97,34 +98,17 @@ public class Graphics implements IGraphics {
          //Set up resize callback to compute new scaling factors and offsets
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
-                int actualW = _window.getWidth();
-                int actualH = _window.getHeight();
-
-                int leftOffset = 0;
-                int topOffset = 0;
-
-                //We start the canvas skipping the window decorations
-                _originX= WINDOW_BORDER;
-                _originY= WINDOW_MENU_HEIGHT + WINDOW_BORDER;
-
-                //Respecting the aspect ratio this would be the expected width and height
-                int expectedWidth  = (int)(actualH * _refFactor);
-                int expectedHeight = (int)(actualW / _refFactor);
-
-                //If the expectedWidth doesn't fit we add height to the bars
-                //Otherwise add width
-                if( expectedWidth > actualW+ WINDOW_BORDER)
-                    topOffset = (actualH- WINDOW_MENU_HEIGHT + WINDOW_BORDER - expectedHeight)/2;
-                else
-                    leftOffset = (actualW+ WINDOW_BORDER - expectedWidth)/2;
-
-                _originX += leftOffset;
-                _originY +=  topOffset;
-
-                _endX = actualW-_originX;
-                _endY = actualH-_originY;
+                recalculateScale();
             }
         });
+        _window.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                super.windowOpened(e);
+                recalculateScale();
+            }
+        });
+        _window.setSize(width, height);
     }
 
     /**************************
@@ -241,7 +225,37 @@ public class Graphics implements IGraphics {
      * Scaling Methods *
      *******************/
 
+    /**
+     * Computes offsets and scale factor based on new dimensions and actual ref dimensions
+     */
+    private void recalculateScale() {
+        int actualW = _window.getWidth();
+        int actualH = _window.getHeight();
 
+        int leftOffset = 0;
+        int topOffset = 0;
+
+        //We start the canvas skipping the window decorations
+        _originX= WINDOW_BORDER;
+        _originY= WINDOW_MENU_HEIGHT + WINDOW_BORDER;
+
+        //Respecting the aspect ratio this would be the expected width and height
+        int expectedWidth  = (int)(actualH * _refFactor);
+        int expectedHeight = (int)(actualW / _refFactor);
+
+        //If the expectedWidth doesn't fit we add height to the bars
+        //Otherwise add width
+        if( expectedWidth > actualW+ WINDOW_BORDER)
+            topOffset = (actualH- WINDOW_MENU_HEIGHT + WINDOW_BORDER - expectedHeight)/2;
+        else
+            leftOffset = (actualW+ WINDOW_BORDER - expectedWidth)/2;
+
+        _originX += leftOffset;
+        _originY +=  topOffset;
+
+        _endX = actualW-_originX;
+        _endY = actualH-_originY;
+    }
 
     private int realPositionX(int x) {
         return _originX+ (x * (_endX-_originX)/_refWidth);
