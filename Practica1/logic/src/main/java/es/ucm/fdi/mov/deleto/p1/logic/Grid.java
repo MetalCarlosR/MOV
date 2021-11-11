@@ -177,15 +177,19 @@ public class Grid {
             if (first == null || first._col != x || first._row != y)
                 undoStack.addFirst(new Cell(c._col, c._row, c.getPreviousState()));
 
-            _clicked = 0;
-            for (Cell[] row : _cells)
-                for(Cell cell : row)
-                    if(!cell.isLocked() && cell.getState()!= Cell.State.Grey)
-                        _clicked++;
-
-            _percentage =  (100 * _clicked) / _gridSolver._freeCells;
+            computePercentage();
             return ClickResult.FREE;
         }
+    }
+
+    private void computePercentage() {
+        _clicked = 0;
+        for (Cell[] row : _cells)
+            for(Cell cell : row)
+                if(!cell.isLocked() && cell.getState()!= Cell.State.Grey)
+                    _clicked++;
+
+        _percentage =  (100 * _clicked) / _gridSolver._freeCells;
     }
 
     /**
@@ -275,17 +279,10 @@ public class Grid {
         Cell c = undoStack.removeFirst();
         Cell cReal = getCell(c._col, c._row);
 
-        Cell.State prev = cReal.getState();
-
         Cell.State s = c.getState();
         cReal.setState(s);
-        if(s == Cell.State.Grey && s!=prev)
-            _clicked--;
-        else if(s == Cell.State.Red)
-            _clicked++;
 
-        _percentage =  (100 * _clicked) / _gridSolver._freeCells;
-
+        computePercentage();
         return c;
     }
 
