@@ -177,10 +177,11 @@ public class Grid {
             if (first == null || first._col != x || first._row != y)
                 undoStack.addFirst(new Cell(c._col, c._row, c.getPreviousState()));
 
-            Cell.State state = getCell(x, y).getState();
-            if(state == Cell.State.Grey)
-                _clicked--;
-            else if(state == Cell.State.Blue) _clicked++;
+            _clicked = 0;
+            for (Cell[] row : _cells)
+                for(Cell cell : row)
+                    if(!cell.isLocked() && cell.getState()!= Cell.State.Grey)
+                        _clicked++;
 
             _percentage =  (100 * _clicked) / _gridSolver._freeCells;
             return ClickResult.FREE;

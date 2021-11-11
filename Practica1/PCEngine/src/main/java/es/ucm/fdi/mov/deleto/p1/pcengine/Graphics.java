@@ -186,11 +186,6 @@ public class Graphics implements IGraphics {
      **********************/
 
     public boolean swapBuffers() {
-        //debug
-        setColor(0xFFFFFF00);
-        _buffer.fillRect(_endX-10,_endY+10,10,10);
-        _buffer.setColor(_actualColor);
-        //debug
 
         _buffer.dispose();
         _buffer = _strategy.getDrawGraphics();
