@@ -274,7 +274,7 @@ public class Graphics implements IGraphics {
     }
 
     private  int realLength(double length){
-        return (int)(length * (_endX-_originX)/(double)_refWidth);
+        return (int)((_endX-_originX) * length/(double)_refWidth);
     }
 
     @Override

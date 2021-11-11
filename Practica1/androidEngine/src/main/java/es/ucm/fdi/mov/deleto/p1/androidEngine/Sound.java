@@ -3,7 +3,6 @@ package es.ucm.fdi.mov.deleto.p1.androidEngine;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.MediaPlayer;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -20,6 +19,7 @@ public class Sound implements ISound {
             AssetFileDescriptor afd = am.openFd(file);
             _mp.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(),afd.getLength());
             _mp.prepare();
+            _mp.setOnCompletionListener(MediaPlayer::release);
         } catch (IOException e) {
             System.err.println("Couldn't load audio file " + file);
             e.printStackTrace();

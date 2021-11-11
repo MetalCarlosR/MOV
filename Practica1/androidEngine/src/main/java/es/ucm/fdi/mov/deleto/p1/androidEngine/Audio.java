@@ -10,6 +10,9 @@ public class Audio implements IAudio {
     String _path;
     AssetManager _am;
 
+    Sound[] _circularList = new Sound[32]; //We allow up to 32 simultaneous sounds
+    int _listIndex = 0;
+
     public Audio(AssetManager am,String path){
         _path = path;
         _am = am;
@@ -22,6 +25,8 @@ public class Audio implements IAudio {
 
     @Override
     public void createAndPlay(String filePath) {
-        newSound(filePath).play();
+        Sound sound = (Sound) newSound(filePath);
+        _circularList[_listIndex++%32] = sound;
+        sound.play();
     }
 }
