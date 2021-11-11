@@ -90,7 +90,7 @@ public class Engine implements IEngine {
                     _app.onRender();
                 }while(_graphics.swapBuffers());
             }
-            //running has been set to false, either we
+            //running has been set to false, even on switch app want to call onExit
             _app.onExit();
 
             //if we have a requested next app, then set running to true and switch to it

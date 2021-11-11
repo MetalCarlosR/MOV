@@ -11,6 +11,9 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
 public class Sound implements ISound {
 
     /**

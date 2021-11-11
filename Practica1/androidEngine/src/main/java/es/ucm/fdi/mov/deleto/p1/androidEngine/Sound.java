@@ -8,10 +8,19 @@ import java.io.IOException;
 
 import es.ucm.fdi.mov.deleto.p1.engine.ISound;
 
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
+
 public class Sound implements ISound {
 
     MediaPlayer _mp = null;
 
+    /**
+     * Tries to create a sound via filepath
+     * @param file the path where the sound file should be contained
+     * @param am Asset Manager for android to open the file
+     */
     public Sound(AssetManager am, String file){
         _mp = new MediaPlayer();
         _mp.reset();

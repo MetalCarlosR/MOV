@@ -13,6 +13,10 @@ import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
+
+/*****************************************************
+ * All interface methods documented on the interface *
+ *****************************************************/
 public class Engine implements IEngine, Runnable {
 
     Graphics _graphics;
@@ -97,16 +101,21 @@ public class Engine implements IEngine, Runnable {
             throw new RuntimeException("run() should not be called directly");
         }
         while (_running) {
-            _running = true;
-            _app.onInit(this);
 
+            //Init app and start measuring time
+            _app.onInit(this);
             long lastFrameTime = System.nanoTime();
+
             while (_running) {
+                //Get delta time and call update
                 long currentTime = System.nanoTime();
                 long nanoElapsedTime = currentTime - lastFrameTime;
                 lastFrameTime = currentTime;
                 double elapsedTime = (double) nanoElapsedTime / 1.0E9;
+
                 _app.onUpdate(elapsedTime);
+
+                //Synchronized call to get events and forward to application
                 List<TouchEvent> evs = _input.getTouchEvents();
                 for (TouchEvent ev : evs) {
                     _app.onEvent(ev);
@@ -116,14 +125,15 @@ public class Engine implements IEngine, Runnable {
                 _app.onRender();
                 _graphics.present();
             }
+            //running has been set to false, even on switch app want to call onExit
             _app.onExit();
 
+            //if we have a requested next app, then set running to true and switch to it
             if (_nextApp != null) {
                 _app = _nextApp;
                 _nextApp = null;
                 _running = true;
-            } else
-                break;
+            }
         }
 
         //Our thread has died by calling Engine.exit() so we want the Android Application to close
@@ -138,6 +148,15 @@ public class Engine implements IEngine, Runnable {
     }
 
     @Override
+    public void changeApp(IApplication newApp) {
+        _nextApp = newApp;
+        _running = false;
+    }
+
+    /***********
+     * Getters *
+     ***********/
+    @Override
     public Graphics getGraphics() {
         return _graphics;
     }
@@ -151,9 +170,5 @@ public class Engine implements IEngine, Runnable {
         return _audio;
     }
 
-    @Override
-    public void changeApp(IApplication newApp) {
-        _nextApp = newApp;
-        _running = false;
-    }
+
 }
