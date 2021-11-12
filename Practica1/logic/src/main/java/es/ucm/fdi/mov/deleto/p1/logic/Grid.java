@@ -7,6 +7,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 public class Grid {
     /*********
@@ -128,31 +129,36 @@ public class Grid {
 
     /**
      * We try to process the click to change the state of a cell
-     * @param x the x logical coordinate where the click was produced
-     * @param y the y logical coordinate where the click was produced
+     * @param ev the TouchEvent we want te cell to process
      * @return whether we clicked on a free cell a locked cell or we missed all cells
      */
-    public ClickResult processClick(int x, int y)
+    public ClickResult processClick(TouchEvent ev)
     {
-        int r = getCell(0,0).getRad();
+//        int r = getCell(0,0).getRad();
 
         //We first check if the click was within the gird
-        if( y >= _originY &&
-            y <  _originY+(_size*(2*(r+ _padding))) &&
-            x >= _originX &&
-            x < (_G.getLogicWidth() - (_padding +BORDER)/2))
+//        if( ev.y() >= _originY &&
+//            ev.y() <  _originY+(_size*(2*(r+ _padding))) &&
+//            ev.x() >= _originX &&
+//            ev.x() < (_G.getLogicWidth() - (_padding +BORDER)/2))
         {
             //We get the x and y that would relate to the click if our cells where squares
-            int widthEach = (2*r)+ _padding;
-            int arrayX = (x - _originX)/widthEach;
-            int arrayY = (y - _originY)/widthEach;
+//            int widthEach = (2*r)+ _padding;
+//            int arrayX = (ev.x() - _originX)/widthEach;
+//            int arrayY = (ev.y() - _originY)/widthEach;
+//
+//
+//
+//            //We try to click it and let it handle its bounding box.
+//            Cell c = getCell(arrayX,arrayY);
+//            if (c != null && c.click(ev))
+//                   return clickCell(arrayX,arrayY);
 
+            for(Cell[] row : _cells)
+                for(Cell ce : row)
+                    if(ce.click(ev))
+                        return clickCell(ce);
 
-
-            //We try to click it and let it handle its bounding box.
-            Cell c = getCell(arrayX,arrayY);
-            if (c != null && c.click(x ,y))
-                   return clickCell(arrayX,arrayY);
         }
         //In case we don't click inside the grid
         return ClickResult.MISSED;
@@ -162,19 +168,17 @@ public class Grid {
      * We try to change the state of {x,y} cell while keeping the stack of undo changes properly
      * updated
      *
-     * @param x the x axis position of the cell to click
-     * @param y the y axis position of the cell to click
+     * @param c the cell clicked
      * @return whether we clicked on a free cell a locked cell or a free one
      */
-    public ClickResult clickCell(int x, int y) {
-        Cell c = getCell(x,y);
-        if(getCell(x, y).isLocked()){
+    public ClickResult clickCell(Cell c) {
+        if(c.isLocked()){
             return  ClickResult.LOCKED;
         }
         //If it wasn't locked we update de undo stack and then te cell and percentage
         else {
             Cell first = undoStack.peekFirst();
-            if (first == null || first._col != x || first._row != y)
+            if (first == null || first._col != c._posX || first._row != c._posY)
                 undoStack.addFirst(new Cell(c._col, c._row, c.getPreviousState()));
 
             computePercentage();

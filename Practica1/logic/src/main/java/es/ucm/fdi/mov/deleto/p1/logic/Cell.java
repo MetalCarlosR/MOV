@@ -131,7 +131,7 @@ public class Cell extends CircleButton{
     public void draw(IGraphics graphics, IImage lock, IFont font, int color) {
         graphics.setOpacity(Math.max((float)_opacity,0));
 
-        double radius = _rad;
+        double radius = (double) getRad();
 
         if(_excitedTimer > 0)
             radius+=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;;
@@ -194,7 +194,7 @@ public class Cell extends CircleButton{
     {
         _posX = x;
         _posY = y;
-        _rad = r;
+        setRad(r);
     }
 
     public void setState(State s){

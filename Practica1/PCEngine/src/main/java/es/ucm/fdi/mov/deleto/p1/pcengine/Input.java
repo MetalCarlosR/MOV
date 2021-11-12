@@ -3,7 +3,10 @@ package es.ucm.fdi.mov.deleto.p1.pcengine;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import javax.security.auth.callback.TextOutputCallback;
 
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -22,19 +25,20 @@ public class Input {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                newTouchEvent(TouchEvent.EventType.TOUCH,e.getX(),e.getY(),e.getID());
+                System.out.println("EH"+e.getButton());
+                newTouchEvent(TouchEvent.EventType.TOUCH,e.getX(),e.getY(),e.getButton());
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                newTouchEvent(TouchEvent.EventType.SLIDE,e.getX(),e.getY(),e.getID());
+                newTouchEvent(TouchEvent.EventType.TOUCH,e.getX(),e.getY(),e.getButton());
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
-                newTouchEvent(TouchEvent.EventType.RELEASE,e.getX(),e.getY(),e.getID());
+                newTouchEvent(TouchEvent.EventType.RELEASE,e.getX(),e.getY(),e.getButton());
             }
         });
     }
@@ -48,6 +52,7 @@ public class Input {
     public synchronized List<TouchEvent> getTouchEvents() {
         List<TouchEvent> events = new ArrayList<>(_events);
         _events.clear();
+        Collections.sort(events);
         return events;
     }
 

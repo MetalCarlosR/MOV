@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+
 /**
  * Button class to abstract the handling of application clicks
  */
@@ -9,14 +11,17 @@ public abstract class CircleButton implements IClickable{
      */
     int _posX;
     int _posY;
-    int _rad;
+    private int _rad;
+    int _holded = -1;
+    int _originalRad = 0;
 
     public CircleButton(int x, int y, int buttonRad) {
         _posX=x;
         _posY=y;
         _rad = buttonRad;
+        _originalRad = buttonRad;
     }
-
+    public void setRad(int r){_rad=r;_originalRad=r;}
     protected CircleButton() {
     }
 
@@ -26,17 +31,37 @@ public abstract class CircleButton implements IClickable{
     protected abstract void clickCallback();
 
     @Override
-    public boolean click(int x, int y) {
-        int dX = x - _posX;
-        int dY = y - _posY;
+    public boolean click(TouchEvent e) {
+        if(e.type() == TouchEvent.EventType.SLIDE)
+            return false;
+        int dX = e.x() - _posX;
+        int dY = e.y() - _posY;
         double mag = (Math.sqrt((dX*dX) + (dY*dY)));
 
-        if(_rad >= mag) {
-            clickCallback();
-            return  true;
+        if(_originalRad >= mag)
+            {
+                if(e.type() == TouchEvent.EventType.TOUCH)
+                {
+                    _holded = e.id();
+                    System.out.println("PRESS");
+                    _rad*=.9;
+                }
+                else if(e.id() == _holded && e.type() == TouchEvent.EventType.RELEASE)
+                {
+                    System.out.println("PITO");
+                    _rad = _originalRad;
+                    clickCallback();
+                    _holded = -1;
+                    return  true;
+                }
+            }
+        else if(e.type() == TouchEvent.EventType.RELEASE && _holded != -1)
+        {
+            System.out.println("OUT");
+            _rad=_originalRad;
+            _holded = -1;
         }
-        else
-            return false;
+        return false;
     }
 
     public int getRad() {

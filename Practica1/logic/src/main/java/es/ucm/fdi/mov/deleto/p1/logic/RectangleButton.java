@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.logic;
 
+import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+
 /**
  * Button class to abstract the handling of application clicks
  */
@@ -25,9 +27,9 @@ public abstract class RectangleButton implements IClickable{
      * Overridable click callback
      */
     @Override
-    public boolean click(int x, int y) {
-        int dX = Math.abs(x - _posX);
-        int dY = Math.abs(y - _posY);
+    public boolean click(TouchEvent ev) {
+        int dX = Math.abs(ev.x() - _posX);
+        int dY = Math.abs(ev.y() - _posY);
 
         if( dX <= _width && dY <=_height) {
             clickCallback();

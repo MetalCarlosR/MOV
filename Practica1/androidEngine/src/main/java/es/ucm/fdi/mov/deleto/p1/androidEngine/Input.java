@@ -27,9 +27,18 @@ public class Input  {
         view.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                newTouchEvent(TouchEvent.EventType.RELEASE,(int)((motionEvent.getX()-_offX)/_scale),
-                                                                          (int)((motionEvent.getY()-_offY)/_scale),1);
-                return false;
+                int id = motionEvent.getActionIndex();
+                TouchEvent.EventType t;
+                if(motionEvent.getActionMasked() == MotionEvent.ACTION_DOWN)
+                    t = TouchEvent.EventType.TOUCH;
+                else if(motionEvent.getActionMasked() == MotionEvent.ACTION_UP)
+                    t = TouchEvent.EventType.RELEASE;
+                else
+                    return false;
+                newTouchEvent(t,(int)((motionEvent.getX()-_offX)/_scale),
+                                (int)((motionEvent.getY()-_offY)/_scale),
+                                motionEvent.getDeviceId());
+                return true;
             }
         });
     }

@@ -3,7 +3,7 @@ package es.ucm.fdi.mov.deleto.p1.engine;
 /**
  * Simple touch event that encapsulates both computer clicks and touch-devices taps
  */
-public class TouchEvent {
+public class TouchEvent implements Comparable<TouchEvent> {
 
     public enum EventType {
         TOUCH,
@@ -28,6 +28,10 @@ public class TouchEvent {
         _id = id;
     }
 
+    @Override
+    public int compareTo(TouchEvent event) {
+        return _type.compareTo(event.type());
+    }
     /***********
      * Getters *
      ***********/

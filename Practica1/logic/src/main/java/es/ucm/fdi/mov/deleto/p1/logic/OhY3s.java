@@ -168,15 +168,17 @@ public class OhY3s implements IApplication {
         //We ignore all types different than release.
         //Possible improvement: process both click and release and act accordingly on each,
         //animate click and act on release
-        if(event.type() == TouchEvent.EventType.RELEASE)
+        if(event.type() == TouchEvent.EventType.CLOSE_REQUEST){
+            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+        }
+        else
+        if(event.type() == TouchEvent.EventType.TOUCH || event.type() == TouchEvent.EventType.RELEASE)
         {
             if(clickOnGrid(event))
                 return;
             clickOnBottomBar(event);
         }
-        else if(event.type() == TouchEvent.EventType.CLOSE_REQUEST){
-            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
-        }
+
     }
 
     /**
@@ -187,7 +189,7 @@ public class OhY3s implements IApplication {
      */
     private boolean clickOnGrid(TouchEvent event)
     {
-        Grid.ClickResult res = _grid.processClick(event.x(),event.y());
+        Grid.ClickResult res = _grid.processClick(event);
         if(res != Grid.ClickResult.MISSED)
         {
             _currentMessage = "";

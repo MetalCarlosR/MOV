@@ -118,8 +118,6 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         //Possible improvements adding hover, click and release callbacks to buttons
         if(event.type() == TouchEvent.EventType.CLOSE_REQUEST)
             _engine.exit();
-        if(event.type() != TouchEvent.EventType.RELEASE)
-            return;
 
         int x = event.x();
         int y = event.y();
@@ -127,19 +125,19 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         //On Initial state check the 'Start Game' and 'Credit button'
         if(_state == State.Initial)
         {
-            if(_startGameButton.click(x,y))
+            if(_startGameButton.click(event))
                 return;
-            _creditButton.click(x,y);
+            _creditButton.click(event);
         }
         else if(_state == State.SelectSize)
         {
             //We try to click on every select size button
-            for(IClickable button : _sizeButtons)
-                if(button.click(x,y))
+            for(CircleButton button : _sizeButtons)
+                if(button.click(event))
                     return;
 
             //If no other button was clicked, then check if exit button was pressed
-            _exitButton.click(x,y);
+            _exitButton.click(event);
         }
     }
 
@@ -202,7 +200,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
                     //Draw circle button with alternating color
                     g.setColor(i%2==0 ? 0xFF1CC0E0 : 0xFFFF384B);
-                    g.fillCircle(btX,btY, BUTTON_RAD);
+                    g.fillCircle(btX,btY, _sizeButtons[i].getRad());
                     g.setColor(0xffffffff);
 
                     //Draw number on circle center
