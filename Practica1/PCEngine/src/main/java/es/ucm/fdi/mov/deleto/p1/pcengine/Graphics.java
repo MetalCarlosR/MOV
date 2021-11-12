@@ -10,6 +10,8 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -74,9 +76,6 @@ public class Graphics implements IGraphics {
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
 
-        _window.setIgnoreRepaint(true);
-        Toolkit.getDefaultToolkit().setDynamicLayout(false);
-
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
 
@@ -98,6 +97,14 @@ public class Graphics implements IGraphics {
          //Set up resize callback to compute new scaling factors and offsets
         _window.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent componentEvent) {
+                recalculateScale();
+            }
+        });
+        _window.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                super.mouseDragged(e);
+                System.out.println("PITO");
                 recalculateScale();
             }
         });

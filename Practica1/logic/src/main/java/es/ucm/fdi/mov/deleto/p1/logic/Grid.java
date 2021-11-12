@@ -134,32 +134,11 @@ public class Grid {
      */
     public ClickResult processClick(TouchEvent ev)
     {
-//        int r = getCell(0,0).getRad();
+        for(Cell[] row : _cells)
+            for(Cell ce : row)
+                if(ce.click(ev))
+                    return clickCell(ce);
 
-        //We first check if the click was within the gird
-//        if( ev.y() >= _originY &&
-//            ev.y() <  _originY+(_size*(2*(r+ _padding))) &&
-//            ev.x() >= _originX &&
-//            ev.x() < (_G.getLogicWidth() - (_padding +BORDER)/2))
-        {
-            //We get the x and y that would relate to the click if our cells where squares
-//            int widthEach = (2*r)+ _padding;
-//            int arrayX = (ev.x() - _originX)/widthEach;
-//            int arrayY = (ev.y() - _originY)/widthEach;
-//
-//
-//
-//            //We try to click it and let it handle its bounding box.
-//            Cell c = getCell(arrayX,arrayY);
-//            if (c != null && c.click(ev))
-//                   return clickCell(arrayX,arrayY);
-
-            for(Cell[] row : _cells)
-                for(Cell ce : row)
-                    if(ce.click(ev))
-                        return clickCell(ce);
-
-        }
         //In case we don't click inside the grid
         return ClickResult.MISSED;
     }
