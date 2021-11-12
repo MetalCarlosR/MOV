@@ -134,12 +134,12 @@ public class Cell extends CircleButton{
         double radius = (double) getRad();
 
         if(_excitedTimer > 0)
-            radius+=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;;
+            radius-=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;
         if(_focus)
         {
-            radius += (((Math.sin(_focusAnimationTime *2)+1)/2)*3);
             graphics.setColor(0xFF000000);
             graphics.fillCircle(_posX,_posY,(radius+ (double) _focusRingSize));
+            radius -= (((Math.sin(_focusAnimationTime *2)+1)/2)*3)*_scale;
         }
         graphics.setColor(color);
         graphics.fillCircle(_posX,_posY,radius);

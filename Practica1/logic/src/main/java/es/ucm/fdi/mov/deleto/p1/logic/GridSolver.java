@@ -71,7 +71,7 @@ public class GridSolver {
                 // Already can see all its neighbours and has remaining open paths {1.}
                 int openDirs = openDirections(c, sel);
                 if(visibleNeigh == c.getNeigh() && openDirs>0)
-                    return new Clue(c,"This number can see all its dots\n\01",new Cell(sel.x(), sel.y(), Cell.State.Red));
+                    return new Clue(c,"This number can see all its dots\n ",new Cell(sel.x(), sel.y(), Cell.State.Red));
 
                 //Not enough neighbours and only one direction remains {8.}
                 else if(openDirs == 1)
