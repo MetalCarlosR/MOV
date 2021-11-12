@@ -4,6 +4,7 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 public class Tween {
 
     private final ITweenTarget _target;
+    private final boolean _loop;
 
     private double _actualTime;
     private final double _duration;
@@ -15,31 +16,47 @@ public class Tween {
         easeIn,
         easeInOut,
         easeOut,
-        LINEAR
+        sin,
+        linear
     }
 
     InterpolationType _type;
 
+    public Tween(boolean loop, double duration, InterpolationType t)
+    {
+        _loop = loop;
+        _duration = duration;
+        _type = t;
+        _target = null;
+    }
 
     public Tween(ITweenTarget target, double duration, InterpolationType t)
     {
         _duration = duration;
         _target = target;
         _type = t;
+        _loop = false;
     }
-    public Object get(){return  _target.get();}
+    public Object get(){
+        if(_target!=null)
+            return  _target.get();
+        else
+            return null;
+    }
 
     public double ease(){
         switch (_type)
         {
-            case LINEAR:
+            case linear:
                 return _factor;
             case easeIn:
                 return easeInSine(_factor);
             case easeInOut:
                 return easeInOutCubic(_factor);
             case easeOut:
-                return  easeOutQuart(_factor);
+                return easeOutQuart(_factor);
+            case sin:
+                return sin(_factor);
             default:
                 return -1;
         }
@@ -49,7 +66,11 @@ public class Tween {
     {
         _actualTime+=dt;
         if(finished())
-           return;
+            if(_loop)
+                _actualTime = 0;
+            else
+                return;
+
         _factor = (_actualTime)/_duration;
         if(_target!=null)
             _target.update(ease());
@@ -69,6 +90,10 @@ public class Tween {
 
     private double easeInSine(double x) {
         return 1 - Math.cos((x * Math.PI) / 2);
+    }
+    private double sin(double x)
+    {
+        return Math.sin(x);
     }
 
     //Easing functions from: easings.net

@@ -33,10 +33,9 @@ public class Cell extends CircleButton{
     static final int _focusRingSize = 2; // The amount of pixels the focused cell ring occupies
     static  double _opacity = 1;                 // Used when transitioning, fades out the circles
 
-    double _excitedTimer;                // Used to animate cell if it is excited i.e. clicked when locked
+    boolean _excited;                    // Used to animate cell if it is excited i.e. clicked when locked
     static final double EXCITED_DURATION = 0.75; // Amount of seconds the excitement lasts
 
-    double _focusAnimationTime = 0;      // Used to animate the current focused cell
     private boolean _focus = false;      // Focused cells are rendered with a ring on it and an animation
 
     private Tween _tweener;
@@ -108,10 +107,6 @@ public class Cell extends CircleButton{
      * @param deltaTime time since previous update
      */
     public void onUpdate(double deltaTime) {
-        if(_focus)
-            _focusAnimationTime +=deltaTime;
-        if(_excitedTimer > 0)
-            _excitedTimer -=deltaTime;
         if(_tweener != null)
             _tweener.update(deltaTime);
     }
@@ -123,7 +118,8 @@ public class Cell extends CircleButton{
     private void toggleLockedGraphics()
     {
         _showLockedGraphics = !_showLockedGraphics;
-        _excitedTimer = EXCITED_DURATION;
+        _excited = true;
+        _tweener = new Tween(null,EXCITED_DURATION, Tween.InterpolationType.easeInOut);
     }
 
     /**
@@ -138,13 +134,16 @@ public class Cell extends CircleButton{
 
         double radius = (double) getRad();
 
-        if(_excitedTimer > 0)
-            radius-=(((int)((easeInOutCubic(_excitedTimer / EXCITED_DURATION))*8))%2)*2;
+        if(_excited)
+        {
+            radius-=(((int)(_tweener.ease()*8))%2)*2;
+            _excited = !_tweener.finished();
+        }
         if(_focus)
         {
             graphics.setColor(0xFF000000);
             graphics.fillCircle(_posX,_posY,(radius+ (double) _focusRingSize));
-            radius -= (((Math.sin(_focusAnimationTime *2)+1)/2)*3)*_scale;
+            radius -= ((_tweener.ease())*3)*_scale;
         }
         graphics.setColor(color);
         graphics.fillCircle(_posX,_posY,radius);
@@ -167,7 +166,7 @@ public class Cell extends CircleButton{
      * Function that calls draw with color by state
      */
     public void draw(IGraphics graphics, IImage lock, IFont font) {
-        draw(graphics,lock,font,(_tweener == null) ? getColorByState(_state) : (Integer)_tweener.get());
+        draw(graphics,lock,font,(_tweener == null || _tweener.get() == null) ? getColorByState(_state) : (Integer)_tweener.get());
     }
 
     /**
@@ -178,16 +177,6 @@ public class Cell extends CircleButton{
     static public int getColorByState(Cell.State state)
     {
         return state == Cell.State.Blue ?0xFF1CC0E0 : state == Cell.State.Red ? 0xFFFF384B : 0xFFEEEEEE;
-    }
-
-    /**
-     * Utility function for animations
-     *      Engine could be extended  with animation/tween module to facilitate this kind of behaviour
-     * @param x input to be interpolated by ease function
-     * @return interpolated output
-     */
-    private double easeInOutCubic(double x) {
-        return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     }
 
 
@@ -210,25 +199,30 @@ public class Cell extends CircleButton{
         _opacity=opacity;
     }
 
-
     public static void setScale(double s)
     {
         _scale = s;
     }
+
     public void lock()
     {
         _locked=true;
     }
+
     public void unlock()
     {
         _locked=false;
     }
+
     public void unfocus() {
         _focus = false;
     }
+
     public void focus(){
         _focus = true;
+        _tweener = new Tween(true,1, Tween.InterpolationType.easeInOut);
     }
+
     public void setNeigh(int n)
     {
         _neigh=n;

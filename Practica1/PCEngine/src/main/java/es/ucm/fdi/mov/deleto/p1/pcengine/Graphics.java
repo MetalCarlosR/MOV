@@ -76,9 +76,9 @@ public class Graphics implements IGraphics {
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
         _window.setSize(0, 0);
-
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
+
 
         _assetsPath = assetPath;
         _size = new Dimension();
@@ -97,18 +97,20 @@ public class Graphics implements IGraphics {
 
          //Set up resize callback to compute new scaling factors and offsets
         _window.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent componentEvent) {
-                recalculateScale();
+            public void componentResized(ComponentEvent e) {
+                recalculateScale(getWindow().getWidth(),getWindow().getHeight());
             }
         });
         _window.addWindowFocusListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
                 super.windowOpened(e);
-                recalculateScale();
+                recalculateScale(e.getWindow().getWidth(),e.getWindow().getHeight());
             }
         });
+
         _window.setSize(width, height);
+        recalculateScale(width,height);
     }
 
     /**************************
@@ -228,9 +230,9 @@ public class Graphics implements IGraphics {
     /**
      * Computes offsets and scale factor based on new dimensions and actual ref dimensions
      */
-    private void recalculateScale() {
-        int actualW = _window.getWidth();
-        int actualH = _window.getHeight();
+    private void recalculateScale(int w, int h) {
+        int actualW = w;
+        int actualH = h;
 
         int leftOffset = 0;
         int topOffset = 0;
