@@ -3,12 +3,12 @@ package es.ucm.fdi.mov.deleto.p1.logic;
 
 public class Tween {
 
-    ITweenTarget _target;
+    private final ITweenTarget _target;
 
     private double _actualTime;
-    double _duration;
+    private final double _duration;
 
-    private double scale;
+    private double _factor;
 
     public enum InterpolationType
     {
@@ -28,29 +28,31 @@ public class Tween {
         _type = t;
     }
     public Object get(){return  _target.get();}
+
+    public double ease(){
+        switch (_type)
+        {
+            case LINEAR:
+                return _factor;
+            case easeIn:
+                return easeInSine(_factor);
+            case easeInOut:
+                return easeInOutCubic(_factor);
+            case easeOut:
+                return  easeOutQuart(_factor);
+            default:
+                return -1;
+        }
+    }
+
     public void update(double dt)
     {
         _actualTime+=dt;
         if(finished())
            return;
-        scale = (_actualTime)/_duration;
-        System.out.println(scale);
-
-        switch (_type)
-        {
-            case LINEAR:
-                _target.update(scale);
-                break;
-            case easeIn:
-                _target.update(easeInSine(scale));
-                break;
-            case easeInOut:
-                _target.update(easeInOutCubic(scale));
-                break;
-            case easeOut:
-                _target.update(easeOutQuart(scale));
-                break;
-        }
+        _factor = (_actualTime)/_duration;
+        if(_target!=null)
+            _target.update(ease());
     }
     public boolean finished()
     {
