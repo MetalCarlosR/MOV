@@ -39,6 +39,7 @@ public class Cell extends CircleButton{
     double _focusAnimationTime = 0;      // Used to animate the current focused cell
     private boolean _focus = false;      // Focused cells are rendered with a ring on it and an animation
 
+    private Tween _tweener;
 
     /**
      * Default cell constructor
@@ -94,8 +95,10 @@ public class Cell extends CircleButton{
      */
     @Override
     public void clickCallback(){
-        if(!_locked)
+        if(!_locked) {
             _state = _state == State.Blue ? State.Red : _state == State.Red ? State.Grey : State.Blue;
+            _tweener = new Tween(new ColorModulator(getColorByState(getPreviousState()),getColorByState(_state)),0.200, Tween.InterpolationType.easeOut);
+        }
         else
             toggleLockedGraphics();
     }
@@ -109,6 +112,8 @@ public class Cell extends CircleButton{
             _focusAnimationTime +=deltaTime;
         if(_excitedTimer > 0)
             _excitedTimer -=deltaTime;
+        if(_tweener != null)
+            _tweener.update(deltaTime);
     }
 
     /**
@@ -162,7 +167,7 @@ public class Cell extends CircleButton{
      * Function that calls draw with color by state
      */
     public void draw(IGraphics graphics, IImage lock, IFont font) {
-        draw(graphics,lock,font,getColorByState(_state));
+        draw(graphics,lock,font,(_tweener == null) ? getColorByState(_state) : (Integer)_tweener.get());
     }
 
     /**
@@ -210,11 +215,11 @@ public class Cell extends CircleButton{
     {
         _scale = s;
     }
-    public  void lock()
+    public void lock()
     {
         _locked=true;
     }
-    public  void unlock()
+    public void unlock()
     {
         _locked=false;
     }
