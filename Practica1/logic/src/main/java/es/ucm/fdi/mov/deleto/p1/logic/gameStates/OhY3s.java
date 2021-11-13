@@ -100,7 +100,6 @@ public class OhY3s implements IApplication {
             @Override
             protected void clickCallback() {
                 _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
-                _currentMessage = "Oh Yes";
             }
         };
         x = ((padding*2)+(w))  +(w/2);

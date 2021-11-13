@@ -78,9 +78,11 @@ public class Graphics implements IGraphics {
          //Setting up window
         _window = new JFrame(name);
 
+        _window.setSize(width, height-1);
+        recalculateScale(width,height);
+
         _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         _window.setVisible(true);
-        _window.setSize(0, 0);
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
 
@@ -113,9 +115,8 @@ public class Graphics implements IGraphics {
                 recalculateScale(e.getWindow().getWidth(),e.getWindow().getHeight());
             }
         });
-
         _window.setSize(width, height);
-        recalculateScale(width,height);
+
     }
 
     /**************************

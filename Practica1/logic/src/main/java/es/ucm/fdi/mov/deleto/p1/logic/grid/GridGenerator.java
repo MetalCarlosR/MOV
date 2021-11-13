@@ -16,7 +16,8 @@ import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
  * We could probably optimize this further or make it more readable but
  * current priorities are on adding extra functionality and feedback to the gameplay itself.
  */
-public class GridGenerator {
+final class GridGenerator {
+    private GridGenerator(){}
 
     /**
      * Creates a new grid randomly, and if its not able, loads one from file
