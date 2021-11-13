@@ -1,14 +1,20 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.grid;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
 
+/**
+ * Has most of the game state:
+ *      Cells      -> Array of cells that compose the current game
+ *      Solver     -> Helper class that generates clues for the user on demand
+ *      UndoStack  -> Stack of the changes made by the user to allow going back on them
+ */
 public class Grid {
     /*********
      * Logic *
@@ -17,11 +23,9 @@ public class Grid {
     private final Cell[][] _cells;
 
     //Size of puzzle, mount of cells will be _size*_size because its always a square
-    private int _size = 0;
+    private final int _size;
     //Solution percentage
-    private int _percentage = 0;
-    //Amount of clicked cells
-    private int _clicked = 0;
+    private int _percentage;
 
     //GirdSolver is the one in charge of generating clues and a solvable puzzle
     private final GridSolver _gridSolver;
@@ -58,12 +62,6 @@ public class Grid {
     //This debug cell helps us indicate where the last clue was generated
     public Cell debugCell;
 
-    //Transition variables, transition is the animation at the end of each level completion
-    private double _actualTransitionTime;
-    private boolean _startTransition = false;
-    private ICallable _transitionCallback;
-
-
     /**
      * Construct a puzzle of size^2 cells. With the help of the gridSolver helper class we ensure
      * the puzzle to be solvable
@@ -71,7 +69,6 @@ public class Grid {
      * @param size number of cells on each side of the square grid
      */
     public Grid(int size){
-        _startTransition = false;
         _gridSolver = new GridSolver(this);
         _size = size;
         _cells = new Cell[size][size];
@@ -119,13 +116,6 @@ public class Grid {
         }
     }
 
-    /**
-     * Percentage getter
-     * @return the amount of free cells that have been clicked in percentage
-     */
-    public int getPercentage(){
-        return _percentage;
-    }
 
     /**
      * We try to process the click to change the state of a cell
@@ -157,16 +147,23 @@ public class Grid {
         //If it wasn't locked we update de undo stack and then te cell and percentage
         else {
             Cell first = undoStack.peekFirst();
-            if (first == null || first._col != c._posX || first._row != c._posY)
-                undoStack.addFirst(new Cell(c._col, c._row, c.getPreviousState()));
+            if (first == null || first.col() != c.x() || first.row() != c.y())
+                undoStack.addFirst(new Cell(c.col(), c.row(), c.getPreviousState()));
 
             computePercentage();
             return ClickResult.FREE;
         }
     }
 
+    /**
+     * We calculate current clicked cells to display percentage on screen.
+     *
+     * This could be optimized to always have the amount of clicked cells updated on clicks and undos.
+     * But this is not that slow because we only compute it when one of those events occurs.
+     */
     private void computePercentage() {
-        _clicked = 0;
+        //Amount of clicked cells
+        int _clicked = 0;
         for (Cell[] row : _cells)
             for(Cell cell : row)
                 if(!cell.isLocked() && cell.getState()!= Cell.State.Grey)
@@ -193,13 +190,10 @@ public class Grid {
     }
 
     /**
-     * Starts the transition, blocks all the cells and saves the callback
-     * @param onTransition callback to be executed once the transition is completed
+     * Blocks all the cells
      */
-    public void setTransition(ICallable onTransition) {
-        _startTransition = true;
-        _transitionCallback = onTransition;
-
+    public void lockCells() {
+        //Lock all cells
         for (Cell[] line: _cells) {
             for (Cell c:line) {
                 c.lock();
@@ -213,33 +207,10 @@ public class Grid {
      * @param deltaTime the ms since the previous update
      */
     public void onUpdate(double deltaTime) {
-        double opacity=1;
-        if(_startTransition)
-        {
-            _actualTransitionTime+=deltaTime;
-            //The transition has a second delay where it doesn't start the fade but cells are locked.
-            //So we wait.
-            double TRANSITION_TARGET_DELAY = 1;
-            if(_actualTransitionTime > TRANSITION_TARGET_DELAY)
-            {
-                //We compute how far into the transition we are, and get the opacity by inverting it
-                double TRANSITION_TARGET_TIME = 2;
-                opacity = 1 - ((_actualTransitionTime- TRANSITION_TARGET_DELAY)/ TRANSITION_TARGET_TIME);
-                Cell.setOpacity(opacity);
-                //On transition completed we call the transition callback
-                if(opacity<= 0)
-                {
-                    _startTransition = false;
-                    _transitionCallback.call();
-                    return;
-                }
-            }
-        }
         //Forward call so each cell can update its animations
         for(Cell[] line : _cells)
-            for(Cell c : line) {
+            for(Cell c : line)
                 c.onUpdate(deltaTime);
-            }
     }
 
 
@@ -260,13 +231,22 @@ public class Grid {
             return null;
 
         Cell c = undoStack.removeFirst();
-        Cell cReal = getCell(c._col, c._row);
+        Cell cReal = getCell(c.col(), c.row());
 
         Cell.State s = c.getState();
         cReal.setState(s);
 
         computePercentage();
         return c;
+    }
+
+
+    /**
+     * Percentage getter
+     * @return the amount of free cells that have been clicked in percentage [0..100]
+     */
+    public int getPercentage(){
+        return _percentage;
     }
 
     /**
@@ -304,5 +284,5 @@ public class Grid {
      * size getter
      * @return the amount of cells a side of the grid has
      */
-    public int getSize() { return _size; };
+    public int getSize() { return _size; }
 }

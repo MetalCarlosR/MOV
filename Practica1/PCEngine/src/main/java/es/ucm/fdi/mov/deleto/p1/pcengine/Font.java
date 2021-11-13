@@ -1,6 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -22,14 +23,13 @@ public class Font implements IFont {
         _path = font;
     }
 
-    public void init() {
+    public void init() throws IOException {
         java.awt.Font baseFont;
         try (InputStream is = new FileInputStream(_path)) {
             baseFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, is);
         }
         catch (Exception e) {
-            System.err.println("Error loading font: " + e);
-            return;
+            throw new IOException();
         }
         _font = baseFont.deriveFont(_bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN,_size);
         System.out.println(_font.getSize());

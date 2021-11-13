@@ -45,12 +45,6 @@ public class Graphics extends SurfaceView implements IGraphics {
         _assetPath = assetPath;
     }
 
-    public float getScale() {
-        return _scale;
-    }
-    public  Vec2<Integer>getOffsets(){return new Vec2<>(_translateX,_translateY);}
-
-
     public void setScreenSize(int x, int y)
     {
         //We try width, then height

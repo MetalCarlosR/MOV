@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -7,12 +7,12 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
  */
 public abstract class RectangleButton implements IClickable{
     /**
-     * Position and radius of circle
+     * Position and sides of rectangle. For now final, no need to change.
      */
-    int _posX;
-    int _posY;
-    int _width;
-    int _height;
+    private final int _posX;
+    private final int _posY;
+    private final int _width;
+    private final int _height;
 
     protected abstract void clickCallback();
 
@@ -38,5 +38,6 @@ public abstract class RectangleButton implements IClickable{
         else
             return false;
     }
-
+    public int x(){return _posX;}
+    public int y(){return _posY;}
 }

@@ -1,8 +1,10 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
+import es.ucm.fdi.mov.deleto.p1.logic.tweens.ColorModulator;
+import es.ucm.fdi.mov.deleto.p1.logic.tweens.Tween;
 
 public class Cell extends CircleButton{
 
@@ -18,20 +20,20 @@ public class Cell extends CircleButton{
     /**
      * Logic state
      */
-    enum State{ Grey, Blue, Red }
+    public enum State{ Grey, Blue, Red }
     private State _state = State.Grey;
 
-    private int _neigh = 0;             // Amount of blue Cells we can see in all directions {N,S,E,W}
-    private boolean _locked = false;    // Whether the player can change the state of the cell or not
-    protected int _col;                 // Grid column
-    protected int _row;                 // Grid row
+    private int _neigh = 0;                 // Amount of blue Cells we can see in all directions {N,S,E,W}
+    private boolean _locked = false;        // Whether the player can change the state of the cell or not
+    private final int _col;                 // Grid column
+    private final int _row;                 // Grid row
 
 
     /**
      * Graphic state
      */
     static final int _focusRingSize = 2; // The amount of pixels the focused cell ring occupies
-    static  double _opacity = 1;                 // Used when transitioning, fades out the circles
+    static  double _opacity = 1;         // Used when transitioning, fades out the circles
 
     boolean _excited;                    // Used to animate cell if it is excited i.e. clicked when locked
     static final double EXCITED_DURATION = 0.75; // Amount of seconds the excitement lasts
@@ -70,7 +72,7 @@ public class Cell extends CircleButton{
      * Method to initialize a cell by passing a string. Used when reading maps from files
      *
      * @param data string of structure "N{f/l}" where N is the number of neighbours,
-     *             l means its locked and f means its free
+     *             l means its locked and f{b/r} means its free
      *
      *             Examples: "0f" "0l" "2l" 2f"
      */
@@ -244,6 +246,14 @@ public class Cell extends CircleButton{
 
     public boolean isLocked() {
         return _locked;
+    }
+    public int col()
+    {
+        return _col;
+    }
+    public int row()
+    {
+        return _row;
     }
 
 }

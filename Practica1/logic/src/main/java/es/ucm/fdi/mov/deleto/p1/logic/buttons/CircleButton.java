@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -12,7 +12,7 @@ public abstract class CircleButton implements IClickable{
     int _posX;
     int _posY;
     private int _rad;
-    int _holded = -1;
+    int _held = -1;
     int _originalRad = 0;
 
     public CircleButton(int x, int y, int buttonRad) {
@@ -22,8 +22,11 @@ public abstract class CircleButton implements IClickable{
         _originalRad = buttonRad;
     }
     public void setRad(int r){_rad=r;_originalRad=r;}
-    protected CircleButton() {
-    }
+
+    /**
+     * For empty constructor for empty cells
+     */
+    protected CircleButton() {}
 
     /**
      * Overridable click callback
@@ -42,24 +45,24 @@ public abstract class CircleButton implements IClickable{
             {
                 if(e.type() == TouchEvent.EventType.TOUCH)
                 {
-                    _holded = e.id();
+                    _held = e.id();
                     System.out.println("PRESS");
                     _rad*=.9;
                 }
-                else if(e.id() == _holded && e.type() == TouchEvent.EventType.RELEASE)
+                else if(e.id() == _held && e.type() == TouchEvent.EventType.RELEASE)
                 {
                     System.out.println("PITO");
                     _rad = _originalRad;
                     clickCallback();
-                    _holded = -1;
+                    _held = -1;
                     return  true;
                 }
             }
-        else if(e.type() == TouchEvent.EventType.RELEASE && _holded != -1)
+        else if(e.type() == TouchEvent.EventType.RELEASE && _held != -1)
         {
             System.out.println("OUT");
             _rad=_originalRad;
-            _holded = -1;
+            _held = -1;
         }
         return false;
     }
@@ -67,5 +70,7 @@ public abstract class CircleButton implements IClickable{
     public int getRad() {
         return _rad;
     }
+    public int x(){return _posX;}
+    public int y(){return _posY;}
 
 }

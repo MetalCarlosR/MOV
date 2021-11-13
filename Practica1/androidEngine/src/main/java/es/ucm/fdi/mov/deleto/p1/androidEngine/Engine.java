@@ -1,5 +1,6 @@
 package es.ucm.fdi.mov.deleto.p1.androidEngine;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,7 +10,6 @@ import java.util.List;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
-import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -40,14 +40,10 @@ public class Engine implements IEngine, Runnable {
     IApplication _app;
     IApplication _nextApp = null;
 
-    //Callback to close application on user demand
-    ICallable _exitFunction;
-
-    public Engine(IApplication app, Context context, String assetsPath, ICallable exit,
+    public Engine(IApplication app, Context context, String assetsPath,
                   int canvasWidth, int canvasHeight, int screenWidth, int screenHeight)
     {
         _app = app;
-        _exitFunction = exit;
         _context = context;
 
         _graphics = new Graphics(context, assetsPath);
@@ -137,8 +133,10 @@ public class Engine implements IEngine, Runnable {
         }
 
         //Our thread has died by calling Engine.exit() so we want the Android Application to close
-        if(_closeEngine)
-            _exitFunction.call();
+        if(_closeEngine) {
+            ((Activity)_context).finish();
+            System.exit(0);
+        }
     }
 
     @Override

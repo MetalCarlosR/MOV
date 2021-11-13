@@ -5,6 +5,8 @@ import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.CircleButton;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.RectangleButton;
 
 public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
@@ -41,9 +43,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public Menu(){}
 
     //Constructor called by game when the puzzle is completed or on back button pressed
-    public Menu(State state, String titleStr){
+    public Menu(State state){
         _state = state;
-        _titleStr = titleStr;
     }
 
     /**
@@ -119,9 +120,6 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         if(event.type() == TouchEvent.EventType.CLOSE_REQUEST)
             _engine.exit();
 
-        int x = event.x();
-        int y = event.y();
-
         //On Initial state check the 'Start Game' and 'Credit button'
         if(_state == State.Initial)
         {
@@ -176,7 +174,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
              */
             case Initial:
                 //Draw play button
-                g.drawText("Play", _startGameButton._posX, _startGameButton._posY, 2.5);
+                g.drawText("Play", _startGameButton.x(), _startGameButton.y(), 2.5);
 
                 //Draw bottom credits
                 g.setColor(0xffa0a0e0);
@@ -196,7 +194,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
                 //Draw select size buttons
                 for(int i = 0; i<6; i++)
                 {
-                    int btX = _sizeButtons[i]._posX; int btY = _sizeButtons[i]._posY;
+                    int btX = _sizeButtons[i].x(); int btY = _sizeButtons[i].y();
 
                     //Draw circle button with alternating color
                     g.setColor(i%2==0 ? 0xFF1CC0E0 : 0xFFFF384B);
@@ -209,7 +207,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
                 //Draw exit button
                 g.setOpacity(0.6f);
-                g.drawImage(_exit, _exitButton._posX, _exitButton._posY, 1.f,1.f);
+                g.drawImage(_exit, _exitButton.x(), _exitButton.y(), 1.f,1.f);
                 g.setOpacity(1.f);
                 break;
             default:

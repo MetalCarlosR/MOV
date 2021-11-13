@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.tweens;
 
 public class ColorModulator implements ITweenTarget<Integer> {
 

@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.grid;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -6,7 +6,16 @@ import java.util.Random;
 import java.util.Scanner;
 
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
 
+
+/**
+ * Purely static class to aid on grid generation
+ * Can generate solvable puzzles randomly or read them from file.
+ *
+ * We could probably optimize this further or make it more readable but
+ * current priorities are on adding extra functionality and feedback to the gameplay itself.
+ */
 public class GridGenerator {
 
     /**
@@ -126,7 +135,7 @@ public class GridGenerator {
      * Try setting one cell to blue if its neighbours allow it
      * @param c the cell that will be tested
      * @param solver the grid to chek if it can be blue
-     * @return
+     * @return wheter we can set it or not
      */
     private static boolean TryBlue(Cell c, GridSolver solver){
         c.setState(Cell.State.Blue);
@@ -134,7 +143,7 @@ public class GridGenerator {
         for (int i = 0; i < solver._dirs.size(); i++) {
             // and search if adding to blue the cell, will exceed the neighbours of one of its neighbours
             for (int j = 0; j < solver._grid.getSize(); j++) {
-                Cell ady = solver._grid.getCell(c._col + solver._dirs.get(i).x() * j, c._row + solver._dirs.get(i).y() * j);
+                Cell ady = solver._grid.getCell(c.col() + solver._dirs.get(i).x() * j, c.row() + solver._dirs.get(i).y() * j);
                 if(ady != null){
                     // if one of them exceeds the maximum, the cell is reset
                     if(solver.visibleNeighbours(ady) > solver._grid.getSize()){
@@ -161,7 +170,7 @@ public class GridGenerator {
         while(!solved){
             Clue clue = solver.getClue();
             // see if there is any clue remaining
-            if(clue == null || clue.getCorrectState() == null){
+            if(clue == null || clue.correctState() == null){
                 // if there is not any new clue, add a new grey cell as locked
                 int rand = r.nextInt(solver._visibleCells.size());
                 Cell c = solver._visibleCells.get(rand);
@@ -175,18 +184,18 @@ public class GridGenerator {
             }
             else{
                 // if there are still clues, keep following them until the game is over or there isnt any
-                int x = clue.getCorrectState()._col;
-                int y = clue.getCorrectState()._row;
+                int x = clue.correctState().col();
+                int y = clue.correctState().row();
                 Cell c = solver._grid.getCell(x,y);
                 if(!c.isLocked()){
                     solver._visibleCells.remove(c);
-                    c.setState(clue.getCorrectState().getState());
+                    c.setState(clue.correctState().getState());
                 }
                 else{
                     // if the clue returns a locked cell to edit
                     System.err.println("La pista debería ser editable: ");
-                    System.err.println(c._col + " " + c._row);
-                    System.err.println(clue.getMessage());
+                    System.err.println(c.col() + " " + c.row());
+                    System.err.println(clue.message());
                 }
 
             }
@@ -194,7 +203,7 @@ public class GridGenerator {
         }
 
         Clue c = solver.getClue();
-        return c == null || c.getCorrectState() == null;
+        return c == null || c.correctState() == null;
     }
 
     /**
@@ -245,7 +254,7 @@ public class GridGenerator {
     {
         for(Vec2<Integer> d:solver._dirs)
         {
-            Cell next = solver._grid.getCell(c._col +d.x(), c._row +d.y());
+            Cell next = solver._grid.getCell(c.col() +d.x(), c.row() +d.y());
             if(next!=null && next.getState() != Cell.State.Red)
                 return  false;
         }

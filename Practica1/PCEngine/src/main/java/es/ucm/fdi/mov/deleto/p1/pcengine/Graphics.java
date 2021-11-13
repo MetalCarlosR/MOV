@@ -15,8 +15,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -34,32 +36,33 @@ public class Graphics implements IGraphics {
      * Stuff for scaling *
      *********************/
 
-    static int WINDOW_MENU_HEIGHT = 23;
-    static int WINDOW_BORDER = 8;
+    protected static int WINDOW_MENU_HEIGHT = 23;
+    protected static int WINDOW_BORDER = 8;
 
-    int    _refWidth;
-    int    _refHeight;
-    double _refFactor;
+    protected int    _refWidth;
+    protected int    _refHeight;
+    protected double _refFactor;
 
-    int _originX=0;
-    int _originY=0;
+    protected int _originX=0;
+    protected int _originY=0;
 
-    int _endX=0;
-    int _endY=0;
+    protected int _endX=0;
+    protected int _endY=0;
 
-    Dimension _size;
+    private Dimension _size;
 
     /******************
      * Renderer State *
      ******************/
 
-    String _assetsPath;
-    java.awt.Font _actualFont;
-    Color _actualColor = new Color(0);
+    protected String _assetsPath;
+    private java.awt.Font _actualFont;
+    private Color _actualColor = new Color(0);
 
-    JFrame _window;
-    BufferStrategy _strategy;
-    java.awt.Graphics _buffer;
+    protected JFrame _window;
+    private BufferStrategy _strategy;
+    private java.awt.Graphics _buffer;
+    protected Engine _engine;
 
     /**
      * Sets up window and configures rendering
@@ -68,7 +71,9 @@ public class Graphics implements IGraphics {
      * @param width window initial width
      * @param height window initial height
      */
-    public Graphics(String name, String assetPath, int width, int height) {
+    public Graphics(Engine engine,String name, String assetPath, int width, int height) {
+
+        _engine = engine; //To report errors
 
          //Setting up window
         _window = new JFrame(name);
@@ -203,13 +208,25 @@ public class Graphics implements IGraphics {
 
     @Override
     public IImage newImage(String name) {
-        return new Image(_assetsPath + "sprites/" + name);
+        try {
+            return new Image(_assetsPath + "sprites/" + name);
+        } catch (IOException e) {
+            _engine.panic("could not load image at: "+_assetsPath + "sprites/"+name,"Image loading error");
+            return null;
+        }
     }
 
     @Override
     public IFont newFont(String fileName, int size, boolean isBold) {
         Font ret = new Font(_assetsPath + "fonts/"+fileName, size, isBold);
-        ret.init();
+        try
+        {
+            ret.init();
+        }
+        catch (IOException e)
+        {
+            _engine.panic("could not load font at: "+_assetsPath + "fonts/"+fileName,"Font loading error");
+        }
         return ret;
     }
 
@@ -221,7 +238,6 @@ public class Graphics implements IGraphics {
         _window.setVisible(false);
         _window.dispose();
     }
-
 
     /*******************
      * Scaling Methods *

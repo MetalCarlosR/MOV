@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.grid;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -6,7 +6,13 @@ import java.util.List;
 import java.util.Vector;
 
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
 
+/**
+ * This class is in charge of finding clues for the grid if it has them.
+ * On grid generation it delegates to the GridGenerator static class to implement grid generation
+ * algorithms but exposes the clue generation to aid generate solvable puzzles.
+ */
 public class GridSolver {
 
     public final Vector<Cell> _fixedCells = new Vector<Cell>();
@@ -96,7 +102,7 @@ public class GridSolver {
         for (Cell c: isolated) {
             return new Clue(c,(c.getState() == Cell.State.Grey) ?
                         "This one should be easy...":"A blue dot should always see at least one other",
-                        new Cell(c._col,c._row, Cell.State.Red));
+                        new Cell(c.col(),c.row(), Cell.State.Red));
         }
 
         //If no better clue has been found we return one of the errors stored in the worstClue
@@ -130,7 +136,7 @@ public class GridSolver {
     private int visibleNeighboursInDirection(Cell c, Vec2<Integer> d){
         int n = -1;
         while( c !=null  && c.getState() == Cell.State.Blue) {
-            c = _grid.getCell(c._col + d.x(), c._row + d.y());
+            c = _grid.getCell(c.col() + d.x(), c.row() + d.y());
             n++;
         }
         return n;
@@ -146,7 +152,7 @@ public class GridSolver {
     private int potentialNeighboursInDirection(Cell c, Vec2<Integer> d){
         int n = -1;
         while( c !=null  && c.getState() != Cell.State.Red) {
-            c = _grid.getCell(c._col + d.x(), c._row + d.y());
+            c = _grid.getCell(c.col() + d.x(), c.row() + d.y());
             n++;
         }
         return n;
@@ -159,13 +165,13 @@ public class GridSolver {
      * @return the position of the first found grey or null otherwise.
      */
     private Vec2<Integer> firstFreeInDirection(Cell c, Vec2<Integer> d){
-        c = _grid.getCell(c._col + d.x(),c._row + d.y());
+        c = _grid.getCell(c.col() + d.x(),c.row() + d.y());
         while( c!= null ){
             if(c.getState() == Cell.State.Grey)
-                return  new Vec2<Integer>(c._col,c._row);
+                return  new Vec2<Integer>(c.col(),c.row());
             else if(c.getState() == Cell.State.Red)
                 return  null;
-            c = _grid.getCell(c._col + d.x(),c._row + d.y());
+            c = _grid.getCell(c.col() + d.x(),c.row() + d.y());
         }
         return null;
     }
@@ -198,7 +204,7 @@ public class GridSolver {
             int i = 1;
             Cell ghostCell = null;
             do {
-                ghostCell = _grid.getCell(c._col + (d.x()*i), c._row + (d.y()*i));
+                ghostCell = _grid.getCell(c.col() + (d.x()*i), c.row() + (d.y()*i));
                 if(ghostCell == null)
                     break;
                 if(ghostCell.getState() == Cell.State.Grey)
@@ -208,7 +214,7 @@ public class GridSolver {
                     n = visibleNeighboursInDirection(ghostCell, d);
                     ghostCell.setState(Cell.State.Grey);
                     if(n + visible + 1 > c.getNeigh())
-                        return new Vec2<Integer>(ghostCell._col,ghostCell._row);
+                        return new Vec2<Integer>(ghostCell.col(),ghostCell.row());
                     break;
                 }
                 else if(ghostCell.getState()== Cell.State.Red)
@@ -298,7 +304,4 @@ public class GridSolver {
         }
         return ret;
     }
-
-
-
 }

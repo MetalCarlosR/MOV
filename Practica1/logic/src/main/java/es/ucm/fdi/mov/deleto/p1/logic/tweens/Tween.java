@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.tweens;
 
 
 public class Tween {
@@ -70,15 +70,27 @@ public class Tween {
                 _actualTime = 0;
             else
                 return;
-
-        _factor = (_actualTime)/_duration;
-        if(_target!=null)
-            _target.update(ease());
+        if(_actualTime>0)
+        {
+            _factor = (_actualTime)/_duration;
+            if(_target!=null)
+                _target.update(ease());
+        }
     }
     public boolean finished()
     {
         return _actualTime > _duration;
     }
+
+    public void delay(double d){
+        _actualTime-=d;
+    }
+
+    /***
+     *Easing functions from: easings.net
+     * @param x take a number between 0 and 1
+     * @return a number between 0 and 1
+     */
 
     private double easeInOutCubic(double x) {
         return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
@@ -96,27 +108,4 @@ public class Tween {
         return Math.sin(x);
     }
 
-    //Easing functions from: easings.net
 }
-
-/*
-*
-*
-* Cell
-*
-*
-* void setTween(0xff00ff)
-* * {
-* * * _teweener = new Tween(new ColorModulator(Cell.GetColorFromState(_state,Cell.getPreviousState)));
-* * }
-* void setTween(0.f)
-* void tween(double t)
-* {
-*    0xff00ff00 -> 0xffff0000
-* }
-*
-*
-*
-*
-*
-* */

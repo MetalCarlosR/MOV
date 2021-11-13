@@ -4,12 +4,15 @@ import java.util.Locale;
 import java.util.Random;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
-import es.ucm.fdi.mov.deleto.p1.engine.ICallable;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
+import es.ucm.fdi.mov.deleto.p1.logic.grid.Clue;
+import es.ucm.fdi.mov.deleto.p1.logic.grid.Grid;
+import es.ucm.fdi.mov.deleto.p1.logic.tweens.Tween;
 
 public class OhY3s implements IApplication {
 
@@ -20,6 +23,7 @@ public class OhY3s implements IApplication {
     private final Grid _grid;
     private final UIBar _bar;
 
+    private Tween _fader = null;
 
     //Resources
     IFont _font;
@@ -27,7 +31,7 @@ public class OhY3s implements IApplication {
     IFont _subtitle;
 
     //Title state
-    String _currentMessage = "";
+    static String _currentMessage = "";
     float _messageScale = 1f;
 
     //Title's dot state
@@ -79,10 +83,17 @@ public class OhY3s implements IApplication {
 
     /**
      * Called on each frame, only used to handle animations
-     * @param deltaTime
+     * @param deltaTime time since last frame
      */
     @Override
     public void onUpdate(double deltaTime) {
+        if(_fader != null)
+        {
+            _fader.update(deltaTime);
+            Cell.setOpacity(1-_fader.ease());
+            if(_fader.finished())
+                _engine.changeApp(new Menu(Menu.State.SelectSize));
+        }
         _grid.onUpdate(deltaTime);
         if(_focusedCell != null && _dotState != null)
             _dotAlpha +=deltaTime;
@@ -165,19 +176,23 @@ public class OhY3s implements IApplication {
      */
     @Override
     public void onEvent(TouchEvent event) {
-        //We ignore all types different than release.
-        //Possible improvement: process both click and release and act accordingly on each,
-        //animate click and act on release
+
         if(event.type() == TouchEvent.EventType.CLOSE_REQUEST){
-            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+            //this happens when we press back button on android build
+            _engine.changeApp(new Menu(Menu.State.SelectSize));
+            _currentMessage = "Oh Yes";
         }
-        else
-        if(event.type() == TouchEvent.EventType.TOUCH || event.type() == TouchEvent.EventType.RELEASE)
+        //If we are transitioning we ignore all game events
+        else if(_fader==null)
         {
-            if(clickOnGrid(event))
-                return;
-            if(event.type()== TouchEvent.EventType.RELEASE)
-                clickOnBottomBar(event);
+            //We don't use moves on this game, so we filter them out
+            if(event.type() == TouchEvent.EventType.TOUCH || event.type() == TouchEvent.EventType.RELEASE)
+            {
+                if(clickOnGrid(event))
+                    return;
+                if(event.type()== TouchEvent.EventType.RELEASE)
+                    clickOnBottomBar(event);
+            }
         }
 
     }
@@ -214,13 +229,14 @@ public class OhY3s implements IApplication {
             if (_grid.checkWin()) {
                 _currentMessage = WIN_MESSAGES[new Random().nextInt(WIN_MESSAGES.length)];
                 _messageScale = 1;
-                _grid.setTransition(new ICallable() {
-                    @Override
-                    public void call() {
-                        _engine.changeApp(new Menu(Menu.State.SelectSize, _currentMessage));
-                    }
-                });
+                _grid.lockCells();
                 _engine.getAudio().createAndPlay("Win.wav");
+
+                //Start transition
+                double DELAY = 1;
+                double FADE_DURATION = 2;
+                _fader = new Tween(null,FADE_DURATION,Tween.InterpolationType.easeOut);
+                _fader.delay(DELAY);
             } else {
                 _engine.getAudio().createAndPlay("ClueFail.wav");
                 handleNewClue();
@@ -254,7 +270,8 @@ public class OhY3s implements IApplication {
                 break;
             case CLOSE:
                 //Create a new Menu app on SelectSize state and change to it
-                _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+                _engine.changeApp(new Menu(Menu.State.SelectSize));
+                _currentMessage = "Oh Yes";
                 break;
             default:
                 throw new IllegalStateException("Unexpected action returned: " + action);
@@ -277,13 +294,13 @@ public class OhY3s implements IApplication {
             _grid.debugCell = null;
             Clue clue = _grid.getClue();
             if (clue != null) {
-                _currentMessage = clue.getMessage();
+                _currentMessage = clue.message();
                 _messageScale = 0.5f;
-                _focusedCell = clue.getCell();
+                _focusedCell = clue.cell();
                 _focusedCell.focus();
-                if (clue.getCorrectState() != null) {
-                    _grid.debugCell = _grid.getCell(clue.getCorrectState()._col, clue.getCorrectState()._row);
-                    _dotState = clue.getCorrectState().getState();
+                if (clue.correctState() != null) {
+                    _grid.debugCell = _grid.getCell(clue.correctState().col(), clue.correctState().row());
+                    _dotState = clue.correctState().getState();
                 }
                 _dotAlpha = 0;
                 _engine.getAudio().createAndPlay("Clue.wav");
@@ -300,7 +317,7 @@ public class OhY3s implements IApplication {
         _messageScale = 0.5f;
 
         if(undo != null){
-            _focusedCell = _grid.getCell(undo._col, undo._row);
+            _focusedCell = _grid.getCell(undo.col(), undo.row());
             _focusedCell.focus();
             Cell.State state = undo.getState();
             _currentMessage = String.format("This tile was reversed to %s",
@@ -315,7 +332,6 @@ public class OhY3s implements IApplication {
             _engine.getAudio().createAndPlay("ClueFail.wav");
         }
     }
-
 
     /**
      * Exit callback called by engine when this application closes. No resource freeing needed.

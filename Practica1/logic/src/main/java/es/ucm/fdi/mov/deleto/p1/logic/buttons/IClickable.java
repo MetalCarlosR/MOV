@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 

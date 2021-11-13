@@ -1,11 +1,14 @@
 package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import java.awt.Desktop;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+
+import javax.swing.JOptionPane;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
@@ -52,7 +55,7 @@ public class Engine implements IEngine {
     public Engine(IApplication app, String appName, String assetsPath, int width, int height) {
         _app = app;
 
-        _graphics = new Graphics(appName, assetsPath, width, height);
+        _graphics = new Graphics(this,appName, assetsPath, width, height);
         _audio = new Audio(assetsPath);
         _input = new Input(_graphics);
     }
@@ -126,6 +129,16 @@ public class Engine implements IEngine {
         else System.err.println("Could not open url: "+url);
     }
 
+
+    /*******************
+     * Error handling
+     *******************/
+
+    protected void panic(String error, String title)
+    {
+        JOptionPane.showMessageDialog(_graphics._window, error, title,JOptionPane.ERROR_MESSAGE);
+        _graphics._window.dispatchEvent(new WindowEvent(_graphics._window, WindowEvent.WINDOW_CLOSING));
+    }
 
     /***********
      * Getters *
