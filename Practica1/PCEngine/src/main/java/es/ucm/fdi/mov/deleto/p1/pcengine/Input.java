@@ -25,7 +25,6 @@ public class Input {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                System.out.println("EH"+e.getButton());
                 newTouchEvent(TouchEvent.EventType.TOUCH,e.getX(),e.getY(),e.getButton());
                 newTouchEvent(TouchEvent.EventType.RELEASE,e.getX(),e.getY(),e.getButton());
             }

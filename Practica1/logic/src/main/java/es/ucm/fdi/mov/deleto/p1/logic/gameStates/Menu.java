@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.gameStates;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -6,7 +6,8 @@ import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.logic.buttons.CircleButton;
-import es.ucm.fdi.mov.deleto.p1.logic.buttons.RectangleButton;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.ImageButton;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.TextButton;
 
 public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
@@ -34,17 +35,18 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
      * Buttons
      */
     CircleButton[] _sizeButtons;
-    RectangleButton _startGameButton;
-    RectangleButton _exitButton;
-    RectangleButton _creditButton;
+    TextButton _startGameButton;
+    ImageButton _exitButton;
+    TextButton _creditButton;
 
 
     //Default constructor
     public Menu(){}
 
     //Constructor called by game when the puzzle is completed or on back button pressed
-    public Menu(State state){
+    public Menu(State state, String title){
         _state = state;
+        _titleStr = title;
     }
 
     /**
@@ -65,21 +67,24 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _exit = g.newImage("close.png");
         _logo = g.newImage("q42.png");
 
-        _startGameButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()/2,56,56) {
+        int c = 0xFF1CC0E0;
+        _startGameButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()/2,56,56,
+                                        "Start game",0xff2c2c2c,c) {
             @Override
             protected void clickCallback() {
                 _state = State.SelectSize;
             }
         };
 
-        _exitButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()-_exit.getHeight(),_exit.getWidth(),_exit.getHeight()) {
+        _exitButton = new ImageButton(_exit, g.getLogicWidth()/2,g.getLogicHeight()-_exit.getHeight(),1) {
             @Override
             protected void clickCallback() {
                 _engine.exit();
             }
         };
 
-        _creditButton = new RectangleButton(g.getLogicWidth()/2,g.getLogicHeight()-132,200,36) {
+        _creditButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()-132,200,36,
+                                    "Deleto Studios copy of a Q42",0xffa0a0e0,0xff6060e0) {
             @Override
             protected void clickCallback() {
                 _engine.openURL("https://github.com/MetalCarlosR/MOV/tree/main/Practica1");
@@ -88,7 +93,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
 
         _sizeButtons = new CircleButton[6];
 
-        /**
+        /*
          * Create centered 'Select Size' buttons
          */
         final int padding = 20;
@@ -147,7 +152,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     public void onRender() {
         IGraphics g = _engine.getGraphics();
 
-        /**
+        /*
          * We always draw the title independent of state
          */
         int y = 46;
@@ -169,46 +174,44 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         //Draw rest based on state
         switch (_state)
         {
-            /**
+            /*
              * Draw the play button and credits
              */
             case Initial:
                 //Draw play button
-                g.drawText("Play", _startGameButton.x(), _startGameButton.y(), 2.5);
+                _startGameButton.draw(g,_regular);
 
                 //Draw bottom credits
-                g.setColor(0xffa0a0e0);
-                g.drawText("Deleto Studios copy of a Q42", g.getLogicWidth()/2,g.getLogicHeight()-132);
+                _creditButton.draw(g,_regular);
                 g.setColor(0xffc0c0c0);
                 g.drawText("game made by Martin Kool",     g.getLogicWidth()/2,g.getLogicHeight()-94);
-
                 g.drawImage(_logo,g.getLogicWidth()/2,g.getLogicHeight()-32,0.05f,0.05f);
                 break;
-            /**
+            /*
              * Draws subtitle, select size buttons and exit button
              */
             case SelectSize:
                 //Draw subtitle
                 g.drawText("Choose a size to play", g.getLogicWidth()/2,y);
 
+                int i = 0;
                 //Draw select size buttons
-                for(int i = 0; i<6; i++)
+                for(CircleButton b : _sizeButtons)
                 {
-                    int btX = _sizeButtons[i].x(); int btY = _sizeButtons[i].y();
+                    int btX = b.x();
+                    int btY = b.y();
 
                     //Draw circle button with alternating color
                     g.setColor(i%2==0 ? 0xFF1CC0E0 : 0xFFFF384B);
-                    g.fillCircle(btX,btY, _sizeButtons[i].getRad());
-                    g.setColor(0xffffffff);
+                    g.fillCircle(btX,btY, b.getRad());
 
+                    g.setColor(0xffffffff);
                     //Draw number on circle center
-                    g.drawText(Integer.toString(4+i),btX,btY,1.5);
+                    g.drawText(Integer.toString(4+i++),btX,btY,1.5);
                 }
 
                 //Draw exit button
-                g.setOpacity(0.6f);
-                g.drawImage(_exit, _exitButton.x(), _exitButton.y(), 1.f,1.f);
-                g.setOpacity(1.f);
+               _exitButton.draw(g,1);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + _state);

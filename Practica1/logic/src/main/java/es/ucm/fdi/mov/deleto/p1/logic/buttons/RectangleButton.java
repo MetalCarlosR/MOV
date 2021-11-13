@@ -5,17 +5,20 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 /**
  * Button class to abstract the handling of application clicks
  */
-public abstract class RectangleButton implements IClickable{
+public abstract class RectangleButton extends IButton {
     /**
      * Position and sides of rectangle. For now final, no need to change.
      */
-    private final int _posX;
-    private final int _posY;
+    protected final int _posX;
+    protected final int _posY;
     private final int _width;
     private final int _height;
 
-    protected abstract void clickCallback();
 
+    /**
+     * whole width and height.
+     * x and y centered
+     */
     public RectangleButton(int x, int y, int w, int h){
         _posX=x;
         _posY=y;
@@ -27,16 +30,11 @@ public abstract class RectangleButton implements IClickable{
      * Overridable click callback
      */
     @Override
-    public boolean click(TouchEvent ev) {
-        int dX = Math.abs(ev.x() - _posX);
-        int dY = Math.abs(ev.y() - _posY);
+    protected boolean hit(int x, int y) {
+        int dX = Math.abs(x - _posX);
+        int dY = Math.abs(y - _posY);
 
-        if( dX <= _width && dY <=_height) {
-            clickCallback();
-            return  true;
-        }
-        else
-            return false;
+        return ( dX <= _width && dY <=_height);
     }
     public int x(){return _posX;}
     public int y(){return _posY;}

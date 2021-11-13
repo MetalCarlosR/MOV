@@ -32,7 +32,6 @@ public class Font implements IFont {
             throw new IOException();
         }
         _font = baseFont.deriveFont(_bold ? java.awt.Font.BOLD : java.awt.Font.PLAIN,_size);
-        System.out.println(_font.getSize());
     }
 
     /**

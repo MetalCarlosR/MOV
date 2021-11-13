@@ -1,7 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcgame;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
-import es.ucm.fdi.mov.deleto.p1.logic.Menu;
+import es.ucm.fdi.mov.deleto.p1.logic.gameStates.Menu;
 import es.ucm.fdi.mov.deleto.p1.pcengine.Engine;
 
 public class PCGame {

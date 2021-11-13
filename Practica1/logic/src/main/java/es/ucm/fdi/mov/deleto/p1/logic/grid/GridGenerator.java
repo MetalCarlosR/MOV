@@ -20,7 +20,7 @@ public class GridGenerator {
 
     /**
      * Creates a new grid randomly, and if its not able, loads one from file
-     * @param solver
+     * @param solver the solver to test
      */
     public static void Generate(GridSolver solver){
         // generates the grid
@@ -63,7 +63,7 @@ public class GridGenerator {
      * Adds blue dots randomly into the grid,
      * following the rules from the game, such as no cell will see more than size blue cells
      * At the end, there won't be any locked cells yet, only the neighbours of each cell
-     * @param solver must be intialized all cells to red
+     * @param solver must be initialized all cells to red
      */
     private static void AddRandomBlueCells(GridSolver solver)
     {
@@ -86,7 +86,7 @@ public class GridGenerator {
             int j = 0;
             // try painting in blue a random number of cells in each direction
             while(totalNeighOfCell > 0 && j < 4 && maxBlue > 0){
-                int totalNeighsInDir = 0;
+                int totalNeighsInDir;
                 if(totalNeighOfCell > 1) {
                     totalNeighsInDir = r.nextInt(totalNeighOfCell-1)+1;
                 }
@@ -135,7 +135,7 @@ public class GridGenerator {
      * Try setting one cell to blue if its neighbours allow it
      * @param c the cell that will be tested
      * @param solver the grid to chek if it can be blue
-     * @return wheter we can set it or not
+     * @return whether we can set it or not
      */
     private static boolean TryBlue(Cell c, GridSolver solver){
         c.setState(Cell.State.Blue);
@@ -158,8 +158,8 @@ public class GridGenerator {
 
     /**
      * Checks if a puzzle can be solved, following the tips a player would receive
-     * @param solver
-     * @return
+     * @param solver solver the solver to test
+     * @return whether the grid corresponding to the solver is solvable or no
      */
     public static boolean CanBeSolved(GridSolver solver)
     {
@@ -183,7 +183,7 @@ public class GridGenerator {
                 solver._fixedCells.add(c);
             }
             else{
-                // if there are still clues, keep following them until the game is over or there isnt any
+                // if there are still clues, keep following them until the game is over or there isn't any
                 int x = clue.correctState().col();
                 int y = clue.correctState().row();
                 Cell c = solver._grid.getCell(x,y);
@@ -193,7 +193,7 @@ public class GridGenerator {
                 }
                 else{
                     // if the clue returns a locked cell to edit
-                    System.err.println("La pista debería ser editable: ");
+                    System.err.println("Clue should not be editable: ");
                     System.err.println(c.col() + " " + c.row());
                     System.err.println(clue.message());
                 }
@@ -210,7 +210,7 @@ public class GridGenerator {
      * Loads a grid from file
      * The file format must be a size number of lines which contains the information for each cell
      * separated by spaces.
-     * Each cell will be formated like:
+     * Each cell will be formatted like:
      * "3f" or "2l" the number representing the neighbours and the f to indicate if its free, and l if its locked
      * @param file file name with the puzzle
      * @param solver grid in which it will be stored
@@ -235,7 +235,6 @@ public class GridGenerator {
             }
         }
         catch (FileNotFoundException e){
-            // TODO: hacemos esto really?
             e.printStackTrace();
             System.err.println("Couldn't open the file");
             System.err.println(System.getProperty("user.dir"));
@@ -248,7 +247,7 @@ public class GridGenerator {
      * Checks if a cell is isolated from the rest, meaning, no other cell is able to see it
      * @param c The cell to check
      * @param solver The rest of the grid
-     * @return
+     * @return whether is isolated or not
      */
     private static boolean IsIsolated(Cell c, GridSolver solver)
     {

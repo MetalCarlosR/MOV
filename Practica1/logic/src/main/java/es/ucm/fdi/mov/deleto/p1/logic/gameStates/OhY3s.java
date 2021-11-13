@@ -1,4 +1,4 @@
-package es.ucm.fdi.mov.deleto.p1.logic;
+package es.ucm.fdi.mov.deleto.p1.logic.gameStates;
 
 import java.util.Locale;
 import java.util.Random;
@@ -7,9 +7,11 @@ import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
+import es.ucm.fdi.mov.deleto.p1.logic.buttons.ImageButton;
 import es.ucm.fdi.mov.deleto.p1.logic.grid.Clue;
 import es.ucm.fdi.mov.deleto.p1.logic.grid.Grid;
 import es.ucm.fdi.mov.deleto.p1.logic.tweens.Tween;
@@ -19,9 +21,7 @@ public class OhY3s implements IApplication {
     //Engine reference
     IEngine _engine;
 
-    //Logic game objects containing buttons and game state
     private final Grid _grid;
-    private final UIBar _bar;
 
     private Tween _fader = null;
 
@@ -29,6 +29,8 @@ public class OhY3s implements IApplication {
     IFont _font;
     IFont _title;
     IFont _subtitle;
+
+    ImageButton[] _bottomButtons;
 
     //Title state
     static String _currentMessage = "";
@@ -54,7 +56,7 @@ public class OhY3s implements IApplication {
      */
     public OhY3s(int size) {
         _grid = new Grid(size);
-        _bar = new UIBar();
+        _bottomButtons = new ImageButton[3];
     }
 
 
@@ -76,9 +78,45 @@ public class OhY3s implements IApplication {
         _title = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",60,true);
         _subtitle = _engine.getGraphics().newFont("JosefinSans-Bold.ttf",24,false);
 
-        //Calls init on each object so they can load their resources
-        _bar.init(_engine.getGraphics());
         _grid.init(_engine.getGraphics());
+        initBar();
+    }
+    private void initBar()
+    {
+        IImage close = _engine.getGraphics().newImage("close.png");
+        IImage undo = _engine.getGraphics().newImage("history.png");
+        IImage clue = _engine.getGraphics().newImage("eye.png");
+        IImage[] images = new IImage[]{close,undo,clue};
+
+        IImage image = images[0];
+        float s = (float) 0.5;
+        int h = (int) (image.getHeight()*s);
+        int w = (int) (image.getWidth() * s);
+        int y = (int) (_engine.getGraphics().getLogicHeight()-(h));
+        int padding = ((_engine.getGraphics().getLogicWidth()-(3*w)) / 4);
+        int x = padding+(w/2);
+
+        _bottomButtons[0] = new ImageButton(images[0],x,y,s) {
+            @Override
+            protected void clickCallback() {
+                _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
+                _currentMessage = "Oh Yes";
+            }
+        };
+        x = ((padding*2)+(w))  +(w/2);
+        _bottomButtons[1] = new ImageButton(images[1],x,y,s) {
+            @Override
+            protected void clickCallback() {
+                handleUndo();
+            }
+        };
+        x = ((padding*3)+(w*2))+(w/2);
+        _bottomButtons[2] = new ImageButton(images[2],x,y,s) {
+            @Override
+            protected void clickCallback() {
+                handleNewClue();
+            }
+        };
     }
 
     /**
@@ -91,8 +129,9 @@ public class OhY3s implements IApplication {
         {
             _fader.update(deltaTime);
             Cell.setOpacity(1-_fader.ease());
-            if(_fader.finished())
-                _engine.changeApp(new Menu(Menu.State.SelectSize));
+            if(_fader.finished()) {
+                _engine.changeApp(new Menu(Menu.State.SelectSize, _currentMessage));
+            }
         }
         _grid.onUpdate(deltaTime);
         if(_focusedCell != null && _dotState != null)
@@ -114,10 +153,12 @@ public class OhY3s implements IApplication {
         //Draw percentage
         _engine.getGraphics().setFont(_subtitle);
         _engine.getGraphics().setColor(0xFF777777);
-        _engine.getGraphics().drawText(String.format("%d%%", _grid.getPercentage()),(_engine.getGraphics().getLogicWidth()/2),500);
+        _engine.getGraphics().drawText(String.format(Locale.ENGLISH,"%d%%", _grid.getPercentage()),(_engine.getGraphics().getLogicWidth()/2),500);
 
         //Draw bottom UI bar
-        _bar.Draw();
+        for(ImageButton i : _bottomButtons)
+            i.draw(_engine.getGraphics(), (_fader != null && !_fader.finished()) ?
+                                            1.f-(float) _fader.ease() :0.8f);
     }
 
     /**
@@ -179,7 +220,7 @@ public class OhY3s implements IApplication {
 
         if(event.type() == TouchEvent.EventType.CLOSE_REQUEST){
             //this happens when we press back button on android build
-            _engine.changeApp(new Menu(Menu.State.SelectSize));
+            _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
             _currentMessage = "Oh Yes";
         }
         //If we are transitioning we ignore all game events
@@ -190,8 +231,10 @@ public class OhY3s implements IApplication {
             {
                 if(clickOnGrid(event))
                     return;
-                if(event.type()== TouchEvent.EventType.RELEASE)
-                    clickOnBottomBar(event);
+
+                for(ImageButton i : _bottomButtons)
+                    if(i.click(event))
+                        return;
             }
         }
 
@@ -242,41 +285,6 @@ public class OhY3s implements IApplication {
                 handleNewClue();
             }
         }
-    }
-
-    /**
-     * Handles a click on bottom game bar of buttons. Three buttons: Clue, Undo and GoBack
-     * @param event
-     * @return
-     */
-
-    private  boolean clickOnBottomBar(TouchEvent event)
-    {
-        UIBar.Action action = _bar.HandleClick(event.x(),event.y());
-        if(action == UIBar.Action.NO_ACTION) {
-            return false;
-        }
-
-        //Whether we click on a clue or undo, last focused cell must be reset
-        if(_focusedCell !=null)
-            _focusedCell.unfocus();
-
-        switch (action){
-            case CLUE:
-                handleNewClue();
-                break;
-            case UNDO:
-                handleUndo();
-                break;
-            case CLOSE:
-                //Create a new Menu app on SelectSize state and change to it
-                _engine.changeApp(new Menu(Menu.State.SelectSize));
-                _currentMessage = "Oh Yes";
-                break;
-            default:
-                throw new IllegalStateException("Unexpected action returned: " + action);
-        }
-        return  true;
     }
 
     /**

@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Engine;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
-import es.ucm.fdi.mov.deleto.p1.logic.Menu;
+import es.ucm.fdi.mov.deleto.p1.logic.gameStates.Menu;
 
 public class AGame extends AppCompatActivity{
 

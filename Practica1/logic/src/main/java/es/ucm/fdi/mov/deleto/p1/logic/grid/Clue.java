@@ -21,7 +21,7 @@ public class Clue {
         _correctState=correct;
     }
 
-    public Cell correctState(){return _correctState;};
-    public Cell cell(){return _cell;};
-    public String message(){return _message;};
+    public Cell correctState(){return _correctState;}
+    public Cell cell(){return _cell;}
+    public String message(){return _message;}
 }

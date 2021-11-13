@@ -5,14 +5,13 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 /**
  * Button class to abstract the handling of application clicks
  */
-public abstract class CircleButton implements IClickable{
+public abstract class CircleButton extends IButton {
     /**
      * Position and radius of circle
      */
     int _posX;
     int _posY;
     private int _rad;
-    int _held = -1;
     int _originalRad = 0;
 
     public CircleButton(int x, int y, int buttonRad) {
@@ -34,37 +33,22 @@ public abstract class CircleButton implements IClickable{
     protected abstract void clickCallback();
 
     @Override
-    public boolean click(TouchEvent e) {
-        if(e.type() == TouchEvent.EventType.SLIDE)
-            return false;
-        int dX = e.x() - _posX;
-        int dY = e.y() - _posY;
+    protected boolean hit(int x, int y) {
+        int dX = x - _posX;
+        int dY = y - _posY;
         double mag = (Math.sqrt((dX*dX) + (dY*dY)));
 
-        if(_originalRad >= mag)
-            {
-                if(e.type() == TouchEvent.EventType.TOUCH)
-                {
-                    _held = e.id();
-                    System.out.println("PRESS");
-                    _rad*=.9;
-                }
-                else if(e.id() == _held && e.type() == TouchEvent.EventType.RELEASE)
-                {
-                    System.out.println("PITO");
-                    _rad = _originalRad;
-                    clickCallback();
-                    _held = -1;
-                    return  true;
-                }
-            }
-        else if(e.type() == TouchEvent.EventType.RELEASE && _held != -1)
-        {
-            System.out.println("OUT");
-            _rad=_originalRad;
-            _held = -1;
-        }
-        return false;
+       return  _originalRad >= mag;
+    }
+
+    @Override
+    protected void held() {
+        _rad = (int) (_originalRad * .9f);
+    }
+
+    @Override
+    protected void reset() {
+        _rad = _originalRad;
     }
 
     public int getRad() {

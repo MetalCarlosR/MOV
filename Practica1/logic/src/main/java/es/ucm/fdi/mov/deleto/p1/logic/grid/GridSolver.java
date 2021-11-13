@@ -15,14 +15,14 @@ import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
  */
 public class GridSolver {
 
-    public final Vector<Cell> _fixedCells = new Vector<Cell>();
-    public final Vector<Cell> _visibleCells = new Vector<Cell>();
-    public final Vector<Cell> _isolated = new Vector<Cell>();
+    public final Vector<Cell> _fixedCells = new Vector<>();
+    public final Vector<Cell> _visibleCells = new Vector<>();
+    public final Vector<Cell> _isolated = new Vector<>();
 
-    public final List<Vec2<Integer>> _dirs = Arrays.asList(new Vec2<Integer >(-1, 0),
-                                                           new Vec2<Integer>(1 , 0),
-                                                           new Vec2<Integer>(0 ,-1),
-                                                           new Vec2<Integer>(0 , 1));
+    public final List<Vec2<Integer>> _dirs = Arrays.asList(new Vec2<>(-1, 0),
+            new Vec2<>(1, 0),
+            new Vec2<>(0, -1),
+            new Vec2<>(0, 1));
 
     public int _freeCells = 0;
     Grid _grid;
@@ -168,7 +168,7 @@ public class GridSolver {
         c = _grid.getCell(c.col() + d.x(),c.row() + d.y());
         while( c!= null ){
             if(c.getState() == Cell.State.Grey)
-                return  new Vec2<Integer>(c.col(),c.row());
+                return new Vec2<>(c.col(), c.row());
             else if(c.getState() == Cell.State.Red)
                 return  null;
             c = _grid.getCell(c.col() + d.x(),c.row() + d.y());
@@ -202,19 +202,19 @@ public class GridSolver {
         int visible = visibleNeighbours(c);
         for (Vec2<Integer> d: _dirs) {
             int i = 1;
-            Cell ghostCell = null;
+            Cell ghostCell;
             do {
                 ghostCell = _grid.getCell(c.col() + (d.x()*i), c.row() + (d.y()*i));
                 if(ghostCell == null)
                     break;
                 if(ghostCell.getState() == Cell.State.Grey)
                 {
-                    int n = 0;
+                    int n;
                     ghostCell.setState(Cell.State.Blue);
                     n = visibleNeighboursInDirection(ghostCell, d);
                     ghostCell.setState(Cell.State.Grey);
                     if(n + visible + 1 > c.getNeigh())
-                        return new Vec2<Integer>(ghostCell.col(),ghostCell.row());
+                        return new Vec2<>(ghostCell.col(), ghostCell.row());
                     break;
                 }
                 else if(ghostCell.getState()== Cell.State.Red)
@@ -284,7 +284,7 @@ public class GridSolver {
      * @return filtered fixed cells
      */
     private Vector<Cell> filterFixedCells(){
-        Vector<Cell> ret = new Vector<Cell>();
+        Vector<Cell> ret = new Vector<>();
         for(Cell c : _fixedCells){
             if(((visibleNeighbours(c) != c.getNeigh()) || canDiscardDirection(c)!=null)
                     && c.getState() != Cell.State.Red)
@@ -298,7 +298,7 @@ public class GridSolver {
      * @return filtered isolated cells
      */
     private Vector<Cell> filterIsolatedCells(){
-        Vector<Cell> ret = new Vector<Cell>();
+        Vector<Cell> ret = new Vector<>();
         for(Cell c : _isolated){
             if(c.getState() != Cell.State.Red) ret.add(c);
         }
