@@ -232,11 +232,22 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
     @Override
     public void onExit() {}
 
+    /**
+     * No need for Serialization of the menu
+     */
     @Override
     public Map<String, String> serialize() {
         return null;
     }
 
+    /**
+     * Because is the first app it receives the data for the map to load,
+     *      it forwards it to the game directly
+     * @param bundle map with the data of the game to recover
+     *               the data to recover is the size(4-9) and
+     *               a string that represents the current state
+     *               of the cells
+     */
     @Override
     public void deserialize(Map<String, String> bundle) {
         OhY3s game = new OhY3s(0);

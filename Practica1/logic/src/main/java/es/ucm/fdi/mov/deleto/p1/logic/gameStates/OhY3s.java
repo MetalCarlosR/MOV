@@ -1,6 +1,5 @@
 package es.ucm.fdi.mov.deleto.p1.logic.gameStates;
 
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -123,6 +122,11 @@ public class OhY3s implements IApplication {
         };
     }
 
+    /**
+     * We store the data of the current game on a map for easier Serialization
+     * The data to store is the level size(4-9) and a string that
+     *              represents the current state of the cells
+     */
     @Override
     public Map<String, String> serialize() {
         Map<String, String> dict = new HashMap<>();
@@ -131,6 +135,14 @@ public class OhY3s implements IApplication {
         return dict;
     }
 
+    /**
+     * Recieves a saved game from the menu to deserialize.
+     * Passes the data to the grid so it can build itself.
+     * @param bundle map with the data of the game to recover
+     *               the data to recover is the size(4-9) and
+     *               a string that epresents the current state
+     *               of the cells
+     */
     @Override
     public void deserialize(Map<String, String> bundle) {
         String level = (String)bundle.get("Level");
@@ -332,6 +344,11 @@ public class OhY3s implements IApplication {
         }
     }
 
+    /**
+     *  Clears the upper text title.
+     *  Also cleans any current focused cell
+     *          marked by clues.
+     */
     private boolean clearTitleState() {
         _currentMessage = "";
         if(_focusedCell != null){

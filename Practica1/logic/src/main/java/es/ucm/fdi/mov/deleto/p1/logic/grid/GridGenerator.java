@@ -68,6 +68,11 @@ public final class GridGenerator {
         }
     }
 
+    /**
+     * Returns a string with a formatted data representing the
+     *          values of all the cells in a given grid in order
+     * @param grid grid to read and serialize
+     */
     public static String Serialize(Grid grid)
     {
         StringBuilder data = new StringBuilder();
@@ -80,7 +85,12 @@ public final class GridGenerator {
         return data.toString();
     }
 
-
+    /**
+     * Sets the initial values for the grid solver for the grid
+     *              that we have just created
+     * @param solver grid solver to modify given the already
+     *               generated grid
+     */
     private static void finishGeneration(GridSolver solver) {
         // once its created
         solver._freeCells = 0;

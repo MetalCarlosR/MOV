@@ -95,6 +95,11 @@ public class Cell extends CircleButton{
             _state = def == 'b' ? State.Blue : def == 'r' ? State.Red : State.Grey;
     }
 
+    /**
+     * Returns formatted state of the cell for Serialization with the
+     *          structure "N{f/l}" where N is the number of neighbours,
+     *          l means its locked and f{b/r/g} means its free and its color
+     */
     public String toString()
     {
         String s = Integer.toString(_neigh)+(_locked ? 'l':(_state==State.Blue)? 'b':(_state==State.Red)?'r':'g');

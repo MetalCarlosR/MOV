@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
@@ -31,6 +34,9 @@ public class Engine implements IEngine, Runnable {
     //but we need to properly recover
     volatile Boolean _closeEngine = false;
 
+    // Map for storing the state when we recover the app
+    Map<String,String> _map = null;
+
     // We need this thread to take control of the rendering and update loop
     Thread _renderThread = null;
 
@@ -41,7 +47,7 @@ public class Engine implements IEngine, Runnable {
     IApplication _nextApp = null;
 
     public Engine(IApplication app, Context context, String assetsPath,
-                  int canvasWidth, int canvasHeight, int screenWidth, int screenHeight)
+                  int canvasWidth, int canvasHeight, int screenWidth, int screenHeight, Bundle bundle)
     {
         _app = app;
         _context = context;
@@ -54,7 +60,16 @@ public class Engine implements IEngine, Runnable {
         _input.setScale(_graphics._scale,_graphics._translateX, _graphics._translateY);
 
         _audio = new Audio(context.getAssets(),assetsPath);
-     }
+
+        if(bundle == null)
+            return;
+
+        _map = new HashMap<>();
+        for(String g : bundle.keySet()) {
+            _map.put(g, bundle.getString(g));
+        }
+
+    }
 
     @Override
     public void openURL(String url) {
@@ -96,10 +111,18 @@ public class Engine implements IEngine, Runnable {
         if (_renderThread != Thread.currentThread()) {
             throw new RuntimeException("run() should not be called directly");
         }
+        boolean firstLoop = true;
         while (_running) {
+
 
             //Init app and start measuring time
             _app.onInit(this);
+            if(firstLoop && _map != null && _map.get("_Saved").equals("True")) {
+                restoreState(_map);
+                firstLoop = false;
+                System.out.println("Restoring State");
+            }
+
             long lastFrameTime = System.nanoTime();
 
             while (_running) {
@@ -139,6 +162,32 @@ public class Engine implements IEngine, Runnable {
         }
     }
 
+    /**
+     *
+     * @param map  ---------------------------------------------------------------------------------
+     */
+    public void restoreState(Map<String, String> map) {
+        _app.deserialize(map);
+    }
+
+
+    /**
+     * Serialize and returns the current state of the application
+     */
+    public Map<String, String> getState() {
+
+        Map<String,String> map = _app.serialize();
+
+        if(map == null){
+            map = new HashMap<>();
+            map.put("_Saved","False");
+        }
+        else
+            map.put("_Saved","True");
+
+        return map;
+    }
+
     @Override
     public void exit() {
         _closeEngine = true;
@@ -167,6 +216,5 @@ public class Engine implements IEngine, Runnable {
     public IAudio getAudio() {
         return _audio;
     }
-
 
 }

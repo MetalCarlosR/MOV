@@ -9,13 +9,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
-
 
 import javax.swing.JOptionPane;
 
@@ -80,6 +77,7 @@ public class Engine implements IEngine {
         boolean firstLoop = true;
         while (running) {
 
+            //We check if we have a game to restore
             _app.onInit(this);
             if(firstLoop ) {
                 restoreState();
@@ -120,11 +118,17 @@ public class Engine implements IEngine {
                 running = true;
             }
         }
-        safeState();
+        //Try to save the state of the game for later reopening
+        saveState();
         _graphics.release();
     }
 
-    public void safeState()
+    /**
+     *  Creates a new file on the temporal folder of the os
+     *      where we serialize and store the information of the current state
+     *      of the game.
+     */
+    public void saveState()
     {
         String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
         System.err.println(path);
@@ -143,6 +147,13 @@ public class Engine implements IEngine {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     *  Try to find a previous saved state of a game to load.
+     *  If it finds it, calls the app to deserialize its contents.
+     *  Continues normally otherwise.
+     */
     public boolean restoreState()
     {
         String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
