@@ -80,8 +80,7 @@ public class Graphics implements IGraphics {
 
         _window.setSize(width, height-1);
         recalculateScale(width,height);
-
-        _window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE );
         _window.setVisible(true);
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
@@ -108,11 +107,20 @@ public class Graphics implements IGraphics {
                 recalculateScale(getWindow().getWidth(),getWindow().getHeight());
             }
         });
-        _window.addWindowFocusListener(new WindowAdapter() {
+        _window.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
                 super.windowOpened(e);
                 recalculateScale(e.getWindow().getWidth(),e.getWindow().getHeight());
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int i=JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?","Exit",JOptionPane.YES_NO_OPTION);
+                if(i==0)
+                {
+                    _engine.exit();
+                }
             }
         });
         _window.setSize(width, height);
@@ -238,6 +246,7 @@ public class Graphics implements IGraphics {
     {
         _window.setVisible(false);
         _window.dispose();
+        System.exit(0);
     }
 
     /*******************

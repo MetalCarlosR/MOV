@@ -67,8 +67,9 @@ public class Grid {
      * the puzzle to be solvable
      *
      * @param size number of cells on each side of the square grid
+     * @param level string that defines level cells, can be empty for random level
      */
-    public Grid(int size){
+    public Grid(int size, String level){
         _gridSolver = new GridSolver(this);
         _size = size;
         _cells = new Cell[size][size];
@@ -76,7 +77,10 @@ public class Grid {
             for (int j = 0; j < size; j++)
                 _cells[i][j] = new Cell(j,i, Cell.State.Red);
 
-        _gridSolver.generateLevel();
+        if(!level.equals(""))
+            _gridSolver.generateLevel(level);
+        else if(size>0)
+            _gridSolver.generateLevel();
         _percentage = 0;
     }
 
@@ -161,7 +165,7 @@ public class Grid {
      * This could be optimized to always have the amount of clicked cells updated on clicks and undos.
      * But this is not that slow because we only compute it when one of those events occurs.
      */
-    private void computePercentage() {
+    public void computePercentage() {
         //Amount of clicked cells
         int _clicked = 0;
         for (Cell[] row : _cells)

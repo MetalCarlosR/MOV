@@ -7,6 +7,9 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Engine;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 import es.ucm.fdi.mov.deleto.p1.logic.gameStates.Menu;
@@ -26,6 +29,11 @@ public class AGame extends AppCompatActivity{
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(_engine.getGraphics());
+
+        Dictionary<String,Object> dict = new Hashtable<>();
+        for(String g : savedInstanceState.keySet()) {
+            dict.put(g, savedInstanceState.get(g));
+        }
     }
 
 

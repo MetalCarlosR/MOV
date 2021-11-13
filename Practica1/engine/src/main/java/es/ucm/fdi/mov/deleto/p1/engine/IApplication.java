@@ -1,6 +1,9 @@
 package es.ucm.fdi.mov.deleto.p1.engine;
 
 
+import java.util.Dictionary;
+import java.util.Map;
+
 /**
  * Interface of what an application must implement to use our engine
  */
@@ -36,4 +39,10 @@ public interface IApplication {
      * @param event platform independent event
      */
     void onEvent(TouchEvent event);
+
+    /**
+    * Serialization methods for saving and recovering the state of the application
+    */
+    Map<String, String> serialize();
+    void deserialize(Map<String, String> bundle);
 }

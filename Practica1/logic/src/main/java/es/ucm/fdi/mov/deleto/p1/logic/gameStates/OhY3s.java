@@ -1,6 +1,9 @@
 package es.ucm.fdi.mov.deleto.p1.logic.gameStates;
 
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
@@ -14,6 +17,7 @@ import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
 import es.ucm.fdi.mov.deleto.p1.logic.buttons.ImageButton;
 import es.ucm.fdi.mov.deleto.p1.logic.grid.Clue;
 import es.ucm.fdi.mov.deleto.p1.logic.grid.Grid;
+import es.ucm.fdi.mov.deleto.p1.logic.grid.GridGenerator;
 import es.ucm.fdi.mov.deleto.p1.logic.tweens.Tween;
 
 public class OhY3s implements IApplication {
@@ -21,7 +25,7 @@ public class OhY3s implements IApplication {
     //Engine reference
     IEngine _engine;
 
-    private final Grid _grid;
+    private Grid _grid;
 
     private Tween _fader = null;
 
@@ -55,7 +59,7 @@ public class OhY3s implements IApplication {
      * @param size the amount of cells each side of the new square grid will have
      */
     public OhY3s(int size) {
-        _grid = new Grid(size);
+        _grid = new Grid(size, "");
         _bottomButtons = new ImageButton[3];
     }
 
@@ -99,6 +103,7 @@ public class OhY3s implements IApplication {
         _bottomButtons[0] = new ImageButton(images[0],x,y,s) {
             @Override
             protected void clickCallback() {
+                clearTitleState();
                 _engine.changeApp(new Menu(Menu.State.SelectSize, "Oh Yes"));
             }
         };
@@ -116,6 +121,23 @@ public class OhY3s implements IApplication {
                 handleNewClue();
             }
         };
+    }
+
+    @Override
+    public Map<String, String> serialize() {
+        Map<String, String> dict = new HashMap<>();
+        dict.put("Size",Integer.toString(_grid.getSize()));
+        dict.put("Level", GridGenerator.Serialize(_grid));
+        return dict;
+    }
+
+    @Override
+    public void deserialize(Map<String, String> bundle) {
+        String level = (String)bundle.get("Level");
+        int size = Integer.parseInt(bundle.get("Size"));
+
+        _grid = new Grid(size,level);
+        _grid.computePercentage();
     }
 
     /**
@@ -239,6 +261,7 @@ public class OhY3s implements IApplication {
 
     }
 
+
     /**
      * Game grid tries to handle the event
      *
@@ -291,13 +314,7 @@ public class OhY3s implements IApplication {
      */
     private void handleNewClue()
     {
-        if(_focusedCell != null){
-            _currentMessage = "";
-            _focusedCell.unfocus();
-            _focusedCell = null;
-            _grid.debugCell = null;
-        }
-        else {
+        if(!clearTitleState()){
             _grid.debugCell = null;
             Clue clue = _grid.getClue();
             if (clue != null) {
@@ -315,17 +332,23 @@ public class OhY3s implements IApplication {
         }
     }
 
+    private boolean clearTitleState() {
+        _currentMessage = "";
+        if(_focusedCell != null){
+            _focusedCell.unfocus();
+            _focusedCell = null;
+            _grid.debugCell = null;
+            return  true;
+        }
+        return  false;
+    }
+
     /**
      *  Undoes last player action and display on title message it's previous state
      */
     private void handleUndo()
     {
-        if(_focusedCell != null){
-            _currentMessage = "";
-            _focusedCell.unfocus();
-            _focusedCell = null;
-            _grid.debugCell = null;
-        }
+        clearTitleState();
         Cell undo = _grid.undoMove();
         _messageScale = 0.5f;
 

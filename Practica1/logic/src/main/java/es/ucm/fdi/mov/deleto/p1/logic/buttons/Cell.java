@@ -72,7 +72,7 @@ public class Cell extends CircleButton{
      * Method to initialize a cell by passing a string. Used when reading maps from files
      *
      * @param data string of structure "N{f/l}" where N is the number of neighbours,
-     *             l means its locked and f{b/r} means its free
+     *             l means its locked and f{b/r/g} means its free and its color
      *
      *             Examples: "0f" "0l" "2l" 2f"
      */
@@ -83,12 +83,23 @@ public class Cell extends CircleButton{
             return;
         }
         _neigh = Character.getNumericValue(data.charAt(0));
-        _locked = data.charAt(1) == 'l';
+        char def = data.charAt(1);
+        _locked = def == 'l';
         if(_locked){
-            if(_neigh > 0)
+            if(_neigh == 0)
+                _state = State.Red;
+            else
                 _state = State.Blue;
-            else _state = State.Red;
         }
+        else
+            _state = def == 'b' ? State.Blue : def == 'r' ? State.Red : State.Grey;
+    }
+
+    public String toString()
+    {
+        String s = Integer.toString(_neigh)+(_locked ? 'l':(_state==State.Blue)? 'b':(_state==State.Red)?'r':'g');
+        System.out.println(s);
+        return  s;
     }
 
     /**

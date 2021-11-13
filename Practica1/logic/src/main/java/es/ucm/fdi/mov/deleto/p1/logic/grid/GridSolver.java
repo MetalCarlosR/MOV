@@ -37,6 +37,13 @@ public class GridSolver {
 
     /**
      * Generates the grid using this solver to guarantee its possible to solve it
+     * @param level Level information
+     */
+    public void generateLevel(String level){
+        GridGenerator.Generate(this, level);
+    }
+    /**
+     * Generates the grid using this solver to guarantee its possible to solve it
      */
     public void generateLevel(){
         GridGenerator.Generate(this);

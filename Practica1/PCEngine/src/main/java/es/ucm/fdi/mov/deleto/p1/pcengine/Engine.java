@@ -2,10 +2,19 @@ package es.ucm.fdi.mov.deleto.p1.pcengine;
 
 import java.awt.Desktop;
 import java.awt.event.WindowEvent;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Scanner;
 
 
 import javax.swing.JOptionPane;
@@ -68,11 +77,17 @@ public class Engine implements IEngine {
         /**
          * Outer loop needed for app switching
          */
+        boolean firstLoop = true;
         while (running) {
 
-            //Init app and start measuring time
             _app.onInit(this);
+            if(firstLoop ) {
+                restoreState();
+                firstLoop = false;
+                System.out.println("Restoring State");
+            }
             long lastFrameTime = System.nanoTime();
+
 
             while (running) {
                 //Get delta time and call update
@@ -99,11 +114,59 @@ public class Engine implements IEngine {
             //if we have a requested next app, then set running to true and switch to it
             if (_nextApp != null) {
                 _app = _nextApp;
+                //Init app and start measuring time
+                _app.onInit(this);
                 _nextApp = null;
                 running = true;
             }
         }
+        safeState();
         _graphics.release();
+    }
+
+    public void safeState()
+    {
+        String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
+        System.err.println(path);
+        Map<String, String> ldapContent = _app.serialize();
+        if(ldapContent == null)
+            return;
+        Properties properties = new Properties();
+
+        for (Map.Entry<String,String> entry : ldapContent.entrySet()) {
+            properties.put(entry.getKey(), entry.getValue());
+        }
+
+        try {
+            properties.store(new FileOutputStream(path), null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public boolean restoreState()
+    {
+        String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
+        Map<String, String> ldapContent = new HashMap<String, String>();
+        Properties properties = new Properties();
+        try (FileInputStream stream = new FileInputStream(path)){
+            properties.load(stream);
+
+        } catch (IOException e) {
+            return false;
+        }
+
+        for (String key : properties.stringPropertyNames()) {
+            ldapContent.put(key, properties.get(key).toString());
+        }
+
+        _app.deserialize(ldapContent);
+
+        try {
+            Files.deleteIfExists(Paths.get(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
     @Override

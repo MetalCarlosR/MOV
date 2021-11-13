@@ -16,7 +16,7 @@ import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
  * We could probably optimize this further or make it more readable but
  * current priorities are on adding extra functionality and feedback to the gameplay itself.
  */
-final class GridGenerator {
+public final class GridGenerator {
     private GridGenerator(){}
 
     /**
@@ -33,6 +33,55 @@ final class GridGenerator {
             LoadGridFromFile("./Assets/examples/ex2.txt",solver);
         }
 
+        finishGeneration(solver);
+    }
+    /**
+     * Creates a new grid randomly, and if its not able, loads one from file
+     * @param solver the solver to test
+     */
+    public static void Generate(GridSolver solver, String levelData)
+    {
+        int i = 0;
+        for(String data : levelData.split("\\r?\\n")) {
+            String[] cellDefinitions = data.split(" ");
+            if (cellDefinitions.length != solver._grid.getSize())
+                throw new RuntimeException("Malformed map was given");
+
+            for (int j = 0; j < solver._grid.getSize(); j++) {
+                Cell c = new Cell(cellDefinitions[j], j, i);
+                solver._grid.setCell(c, j, i);
+
+                if (c.isLocked())
+                    solver._fixedCells.add(c);
+                else solver._freeCells++;
+            }
+            i++;
+        }
+        for (int x = 0; x < solver._grid.getSize(); x++) {
+            for (int y = 0; y < solver._grid.getSize(); y++) {
+                Cell c = solver._grid.getCell(x, y);
+                if (IsIsolated(c, solver)) {
+                    solver._isolated.add(c);
+                    solver._fixedCells.remove(c);
+                }
+            }
+        }
+    }
+
+    public static String Serialize(Grid grid)
+    {
+        StringBuilder data = new StringBuilder();
+        for(int i = 0; i<grid.getSize();i++)
+        {
+            for(int j = 0; j<grid.getSize();j++)
+                data.append(grid.getCell(j, i).toString()).append(" ");
+            data.append("\n");
+        }
+        return data.toString();
+    }
+
+
+    private static void finishGeneration(GridSolver solver) {
         // once its created
         solver._freeCells = 0;
         // sets the cells to the states and arrays they belong
@@ -52,7 +101,7 @@ final class GridGenerator {
         }
         // cleans the isolated cells from the algorithm and sets them free
         for(Cell is : solver._isolated){
-            if(is.isLocked() && IsIsolated(is,solver)){
+            if(is.isLocked() && IsIsolated(is, solver)){
                 is.unlock();
                 is.setState(Cell.State.Grey);
                 solver._freeCells++;

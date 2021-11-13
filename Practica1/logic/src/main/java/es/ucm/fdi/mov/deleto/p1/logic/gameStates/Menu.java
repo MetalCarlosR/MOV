@@ -1,5 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.logic.gameStates;
 
+import java.util.Map;
+
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -229,4 +231,16 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
      */
     @Override
     public void onExit() {}
+
+    @Override
+    public Map<String, String> serialize() {
+        return null;
+    }
+
+    @Override
+    public void deserialize(Map<String, String> bundle) {
+        OhY3s game = new OhY3s(0);
+        game.deserialize(bundle);
+        _engine.changeApp(game);
+    }
 }
