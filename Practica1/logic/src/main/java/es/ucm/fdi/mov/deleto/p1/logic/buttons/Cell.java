@@ -14,7 +14,7 @@ public class Cell extends CircleButton{
      *      _showLockedGraphics: when we click on a locked cell we show all locked cells
      */
     static private boolean _showLockedGraphics = false;
-    static private double _scale;
+    static private double _scale = 1;
 
 
     /**
@@ -98,7 +98,7 @@ public class Cell extends CircleButton{
     public void clickCallback(){
         if(!_locked) {
             _state = _state == State.Blue ? State.Red : _state == State.Red ? State.Grey : State.Blue;
-            _tweener = new Tween(new ColorModulator(getColorByState(getPreviousState()),getColorByState(_state)),0.200, Tween.InterpolationType.easeOut);
+            _tweener = new Tween(new ColorModulator(getColorByState(getPreviousState()),getColorByState(_state)),0.500, Tween.InterpolationType.easeOut);
         }
         else
             toggleLockedGraphics();

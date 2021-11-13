@@ -28,6 +28,7 @@ public class Tween {
         _duration = duration;
         _type = t;
         _target = null;
+        _actualTime = 0;
     }
 
     public Tween(ITweenTarget target, double duration, InterpolationType t)
@@ -36,6 +37,7 @@ public class Tween {
         _target = target;
         _type = t;
         _loop = false;
+        _actualTime = 0;
     }
     public Object get(){
         if(_target!=null)

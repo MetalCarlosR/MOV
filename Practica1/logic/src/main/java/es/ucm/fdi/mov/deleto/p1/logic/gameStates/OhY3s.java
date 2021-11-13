@@ -320,6 +320,12 @@ public class OhY3s implements IApplication {
      */
     private void handleUndo()
     {
+        if(_focusedCell != null){
+            _currentMessage = "";
+            _focusedCell.unfocus();
+            _focusedCell = null;
+            _grid.debugCell = null;
+        }
         Cell undo = _grid.undoMove();
         _messageScale = 0.5f;
 

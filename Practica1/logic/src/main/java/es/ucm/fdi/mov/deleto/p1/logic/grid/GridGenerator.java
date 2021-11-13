@@ -52,7 +52,7 @@ final class GridGenerator {
         }
         // cleans the isolated cells from the algorithm and sets them free
         for(Cell is : solver._isolated){
-            if(is.isLocked()){
+            if(is.isLocked() && IsIsolated(is,solver)){
                 is.unlock();
                 is.setState(Cell.State.Grey);
                 solver._freeCells++;
