@@ -1,6 +1,17 @@
 package es.ucm.fdi.mov.deleto.p1.logic.tweens;
 
 
+/**
+* Class for handling animations.
+ *
+ *  It simply counts the time that passes since it was created and based on that time
+ *  and the duration gives a interpolated number between 0 and 1 (factor). We have different
+ *  interpolation modes to use easing functions with the same Tween class.
+ *
+ *  Furthermore if the animation we want to have is more involved than simply multiplying a number by
+ *  the calculated factor it supports an interface ITweenTarget to apply more complex
+ *  behaviours. Right now we only have a ColorModulator that mixes between 2 colors
+*/
 public class Tween {
 
     private final ITweenTarget _target;

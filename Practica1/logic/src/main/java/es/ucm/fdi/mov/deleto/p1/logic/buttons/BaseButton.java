@@ -3,16 +3,18 @@ package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 /**
- * Interface for buttons to implement
- *  Could be extended to handle both Click and Releases so we can give more feedback on buttons
+ * Abstract class for buttons to implement
  */
-public abstract class IButton {
+public abstract class BaseButton {
 
     //Tracks last click id
     int _id = -1;
 
     /**
-     * Function to check if given click falls under IClickable space
+     *  If given event was TOUCH and inside bounds we store id and show held graphics,
+     *  if it was RELEASE and by the stored ID we reset and call callback.
+     *  We keep the state accordingly otherwise
+     *
      * @param event the TouchEvent that we want to handle
      * @return whether the click was inside bounding box
      */

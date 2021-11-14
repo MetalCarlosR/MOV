@@ -1,11 +1,10 @@
 package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
-import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
 /**
  * Button class to abstract the handling of application clicks
  */
-public abstract class RectangleButton extends IButton {
+public abstract class RectangleButton extends BaseButton {
     /**
      * Position and sides of rectangle. For now final, no need to change.
      */

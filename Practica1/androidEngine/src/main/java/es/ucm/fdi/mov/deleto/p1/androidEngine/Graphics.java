@@ -30,12 +30,14 @@ public class Graphics extends AbstractGraphics implements IGraphics {
     Engine _engine;
     SurfaceView _view;
 
+    int _clearColor;
+
     public Graphics(Context context, EngineOptions options, Engine engine) {
         _currentPaint = new Paint();
         _currentPaint.setFilterBitmap(true);
         _currentPaint.setAntiAlias(true);
         _currentPaint.setFlags(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG );
-
+        _clearColor = options.clearColor;
         _view = new SurfaceView(context);
         _holder = _view.getHolder();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -81,9 +83,9 @@ public class Graphics extends AbstractGraphics implements IGraphics {
         _canvas.drawBitmap(im.getScaled(width, height), (posX)-width/(float)2, (posY)-height/(float)2, _currentPaint);
     }
 
-    public void clear(int color) {
+    public void clear() {
         int prev = _currentPaint.getColor();
-        _currentPaint.setColor(color);
+        _currentPaint.setColor(_clearColor);
         _canvas.drawRect(0,0,_canvas.getWidth(), _canvas.getHeight(), _currentPaint);
         _currentPaint.setColor(prev);
         _canvas.translate(_translateX,_translateY);

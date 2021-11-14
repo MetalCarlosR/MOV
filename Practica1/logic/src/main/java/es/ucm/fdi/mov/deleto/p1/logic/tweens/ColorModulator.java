@@ -1,10 +1,15 @@
 package es.ucm.fdi.mov.deleto.p1.logic.tweens;
 
+/**
+ * TweenTarget that modulates 2 colors so when update gets
+ *  on 0 we return initial, 0.5 we return a 50 50 blend of them
+ *  and on 1 we return final and everything in between
+ */
 public class ColorModulator implements ITweenTarget<Integer> {
 
-    int _initial;
-    int _final;
-    int _actual;
+    private final int _initial;
+    private final int _final;
+    private int _actual;
 
     public ColorModulator(int i, int f)
     {

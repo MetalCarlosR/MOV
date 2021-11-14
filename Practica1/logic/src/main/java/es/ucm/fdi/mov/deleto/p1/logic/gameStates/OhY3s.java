@@ -5,6 +5,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
+import es.ucm.fdi.mov.deleto.p1.engine.AbstractEngine;
+import es.ucm.fdi.mov.deleto.p1.engine.AbstractGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
@@ -61,7 +63,6 @@ public class OhY3s implements IApplication {
         _grid = new Grid(size, "");
         _bottomButtons = new ImageButton[3];
     }
-
 
     /**
      * Load all resources needed and save the engine reference.

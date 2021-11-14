@@ -28,13 +28,15 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
      */
     protected IApplication _nextApp = null;
 
+    protected AbstractEngine(){}
 
     public void run() {
+        //This main loop is supposed to be ran on a different thread, as to get better
+        // use of platform resources
         if (_renderThread != Thread.currentThread()) {
             throw new RuntimeException("run() should not be called directly");
         }
         while (_running) {
-            int lost = 0;
             //Init app and start measuring time
             _app.onInit(this);
 
@@ -48,16 +50,16 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
                 lastFrameTime = currentTime;
                 double elapsedTime = (double) nanoElapsedTime / 1.0E9;
 
-                _app.onUpdate(elapsedTime);
-
                 pollEvents();
+
+                _app.onUpdate(elapsedTime);
 
                 render();
 
                 try {
-                    long diff = (long) ((long)(System.nanoTime()-lastFrameTime)/1.0E6);
-                    if( diff< 16l)
-                        Thread.sleep((long) (16-diff));
+                    long diff = (long) ((System.nanoTime()-lastFrameTime) /1.0E6);
+                    if( diff< 16L)
+                        Thread.sleep(16-diff);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -67,11 +69,15 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
 
            //if we have a requested next app, then set running to true and switch to it
             checkNextApp();
+        //otherwise exit and closeEngine
         }
         closeEngine();
     }
 
 
+    /**
+     * Checks if a next app has been set to swap states
+     */
     protected void checkNextApp() {
         if (_nextApp != null) {
             _app = _nextApp;
@@ -87,17 +93,17 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
     }
 
     /**
-     * Android specific resume method for application life cycle.
+     * Continues the main loop after pausing the application
      */
     public void resume(){
         System.out.println("RESUME");
         _running = true;
         _renderThread = new Thread(this);
         _renderThread.start();
-    };
+    }
 
     /**
-     * Android specific pause method for application life cycle
+     * Pause method to stop main loop without closing application
      */
     public void pause(){
         System.out.println("PAUSE");
@@ -113,26 +119,36 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
                 }
             }
         }
-    };
+    }
 
     /**
-     * --------- TO DO ------------
+     * Properly close all resources upon exiting main loop
      */
     protected abstract void  closeEngine();
 
     /**
-     * --------- TO DO ------------
+     * Platform specific way to poll all the events and send them to the current app
+     * to react.
      */
     protected abstract void pollEvents();
 
     /**
-     * --------- TO DO ------------
+     * Platform specific way to render, we need this because Desktop rendering can
+     * fail and needs to re-send rendering commands to application to repeat a frame
      */
     protected abstract void render();
 
     /**
-     * --------- TO DO ------------
+     * Platform specific way to save and restore the state of the application.
+     * This can be optionally implemented by applications that want to restore previous state
+     * when unexpectedly closed. For example if the application was a text editor you would
+     * probably want to store the current unsaved file somewhere to restored next time the
+     * app is launched.
+     *
+     * This saved state is temporary and managed by host OS. For permanently stored data
+     * we could further extend IEngine interface to facilitate some SaveData and LoadData
+     * methods that call serialize/deserialize and stored them on given paths.
      */
     public abstract void restoreState();
-
+    public abstract void saveState();
 }

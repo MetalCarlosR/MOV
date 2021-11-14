@@ -22,6 +22,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
+import sun.util.resources.cldr.ext.CurrencyNames_ce;
 
 /*****************************************************
  * All interface methods documented on the interface *
@@ -46,12 +47,14 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
     private Color _actualColor = new Color(0);
 
     protected JFrame _window;
-    private BufferStrategy _strategy;
+    private final BufferStrategy _strategy;
     private java.awt.Graphics _buffer;
     protected Engine _engine;
 
     String _imagePath;
     String _fontPath;
+
+    int _clearColor;
 
     /**
      * Sets up window and configures rendering
@@ -70,7 +73,7 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
         _window.setVisible(true);
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
-
+        _clearColor = options.clearColor;
 
         _imagePath = options.assetsPath+options.imagesPath;
         _fontPath = options.assetsPath+options.fontsPath;
@@ -154,8 +157,8 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
             _buffer.drawString(s, (x)-fX, (y)+fY/2);
         }
         int xX=0, yY=0;
-        xX = (int)(x+fX);
-        yY = (int)(y+fY/2);
+        xX = x+fX;
+        yY = y+fY/2;
         return new Vec2<>(xX,(yY));
     }
 
@@ -193,11 +196,11 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
         return repeat || _strategy.contentsLost();
     }
 
-    public void clear(int color) {
+    public void clear() {
         _size = _window.getSize();
 
         Color aux = _actualColor;
-        setColor(color);
+        setColor(_clearColor);
         _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
         setColor(aux.getRGB());
 

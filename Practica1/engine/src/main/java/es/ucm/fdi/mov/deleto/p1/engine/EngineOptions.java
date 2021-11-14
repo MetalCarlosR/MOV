@@ -15,9 +15,9 @@ public class EngineOptions {
     public int logicHeight;
     public int realWidth;
     public int realHeight;
+    public int clearColor;
 
-    public EngineOptions() {}
-    public EngineOptions( String p,String i, String f, String audio, int w, int h)
+    public EngineOptions( String p,String i, String f, String audio, int w, int h, int cC)
     {
         assetsPath = p;
         imagesPath = i;
@@ -25,5 +25,6 @@ public class EngineOptions {
         audioPath = audio;
         logicWidth = w;
         logicHeight = h;
+        clearColor = cC;
     }
 }

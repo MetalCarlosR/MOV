@@ -25,24 +25,13 @@ public class AGame extends AppCompatActivity{
         Point size = new Point();
         getWindowManager().getDefaultDisplay().getSize(size);
 
-
         Constants.OPTIONS.realWidth=size.x;
         Constants.OPTIONS.realHeight=size.y;
-
         _engine = new Engine(new Menu(),this,savedInstanceState, Constants.OPTIONS);
 
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(_engine.getGraphics().getView());
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Map<String,String> map = _engine.getState();
-        for(String g : map.keySet()) {
-            outState.putString(g,map.get(g));
-        }
     }
 
     @Override
@@ -58,8 +47,18 @@ public class AGame extends AppCompatActivity{
         _engine.pause();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Map<String,String> map = _engine.getState();
+        for(String g : map.keySet()) {
+            outState.putString(g,map.get(g));
+        }
+    }
+
     /**
-     * We can only capture here the onBackPressed event so we forward it to the engine
+     * We can only capture here the onBackPressed event so we forward it to the engine.
+     * This event occurs when the user presses the back button on the device
      */
     @Override
     public void onBackPressed() {

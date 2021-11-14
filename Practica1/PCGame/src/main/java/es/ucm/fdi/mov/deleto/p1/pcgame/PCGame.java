@@ -14,7 +14,6 @@ public class PCGame {
         Constants.OPTIONS.realHeight = 600;
         Constants.OPTIONS.realWidth = 400;
         Engine engine = new Engine(_game,"Oh Yes",Constants.OPTIONS, "Are you sure?");
-        engine.start();
     }
 
     static IApplication _game;

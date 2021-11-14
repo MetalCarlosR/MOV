@@ -1,11 +1,9 @@
 package es.ucm.fdi.mov.deleto.p1.logic.buttons;
 
-import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
-
 /**
  * Button class to abstract the handling of application clicks
  */
-public abstract class CircleButton extends IButton {
+public abstract class CircleButton extends BaseButton {
     /**
      * Position and radius of circle
      */
@@ -36,9 +34,9 @@ public abstract class CircleButton extends IButton {
     protected boolean hit(int x, int y) {
         int dX = x - _posX;
         int dY = y - _posY;
-        double mag = (Math.sqrt((dX*dX) + (dY*dY)));
+        double mag2 = (dX*dX) + (dY*dY);
 
-       return  _originalRad >= mag;
+        return  _originalRad * _originalRad >= mag2;
     }
 
     @Override

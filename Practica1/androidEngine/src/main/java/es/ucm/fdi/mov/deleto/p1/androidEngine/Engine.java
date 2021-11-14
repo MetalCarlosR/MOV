@@ -23,12 +23,9 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
  * All interface methods documented on the interface *
  *****************************************************/
 public class Engine extends AbstractEngine {
-
     Graphics _graphics;
     Input _input;
     Audio _audio;
-
-
 
     // Map for storing the state when we recover the app
     Map<String,String> _map = null;
@@ -62,19 +59,8 @@ public class Engine extends AbstractEngine {
         }
     }
 
-    @Override
-    public void openURL(String url) {
-        _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-    }
 
-    @Override
-    protected void closeEngine() {
-        //Our thread has died by calling Engine.exit() so we want the Android Application to close
-        if(_closeEngine) {
-            ((Activity)_context).finish();
-            System.exit(0);
-        }
-    }
+
 
     @Override
     protected void pollEvents() {
@@ -88,49 +74,81 @@ public class Engine extends AbstractEngine {
     @Override
     protected void render() {
         _graphics.prepareFrame();
-        _graphics.clear(0xFFFFFFFF);
+        _graphics.clear();
         _app.onRender();
         _graphics.present();
     }
-
-
-    public void restoreState() {
-        _app.deserialize(_map, this);
-        checkNextApp();
+    @Override
+    protected void closeEngine() {
+        //Our thread has died by calling Engine.exit() so we want the Android Application to close
+        if(_closeEngine) {
+            ((Activity)_context).finish();
+            System.exit(0);
+        }
     }
 
-    protected void panic(String message)
-    {
-        AlertDialog error = new AlertDialog.Builder(_context)
-                                .setTitle("Fatal Error")
-                                .setMessage(message)
-                                .setPositiveButton("Ok",(dialogInterface, i) -> exit())
-                                .setIcon(android.R.drawable.alert_dark_frame)
-                                .show();
-    }
-
+    /**************************
+     * Temporary State Storage*
+     * *  Read saveState() and storeState() on parent class for further information
+     **************************/
 
     /**
-     * Serialize and returns the current state of the application
+     * @return the current state to give AndroidOS to store
      */
     public Map<String, String> getState() {
+        return _map;
+    }
 
-        Map<String,String> map = _app.serialize();
+    /**
+     * Serialize and stores the current state of the application, called by Android Kernel
+     */
+    @Override
+    public void saveState() {
+        _map = _app.serialize();
 
-        if(map == null){
-            map = new HashMap<>();
-            map.put("_Saved","False");
+        if(_map == null){
+            _map = new HashMap<>();
+            _map.put("_Saved","False");
         }
         else
-            map.put("_Saved","True");
+            _map.put("_Saved","True");
+    }
 
-        return map;
+    /**
+     *  Try to find a previous saved state of a game to load.
+     *  If it finds it, calls the app to deserialize its contents.
+     *  Continues normally otherwise.
+     */
+    @Override
+    public void restoreState() {
+        _app.deserialize(_map, this);
+        //We need to check if the application has
+        //recuested to change app state
+        checkNextApp();
     }
 
     @Override
     public void exit() {
         _closeEngine = true;
         _running = false;
+    }
+
+    @Override
+    public void openURL(String url) {
+        _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+    /*******************
+     * Error handling
+     *******************/
+
+    protected void panic(String message)
+    {
+        new AlertDialog.Builder(_context)
+                .setTitle("Fatal Error")
+                .setMessage(message)
+                .setPositiveButton("Ok",(dialogInterface, i) -> exit())
+                .setIcon(android.R.drawable.alert_dark_frame)
+                .show();
     }
 
 

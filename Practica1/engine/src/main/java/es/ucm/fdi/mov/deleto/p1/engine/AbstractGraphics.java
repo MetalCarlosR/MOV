@@ -9,7 +9,7 @@ public abstract class AbstractGraphics {
     protected int _translateX=0;
     protected int _translateY=0;
 
-
+    protected AbstractGraphics(){}
     /**
      * Computes offsets and scale factor based on new dimensions and actual ref dimensions
      */

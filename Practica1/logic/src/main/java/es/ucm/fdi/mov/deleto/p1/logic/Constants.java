@@ -6,5 +6,7 @@ public class Constants {
     public static final boolean DEBUG =false;
     static int CanvasWidth = 400;
     static  int CanvasHeight = 600;
-    public static EngineOptions OPTIONS = new EngineOptions("","sprites/","fonts/","audio/",CanvasWidth,CanvasHeight);
+    public static EngineOptions OPTIONS
+            = new EngineOptions("","sprites/","fonts/","audio/",
+                                       CanvasWidth,CanvasHeight,0xffffffff);
 }

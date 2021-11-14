@@ -35,6 +35,7 @@ public class Engine extends AbstractEngine {
     Input _input;
     Audio _audio;
 
+    //Store applicationName, to use it on temp files
     String _appName;
 
 
@@ -49,27 +50,19 @@ public class Engine extends AbstractEngine {
         _app = app;
         _appName = appName;
 
+        //Initializes interfaces with given options
         _graphics = new Graphics(this,appName, options,askBeforeExit);
         _audio = new Audio(options.assetsPath+options.audioPath,this);
         _input = new Input(_graphics);
 
+        //We check if a previous state was saved
         restoreState();
-    }
-    public void start()
-    {
+
+        //Start the loop
         _renderThread = new Thread(this);
         _renderThread.start();
     }
 
-
-    @Override
-    protected void closeEngine() {
-        //Try to save the state of the game for later reopening
-        if(_closeEngine) {
-            saveState();
-            _graphics.release();
-        }
-    }
 
     @Override
     protected void pollEvents() {
@@ -84,16 +77,30 @@ public class Engine extends AbstractEngine {
     protected void render() {
         //We try to render in a loop because swing's swap buffer can fail
         do {
-            _graphics.clear(0xFFFFFFFF);
+            _graphics.clear();
             _app.onRender();
         }while(_running && _graphics.swapBuffers());
     }
 
+    @Override
+    protected void closeEngine() {
+        //Try to save the state of the game for later reopening
+        if(_closeEngine) {
+            saveState();
+            _graphics.release();
+        }
+    }
+
+    /**************************
+     * Temporary State Storage*
+     * *  Read saveState() and storeState() on parent class for further information
+     **************************/
+
     /**
      *  Creates a new file on the temporal folder of the os
-     *      where we serialize and store the information of the current state
-     *      of the game.
+     *  where we serialize and store the information of the current state.
      */
+    @Override
     public void saveState()
     {
         String path = System.getProperty("java.io.tmpdir")+_appName + ".txt";
@@ -136,6 +143,8 @@ public class Engine extends AbstractEngine {
         }
 
         _app.deserialize(ldapContent, this);
+        //We need to check if the application has
+        //recuested to change app state
         checkNextApp();
         try {
             Files.deleteIfExists(Paths.get(path));
