@@ -1,0 +1,3 @@
+#Sun Nov 14 22:00:52 CET 2021
+Size=6
+Level=0l 0l 0l 0l 3g 5l \n2l 2g 2g 0l 3l 5g \n0l 0l 0g 0g 3g 5l \n5g 5l 5g 5l 0l 4l \n5l 5l 5l 5l 0g 4g \n5g 5l 5l 5g 0l 0l \n

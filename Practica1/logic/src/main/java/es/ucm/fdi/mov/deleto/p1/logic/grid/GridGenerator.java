@@ -30,7 +30,7 @@ public final class GridGenerator {
             // if its not able, load it from file
             solver.reset();
             System.err.println("Couldn't generate a new map...\nLoading one from file");
-            LoadGridFromFile("./Assets/examples/ex2.txt",solver);
+            LoadGridFromFile("./Assets/examples/example" + solver._grid.getSize() + ".txt",solver);
         }
 
         finishGeneration(solver);
