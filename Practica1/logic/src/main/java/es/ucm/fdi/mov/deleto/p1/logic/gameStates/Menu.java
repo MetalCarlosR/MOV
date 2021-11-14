@@ -70,7 +70,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _logo = g.newImage("q42.png");
 
         int c = 0xFF1CC0E0;
-        _startGameButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()/2,56,56,
+        _startGameButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()/2,200,56,
                                         "Start game",0xff2c2c2c,c) {
             @Override
             protected void clickCallback() {
@@ -181,7 +181,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
              */
             case Initial:
                 //Draw play button
-                _startGameButton.draw(g,_regular);
+                _startGameButton.draw(g,_winMessageFont);
 
                 //Draw bottom credits
                 _creditButton.draw(g,_regular);
@@ -249,9 +249,9 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
      *               of the cells
      */
     @Override
-    public void deserialize(Map<String, String> bundle) {
+    public void deserialize(Map<String, String> bundle, IEngine engine) {
         OhY3s game = new OhY3s(0);
-        game.deserialize(bundle);
-        _engine.changeApp(game);
+        game.deserialize(bundle, engine);
+        engine.changeApp(game);
     }
 }

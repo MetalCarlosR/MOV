@@ -144,7 +144,7 @@ public class OhY3s implements IApplication {
      *               of the cells
      */
     @Override
-    public void deserialize(Map<String, String> bundle) {
+    public void deserialize(Map<String, String> bundle, IEngine engine) {
         String level = (String)bundle.get("Level");
         int size = Integer.parseInt(bundle.get("Size"));
 

@@ -36,8 +36,8 @@ public interface IGraphics {
      * undefined behaviour if scale = 0
      *
      * @param image image to draw
-     * @param posX x canvas coordinate
-     * @param posY y canvas coordinate
+     * @param posX centered x canvas coordinate
+     * @param posY centered y canvas coordinate
      * @param scaleX horizontal scale factor
      * @param scaleY vertical scale factor
      */

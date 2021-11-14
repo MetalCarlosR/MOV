@@ -77,9 +77,7 @@ public class Graphics implements IGraphics {
 
          //Setting up window
         _window = new JFrame(name);
-
-        _window.setSize(width, height-1);
-        recalculateScale(width,height);
+        _window.setSize(width, height);
         _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE );
         _window.setVisible(true);
         WINDOW_BORDER = _window.getInsets().right;
@@ -101,29 +99,15 @@ public class Graphics implements IGraphics {
         _strategy = _window.getBufferStrategy();
         _buffer = _strategy.getDrawGraphics();
 
-         //Set up resize callback to compute new scaling factors and offsets
-        _window.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-                recalculateScale(getWindow().getWidth(),getWindow().getHeight());
-            }
-        });
-        _window.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-                super.windowOpened(e);
-                recalculateScale(e.getWindow().getWidth(),e.getWindow().getHeight());
-            }
 
+        _window.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 int i=JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?","Exit",JOptionPane.YES_NO_OPTION);
                 if(i==0)
-                {
                     _engine.exit();
-                }
             }
         });
-        _window.setSize(width, height);
 
     }
 
@@ -189,6 +173,9 @@ public class Graphics implements IGraphics {
 
         _buffer.dispose();
         _buffer = _strategy.getDrawGraphics();
+
+        recalculateScale(_window.getWidth(),_window.getHeight());
+
         //Enable antialiasing for the new buffer
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);

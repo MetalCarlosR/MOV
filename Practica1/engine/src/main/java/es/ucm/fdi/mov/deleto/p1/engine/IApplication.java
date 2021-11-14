@@ -44,5 +44,5 @@ public interface IApplication {
     * Serialization methods for saving and recovering the state of the application
     */
     Map<String, String> serialize();
-    void deserialize(Map<String, String> bundle);
+    void deserialize(Map<String, String> bundle, IEngine engine);
 }

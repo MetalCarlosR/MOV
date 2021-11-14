@@ -34,7 +34,7 @@ public abstract class RectangleButton extends IButton {
         int dX = Math.abs(x - _posX);
         int dY = Math.abs(y - _posY);
 
-        return ( dX <= _width && dY <=_height);
+        return ( dX <= _width/2 && dY <=_height/2);
     }
     public int x(){return _posX;}
     public int y(){return _posY;}

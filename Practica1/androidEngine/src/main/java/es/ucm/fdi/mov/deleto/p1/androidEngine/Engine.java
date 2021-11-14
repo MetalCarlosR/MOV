@@ -68,6 +68,9 @@ public class Engine implements IEngine, Runnable {
         for(String g : bundle.keySet()) {
             _map.put(g, bundle.getString(g));
         }
+        if(_map != null && _map.get("_Saved").equals("True")) {
+            restoreState(_map);
+        }
 
     }
 
@@ -111,17 +114,11 @@ public class Engine implements IEngine, Runnable {
         if (_renderThread != Thread.currentThread()) {
             throw new RuntimeException("run() should not be called directly");
         }
-        boolean firstLoop = true;
         while (_running) {
 
 
             //Init app and start measuring time
             _app.onInit(this);
-            if(firstLoop && _map != null && _map.get("_Saved").equals("True")) {
-                restoreState(_map);
-                firstLoop = false;
-                System.out.println("Restoring State");
-            }
 
             long lastFrameTime = System.nanoTime();
 
@@ -148,11 +145,7 @@ public class Engine implements IEngine, Runnable {
             _app.onExit();
 
             //if we have a requested next app, then set running to true and switch to it
-            if (_nextApp != null) {
-                _app = _nextApp;
-                _nextApp = null;
-                _running = true;
-            }
+            checkNextApp();
         }
 
         //Our thread has died by calling Engine.exit() so we want the Android Application to close
@@ -162,12 +155,21 @@ public class Engine implements IEngine, Runnable {
         }
     }
 
+    private void checkNextApp() {
+        if (_nextApp != null) {
+            _app = _nextApp;
+            _nextApp = null;
+            _running = true;
+        }
+    }
+
     /**
      *
      * @param map  ---------------------------------------------------------------------------------
      */
     public void restoreState(Map<String, String> map) {
-        _app.deserialize(map);
+        _app.deserialize(map, this);
+        checkNextApp();
     }
 
 

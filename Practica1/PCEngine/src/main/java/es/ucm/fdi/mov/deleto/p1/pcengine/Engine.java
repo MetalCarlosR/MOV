@@ -64,6 +64,9 @@ public class Engine implements IEngine {
         _graphics = new Graphics(this,appName, assetsPath, width, height);
         _audio = new Audio(assetsPath);
         _input = new Input(_graphics);
+
+        if(restoreState());
+            System.out.println("Restoring State");
     }
 
     /**
@@ -74,18 +77,9 @@ public class Engine implements IEngine {
         /**
          * Outer loop needed for app switching
          */
-        boolean firstLoop = true;
         while (running) {
-
-            //We check if we have a game to restore
-            _app.onInit(this);
-            if(firstLoop ) {
-                restoreState();
-                firstLoop = false;
-                System.out.println("Restoring State");
-            }
             long lastFrameTime = System.nanoTime();
-
+            _app.onInit(this);
 
             while (running) {
                 //Get delta time and call update
@@ -110,13 +104,7 @@ public class Engine implements IEngine {
             _app.onExit();
 
             //if we have a requested next app, then set running to true and switch to it
-            if (_nextApp != null) {
-                _app = _nextApp;
-                //Init app and start measuring time
-                _app.onInit(this);
-                _nextApp = null;
-                running = true;
-            }
+            checkNextApp();
         }
         //Try to save the state of the game for later reopening
         saveState();
@@ -170,14 +158,22 @@ public class Engine implements IEngine {
             ldapContent.put(key, properties.get(key).toString());
         }
 
-        _app.deserialize(ldapContent);
-
+        _app.deserialize(ldapContent, this);
+        checkNextApp();
         try {
             Files.deleteIfExists(Paths.get(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
         return true;
+    }
+
+    private void checkNextApp() {
+        if (_nextApp != null) {
+            _app = _nextApp;
+            _nextApp = null;
+            running = true;
+        }
     }
 
     @Override
