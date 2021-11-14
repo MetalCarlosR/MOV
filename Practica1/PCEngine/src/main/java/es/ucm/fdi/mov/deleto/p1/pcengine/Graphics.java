@@ -90,11 +90,25 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
             @Override
             public void windowClosing(WindowEvent e) {
                 int i=JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?","Exit",JOptionPane.YES_NO_OPTION);
-                if(i==0)
+                if(i==0) {
                     _engine.exit();
+                }
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                _engine.pause();
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                _engine.resume();
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
             }
         });
-
     }
 
     /**************************
@@ -168,12 +182,12 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 
         //Check if resize was applied during rendering, if so then repaint
-        boolean repeat = !_size.equals(_window.getSize());
+        boolean repeat = _strategy.contentsRestored();
         if(!repeat)
         {
             _strategy.show();
         }
-        return repeat;
+        return repeat || _strategy.contentsLost();
     }
 
     public void clear(int color) {

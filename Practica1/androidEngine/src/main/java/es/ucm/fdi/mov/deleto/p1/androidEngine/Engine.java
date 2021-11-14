@@ -20,15 +20,13 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 /*****************************************************
  * All interface methods documented on the interface *
  *****************************************************/
-public class Engine extends AbstractEngine implements Runnable {
+public class Engine extends AbstractEngine {
 
     Graphics _graphics;
     Input _input;
     Audio _audio;
 
-    //This extra boolean is needed because android cycle might end up stopping our main loop
-    //but we need to properly recover
-    volatile Boolean _closeEngine = false;
+
 
     // Map for storing the state when we recover the app
     Map<String,String> _map = null;
@@ -68,37 +66,6 @@ public class Engine extends AbstractEngine implements Runnable {
     public void openURL(String url) {
         _context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
-
-    /**
-     * Android specific resume method for application life cycle.
-     */
-    public void resume(){
-        Log.d("[Engine]", "resume");
-
-        _running = true;
-        _renderThread = new Thread(this);
-        _renderThread.start();
-    };
-
-    /**
-     * Android specific pause method for application life cycle
-     */
-    public void pause(){
-        Log.d("[Engine]", "pause");
-        if (_running) {
-            _running = false;
-            while (true) {
-                try {
-                    _renderThread.join();
-                    _renderThread = null;
-                    break;
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace(); //this should never happen
-                }
-            }
-        }
-    };
-
 
     @Override
     protected void closeEngine() {

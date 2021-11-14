@@ -55,13 +55,20 @@ public class Engine extends AbstractEngine {
 
         restoreState();
     }
+    public void start()
+    {
+        _renderThread = new Thread(this);
+        _renderThread.start();
+    }
 
 
     @Override
     protected void closeEngine() {
         //Try to save the state of the game for later reopening
-        saveState();
-        _graphics.release();
+        if(_closeEngine) {
+            saveState();
+            _graphics.release();
+        }
     }
 
     @Override
@@ -79,7 +86,7 @@ public class Engine extends AbstractEngine {
         do {
             _graphics.clear(0xFFFFFFFF);
             _app.onRender();
-        }while(_graphics.swapBuffers());
+        }while(_running && _graphics.swapBuffers());
     }
 
     /**
@@ -139,6 +146,7 @@ public class Engine extends AbstractEngine {
 
     @Override
     public void exit() {
+        _closeEngine = true;
         _running = false;
     }
 

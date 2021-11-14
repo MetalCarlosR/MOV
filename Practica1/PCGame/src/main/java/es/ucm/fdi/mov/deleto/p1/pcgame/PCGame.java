@@ -11,7 +11,7 @@ public class PCGame {
 
         Engine engine = new Engine(_game,"Oh Yes","./assets/",400,600);
         engine.getGraphics().setResolution(400,600);
-        engine.run();
+        engine.start();
     }
 
     static IApplication _game;
