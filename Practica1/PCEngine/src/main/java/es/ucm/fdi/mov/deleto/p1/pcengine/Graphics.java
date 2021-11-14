@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
+import es.ucm.fdi.mov.deleto.p1.engine.AbstractGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
@@ -25,7 +26,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
  * All interface methods documented on the interface *
  *****************************************************/
 
-public class Graphics implements IGraphics {
+public class Graphics extends AbstractGraphics implements IGraphics   {
 
     /*********************
      * Stuff for scaling *
@@ -33,14 +34,6 @@ public class Graphics implements IGraphics {
 
     protected static int WINDOW_MENU_HEIGHT = 23;
     protected static int WINDOW_BORDER = 8;
-
-    protected int _logicW;
-    protected int _logicH;
-    protected double _scale;
-
-    protected int _translateX=0;
-    protected int _translateY=0;
-
 
     private Dimension _size;
 
@@ -167,7 +160,7 @@ public class Graphics implements IGraphics {
         _buffer.dispose();
         _buffer = _strategy.getDrawGraphics();
 
-        recalculateScale(_window.getWidth(),_window.getHeight());
+        this.recalculateTransform(_window.getWidth(),_window.getHeight(),WINDOW_BORDER,WINDOW_MENU_HEIGHT);
 
         //Enable antialiasing for the new buffer
         ((Graphics2D)_buffer).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
@@ -185,10 +178,12 @@ public class Graphics implements IGraphics {
 
     public void clear(int color) {
         _size = _window.getSize();
+
         Color aux = _actualColor;
         setColor(color);
         _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
         setColor(aux.getRGB());
+
         ((Graphics2D)_buffer).translate(_translateX,_translateY);
         ((Graphics2D)_buffer).scale(_scale,_scale);
     }
@@ -234,37 +229,6 @@ public class Graphics implements IGraphics {
     /*******************
      * Scaling Methods *
      *******************/
-
-    /**
-     * Computes offsets and scale factor based on new dimensions and actual ref dimensions
-     */
-    private void recalculateScale(int w, int h) {
-        int actualW = w;
-        int actualH = h;
-
-        actualH-=WINDOW_MENU_HEIGHT;
-        actualW-=(WINDOW_BORDER*2);
-
-        //We try width, then height
-        int expectedHeight = (int)((_logicH * actualW)/ (float)_logicW);
-        int expectedWidth  = (int)((_logicW * actualH)/ (float)_logicH);
-
-        int barWidth = 0;
-        int barHeight = 0;
-
-        if(actualH >= expectedHeight) {
-            barHeight = (actualH - expectedHeight) / 2;
-            _scale = actualW /(float)_logicW;
-        }
-        else {
-            barWidth = (actualW - expectedWidth) / 2;
-            _scale = actualH /(float)_logicH;
-        }
-
-        _translateX=barWidth+WINDOW_BORDER;
-        _translateY=barHeight+WINDOW_MENU_HEIGHT;
-    }
-
     @Override
     public void setOpacity(float opacity) {
         ((Graphics2D) _buffer).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));

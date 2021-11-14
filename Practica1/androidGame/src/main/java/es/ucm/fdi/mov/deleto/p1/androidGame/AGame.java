@@ -27,7 +27,7 @@ public class AGame extends AppCompatActivity{
 
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(_engine.getGraphics());
+        setContentView(_engine.getGraphics().getView());
     }
 
     @Override

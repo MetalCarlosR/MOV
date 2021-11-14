@@ -7,35 +7,32 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
+import es.ucm.fdi.mov.deleto.p1.engine.AbstractGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.Vec2;
 
-public class Graphics extends SurfaceView implements IGraphics {
+public class Graphics extends AbstractGraphics implements IGraphics {
 
     private static final String TAG = "[Graphics]";
     SurfaceHolder _holder;
     Canvas _canvas;
     Paint _currentPaint;
     String _assetPath;
-
-    int _logicW;
-    int _logicH;
-    float _scale;
-    int _translateX;
-    int _translateY;
     float _opacity = 1;
+    SurfaceView _view;
 
     public Graphics(Context context, String assetPath) {
-        super(context);
         _currentPaint = new Paint();
         _currentPaint.setFilterBitmap(true);
         _currentPaint.setAntiAlias(true);
         _currentPaint.setFlags(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG );
 
-        _holder = getHolder();
+        _view = new SurfaceView(context);
+        _holder = _view.getHolder();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             _canvas = _holder.lockHardwareCanvas();
         }
@@ -43,27 +40,6 @@ public class Graphics extends SurfaceView implements IGraphics {
             _canvas = _holder.lockCanvas();
 
         _assetPath = assetPath;
-    }
-
-    public void setScreenSize(int x, int y)
-    {
-        //We try width, then height
-        int expectedHeight = (int)((_logicH * x)/ (float)_logicW);
-        int expectedWidth  = (int)((_logicW * y)/ (float)_logicH);
-
-        int barWidth = 0;
-        int barHeight = 0;
-
-        if(y >= expectedHeight) {
-            barHeight = (y - expectedHeight) / 2;
-            _scale = x /(float)_logicW;
-        }
-        else {
-            barWidth = (x - expectedWidth) / 2;
-            _scale = y /(float)_logicH;
-        }
-        _translateX=barWidth;
-        _translateY=barHeight;
     }
 
     @Override
@@ -104,7 +80,7 @@ public class Graphics extends SurfaceView implements IGraphics {
         _canvas.drawRect(0,0,_canvas.getWidth(), _canvas.getHeight(), _currentPaint);
         _currentPaint.setColor(prev);
         _canvas.translate(_translateX,_translateY);
-        _canvas.scale(_scale,_scale);
+        _canvas.scale((float)_scale,(float)_scale);
     }
 
     public void prepareFrame()
@@ -182,11 +158,15 @@ public class Graphics extends SurfaceView implements IGraphics {
 
     @Override
     public IImage newImage(String name) {
-        return new Image(getContext().getAssets(),_assetPath + "sprites/"+ name);
+        return new Image(_view.getContext().getAssets(),_assetPath + "sprites/"+ name);
     }
 
     @Override
     public IFont newFont(String fileName, int size, boolean isBold) {
-        return new Font(getContext().getAssets(), _assetPath+"fonts/"+fileName,size,isBold);
+        return new Font(_view.getContext().getAssets(), _assetPath+"fonts/"+fileName,size,isBold);
+    }
+
+    public View getView() {
+        return _view;
     }
 }

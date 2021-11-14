@@ -54,10 +54,10 @@ public class Engine implements IEngine, Runnable {
 
         _graphics = new Graphics(context, assetsPath);
         _graphics.setResolution(canvasWidth,canvasHeight);
-        _graphics.setScreenSize(screenWidth,screenHeight);
+        _graphics.recalculateTransform(screenWidth,screenHeight);
 
-        _input = new Input(_graphics);
-        _input.setScale(_graphics._scale,_graphics._translateX, _graphics._translateY);
+        _input = new Input(_graphics.getView());
+        _input.setScale((float)_graphics.getScale(),_graphics.getTranslateX(), _graphics.getTranslateY());
 
         _audio = new Audio(context.getAssets(),assetsPath);
 
