@@ -4,16 +4,18 @@ This android and desktop game is an adaptation of the original [Oh no](https://0
 
 ## Extra features
 
-We have added some extra features appart from the ones that where proposed:
+We have added some extra features:
 
 - Sound
+- Desktop stop consuming resources when window is minimized 
+- [Serialziation](#)
 - Android Application closing
 - Multiplatform link re-direct
-- ??Serialization¿¿
 
-## Module Dependency
 
-![](./documentation/diagram.jpg)
+## Module Dependencies
+
+TODO Abstract Engine y Abstract Graphics
 
 ### Engine (Technology Interfaces)
 
@@ -35,6 +37,10 @@ This module exposes interfaces that the application logic can use independent of
 ### Launchers
 
 - We need launcher modules to depend on so many other modules because they have the responsability to be the "bridge" that starts the game application, the engine and configures everything to later give up the main loop to the engine. The android one has a little bit more to it as in Android Applications we can't simply have a main function but it ends up been very similar.
+
+## Gameplay Modules Architecture
+![OhYesArchitecture](https://user-images.githubusercontent.com/48621751/141690542-47494d9b-eb64-4d27-9349-cd5a81925e8a.png)
+TODO describir un poco esto
 
 ## Authors
 
