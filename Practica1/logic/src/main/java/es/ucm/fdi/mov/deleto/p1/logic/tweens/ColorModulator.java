@@ -10,6 +10,7 @@ public class ColorModulator implements ITweenTarget<Integer> {
     {
         _initial = i;
         _final = f;
+        _actual = _initial;
     }
 
     @Override

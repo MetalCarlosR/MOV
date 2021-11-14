@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 import es.ucm.fdi.mov.deleto.p1.engine.AbstractGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.EngineOptions;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
@@ -41,7 +42,6 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
      * Renderer State *
      ******************/
 
-    protected String _assetsPath;
     private java.awt.Font _actualFont;
     private Color _actualColor = new Color(0);
 
@@ -50,27 +50,30 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
     private java.awt.Graphics _buffer;
     protected Engine _engine;
 
+    String _imagePath;
+    String _fontPath;
+
     /**
      * Sets up window and configures rendering
      * @param name title of the window
-     * @param assetPath directory where assets will be fetched from
-     * @param width window initial width
-     * @param height window initial height
+     * @param options options with path and window size
+     * @param askBeforeExit if this string is set, we display this message before closing the window
      */
-    public Graphics(Engine engine,String name, String assetPath, int width, int height) {
+    public Graphics(Engine engine, String name, EngineOptions options, final String askBeforeExit) {
 
         _engine = engine; //To report errors
 
          //Setting up window
         _window = new JFrame(name);
-        _window.setSize(width, height);
+        _window.setSize(options.realWidth, options.realHeight);
         _window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE );
         _window.setVisible(true);
         WINDOW_BORDER = _window.getInsets().right;
         WINDOW_MENU_HEIGHT = _window.getInsets().top - WINDOW_BORDER;
 
 
-        _assetsPath = assetPath;
+        _imagePath = options.assetsPath+options.imagesPath;
+        _fontPath = options.assetsPath+options.fontsPath;
         _size = new Dimension();
 
          //Create and get buffer strategy
@@ -89,12 +92,15 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
         _window.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int i=JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?","Exit",JOptionPane.YES_NO_OPTION);
-                if(i==0) {
-                    _engine.exit();
+                if(!askBeforeExit.equals(""))
+                {
+                    int i=JOptionPane.showConfirmDialog(null, askBeforeExit,"Exit",JOptionPane.YES_NO_OPTION);
+                    if(i==0) {
+                        _engine.exit();
+                    }
                 }
+                else _engine.exit();
             }
-
             @Override
             public void windowIconified(WindowEvent e) {
                 _engine.pause();
@@ -104,11 +110,8 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
             public void windowDeiconified(WindowEvent e) {
                 _engine.resume();
             }
-
-            @Override
-            public void windowLostFocus(WindowEvent e) {
-            }
         });
+        setResolution(options.realWidth,options.realHeight);
     }
 
     /**************************
@@ -209,23 +212,23 @@ public class Graphics extends AbstractGraphics implements IGraphics   {
     @Override
     public IImage newImage(String name) {
         try {
-            return new Image(_assetsPath + "sprites/" + name);
+            return new Image(_imagePath+name);
         } catch (IOException e) {
-            _engine.panic("could not load image at: "+_assetsPath + "sprites/"+name,"Image loading error");
+            _engine.panic("could not load image at: "+ _imagePath+name,"Image loading error");
             return null;
         }
     }
 
     @Override
     public IFont newFont(String fileName, int size, boolean isBold) {
-        Font ret = new Font(_assetsPath + "fonts/"+fileName, size, isBold);
+        Font ret = new Font(_fontPath+fileName, size, isBold);
         try
         {
             ret.init();
         }
         catch (IOException e)
         {
-            _engine.panic("could not load font at: "+_assetsPath + "fonts/"+fileName,"Font loading error");
+            _engine.panic("could not load font at: "+_fontPath+fileName,"Font loading error");
         }
         return ret;
     }

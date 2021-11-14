@@ -9,7 +9,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
+import java.io.IOException;
+
 import es.ucm.fdi.mov.deleto.p1.engine.AbstractGraphics;
+import es.ucm.fdi.mov.deleto.p1.engine.EngineOptions;
 import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
@@ -21,11 +24,13 @@ public class Graphics extends AbstractGraphics implements IGraphics {
     SurfaceHolder _holder;
     Canvas _canvas;
     Paint _currentPaint;
-    String _assetPath;
+    String _fontPath;
+    String _imagePath;
     float _opacity = 1;
+    Engine _engine;
     SurfaceView _view;
 
-    public Graphics(Context context, String assetPath) {
+    public Graphics(Context context, EngineOptions options, Engine engine) {
         _currentPaint = new Paint();
         _currentPaint.setFilterBitmap(true);
         _currentPaint.setAntiAlias(true);
@@ -39,7 +44,9 @@ public class Graphics extends AbstractGraphics implements IGraphics {
         else
             _canvas = _holder.lockCanvas();
 
-        _assetPath = assetPath;
+        _fontPath = options.assetsPath+options.fontsPath;
+        _imagePath = options.assetsPath+options.imagesPath;
+        _engine = engine;
     }
 
     @Override
@@ -158,12 +165,24 @@ public class Graphics extends AbstractGraphics implements IGraphics {
 
     @Override
     public IImage newImage(String name) {
-        return new Image(_view.getContext().getAssets(),_assetPath + "sprites/"+ name);
+        try {
+            return new Image(_view.getContext().getAssets(),_imagePath+ name);
+        } catch (IOException e) {
+            _engine.panic("Could not find image "+name+" please try re-installing our application");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public IFont newFont(String fileName, int size, boolean isBold) {
-        return new Font(_view.getContext().getAssets(), _assetPath+"fonts/"+fileName,size,isBold);
+        try {
+            return new Font(_view.getContext().getAssets(), _fontPath+fileName,size,isBold);
+        } catch (Exception e) {
+            _engine.panic("Could not find image "+fileName+" please try re-installing our application");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public View getView() {

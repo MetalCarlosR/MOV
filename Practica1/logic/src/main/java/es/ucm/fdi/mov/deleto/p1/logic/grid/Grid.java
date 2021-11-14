@@ -7,6 +7,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.IFont;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+import es.ucm.fdi.mov.deleto.p1.logic.Constants;
 import es.ucm.fdi.mov.deleto.p1.logic.buttons.Cell;
 
 /**
@@ -184,7 +185,7 @@ public class Grid {
         for(int i = 0; i < _size; i++) {
             for(int j = 0; j < _size; j++)
             {
-                if(getCell(j,i) == debugCell)
+                if(Constants.DEBUG && getCell(j,i) == debugCell)
                     getCell(j,i).draw(_G, _cellLockImage, font, 0xffc0c0c0);
                 else
                     getCell(j,i).draw(_G, _cellLockImage, font);

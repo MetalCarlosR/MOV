@@ -1,6 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.androidEngine;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import es.ucm.fdi.mov.deleto.p1.engine.AbstractEngine;
+import es.ucm.fdi.mov.deleto.p1.engine.EngineOptions;
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
@@ -34,20 +36,19 @@ public class Engine extends AbstractEngine {
     //Android activity context
     Context _context;
 
-    public Engine(IApplication app, Context context, String assetsPath,
-                  int canvasWidth, int canvasHeight, int screenWidth, int screenHeight, Bundle bundle)
+    public Engine(IApplication app, Context context, Bundle bundle, EngineOptions options)
     {
         _app = app;
         _context = context;
 
-        _graphics = new Graphics(context, assetsPath);
-        _graphics.setResolution(canvasWidth,canvasHeight);
-        _graphics.recalculateTransform(screenWidth,screenHeight);
+        _graphics = new Graphics(context, options,this);
+        _graphics.setResolution(options.logicWidth,options.logicHeight);
+        _graphics.recalculateTransform(options.realWidth, options.realHeight);
 
         _input = new Input(_graphics.getView());
         _input.setScale((float)_graphics.getScale(),_graphics.getTranslateX(), _graphics.getTranslateY());
 
-        _audio = new Audio(context.getAssets(),assetsPath);
+        _audio = new Audio(context.getAssets(),options.assetsPath+options.audioPath);
 
         if(bundle == null)
             return;
@@ -59,7 +60,6 @@ public class Engine extends AbstractEngine {
         if(_map != null && _map.get("_Saved").equals("True")) {
             restoreState();
         }
-
     }
 
     @Override
@@ -98,6 +98,17 @@ public class Engine extends AbstractEngine {
         _app.deserialize(_map, this);
         checkNextApp();
     }
+
+    protected void panic(String message)
+    {
+        AlertDialog error = new AlertDialog.Builder(_context)
+                                .setTitle("Fatal Error")
+                                .setMessage(message)
+                                .setPositiveButton("Ok",(dialogInterface, i) -> exit())
+                                .setIcon(android.R.drawable.alert_dark_frame)
+                                .show();
+    }
+
 
     /**
      * Serialize and returns the current state of the application

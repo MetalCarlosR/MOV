@@ -4,6 +4,8 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.io.IOException;
+
 import es.ucm.fdi.mov.deleto.p1.engine.IImage;
 
 
@@ -19,13 +21,8 @@ public class Image implements IImage {
      * @param path the path where the sound file should be contained
      * @param am Asset Manager for android to open the file
      */
-    public Image(AssetManager am, String path)
-    {
-        try {
-            _platformImage = BitmapFactory.decodeStream(am.open(path));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public Image(AssetManager am, String path) throws IOException {
+        _platformImage = BitmapFactory.decodeStream(am.open(path));
     }
 
     public android.graphics.Bitmap getHandler()

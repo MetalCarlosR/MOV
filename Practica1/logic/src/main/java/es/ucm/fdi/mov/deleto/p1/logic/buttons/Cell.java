@@ -184,7 +184,8 @@ public class Cell extends CircleButton{
      * Function that calls draw with color by state
      */
     public void draw(IGraphics graphics, IImage lock, IFont font) {
-        draw(graphics,lock,font,(_tweener == null || _tweener.get() == null) ? getColorByState(_state) : (Integer)_tweener.get());
+        int color = (_tweener == null || _tweener.get() == null) ? getColorByState(_state) : (Integer)_tweener.get();
+        draw(graphics,lock,font,color);
     }
 
     /**

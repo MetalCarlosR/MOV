@@ -3,14 +3,18 @@ package es.ucm.fdi.mov.deleto.p1.engine;
 public abstract class AbstractEngine implements IEngine,  Runnable {
 
     static int frame = 0;
-    //This extra boolean is needed because android cycle might end up stopping our main loop
-    //but we need to properly recover
+
+    /**This extra boolean is needed because application cycle might end up stopping our main loop
+            but we need to properly recover and only close on exit demand.
+     */
     volatile protected Boolean _closeEngine = false;
 
     //Main loop stop condition
     volatile protected Boolean _running = true;
 
-    // We need this thread to take control of the rendering and update loop
+    /**
+     * We need this thread to take control of the main loop only when the application is on focus
+     */
     protected Thread _renderThread = null;
 
     /**
@@ -54,16 +58,12 @@ public abstract class AbstractEngine implements IEngine,  Runnable {
                     long diff = (long) ((long)(System.nanoTime()-lastFrameTime)/1.0E6);
                     if( diff< 16l)
                         Thread.sleep((long) (16-diff));
-                    else
-                        System.err.println("NO LLEGOOOO"+lost++);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
             //running has been set to false, even on switch app want to call onExit
             _app.onExit();
-
-            System.err.println("Se perdió: "+lost+" frames -> "+ ((double)lost/(double)frame)*100+"%");
 
            //if we have a requested next app, then set running to true and switch to it
             checkNextApp();

@@ -20,7 +20,7 @@ public class Audio implements IAudio {
 
     @Override
     public ISound newSound(String filePath) {
-        return new Sound(_am,_path +"audio/"+ filePath);
+        return new Sound(_am,_path + filePath);
     }
 
     @Override

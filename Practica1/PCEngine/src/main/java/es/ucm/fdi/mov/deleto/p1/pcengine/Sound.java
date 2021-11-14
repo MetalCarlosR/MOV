@@ -25,16 +25,11 @@ public class Sound implements ISound {
      * Tries to create a sound via filepath
      * @param file the path where the sound file should be contained
      */
-    public Sound(String file) {
+    public Sound(String file) throws LineUnavailableException, IOException, UnsupportedAudioFileException {
         AudioInputStream inputStream = null;
-        try {
-            inputStream = AudioSystem.getAudioInputStream(new File(file).getAbsoluteFile());
-            _clip = AudioSystem.getClip();
-            _clip.open(inputStream);
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            System.err.println("Couldn't load audio file " + file);
-            e.printStackTrace();
-        }
+        inputStream = AudioSystem.getAudioInputStream(new File(file).getAbsoluteFile());
+        _clip = AudioSystem.getClip();
+        _clip.open(inputStream);
     }
 
     @Override

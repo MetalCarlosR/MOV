@@ -17,6 +17,7 @@ import java.util.Properties;
 import javax.swing.JOptionPane;
 
 import es.ucm.fdi.mov.deleto.p1.engine.AbstractEngine;
+import es.ucm.fdi.mov.deleto.p1.engine.EngineOptions;
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
@@ -41,16 +42,15 @@ public class Engine extends AbstractEngine {
      *  Constructor, simply calls new on every platform engine
      * @param app the app to initiate.
      * @param appName name of the window to create
-     * @param assetsPath path where assets will be located
-     * @param width window initial width
-     * @param height window initial height
+     * @param options object with configuration for this engine
+     * @param askBeforeExit if this string is set, we display this message before closing the window
      */
-    public Engine(IApplication app, String appName, String assetsPath, int width, int height) {
+    public Engine(IApplication app, String appName, EngineOptions options, final String askBeforeExit) {
         _app = app;
         _appName = appName;
 
-        _graphics = new Graphics(this,appName, assetsPath, width, height);
-        _audio = new Audio(assetsPath);
+        _graphics = new Graphics(this,appName, options,askBeforeExit);
+        _audio = new Audio(options.assetsPath+options.audioPath,this);
         _input = new Input(_graphics);
 
         restoreState();

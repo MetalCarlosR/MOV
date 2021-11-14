@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Map;
 
 import es.ucm.fdi.mov.deleto.p1.androidEngine.Engine;
+import es.ucm.fdi.mov.deleto.p1.engine.EngineOptions;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
+import es.ucm.fdi.mov.deleto.p1.logic.Constants;
 import es.ucm.fdi.mov.deleto.p1.logic.gameStates.Menu;
 
 public class AGame extends AppCompatActivity{
@@ -23,7 +25,11 @@ public class AGame extends AppCompatActivity{
         Point size = new Point();
         getWindowManager().getDefaultDisplay().getSize(size);
 
-        _engine = new Engine(new Menu(),this, "",400, 600, size.x, size.y,savedInstanceState );
+
+        Constants.OPTIONS.realWidth=size.x;
+        Constants.OPTIONS.realHeight=size.y;
+
+        _engine = new Engine(new Menu(),this,savedInstanceState, Constants.OPTIONS);
 
         this.setTheme(R.style.Theme_AppCompat_NoActionBar);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);

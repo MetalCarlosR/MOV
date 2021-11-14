@@ -1,6 +1,7 @@
 package es.ucm.fdi.mov.deleto.p1.pcgame;
 
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
+import es.ucm.fdi.mov.deleto.p1.logic.Constants;
 import es.ucm.fdi.mov.deleto.p1.logic.gameStates.Menu;
 import es.ucm.fdi.mov.deleto.p1.pcengine.Engine;
 
@@ -9,8 +10,10 @@ public class PCGame {
 
         _game = new Menu();
 
-        Engine engine = new Engine(_game,"Oh Yes","./assets/",400,600);
-        engine.getGraphics().setResolution(400,600);
+        Constants.OPTIONS.assetsPath = "./assets/";
+        Constants.OPTIONS.realHeight = 600;
+        Constants.OPTIONS.realWidth = 400;
+        Engine engine = new Engine(_game,"Oh Yes",Constants.OPTIONS, "Are you sure?");
         engine.start();
     }
 
