@@ -67,6 +67,10 @@ public class Input {
      * @param id of the 'click' that created the event
      */
     public synchronized void newTouchEvent(TouchEvent.EventType type, int x, int y, int id) {
-        _events.add(new TouchEvent(type, _graphics.refPositionX(x), _graphics.refPositionY(y),id));
+        int xOff = _graphics._translateX;
+        int yOff = _graphics._translateY;
+        double scale = _graphics._scale;
+
+        _events.add(new TouchEvent(type, (int)((x-xOff)/scale), (int)((y-yOff)/scale),id));
     }
 }

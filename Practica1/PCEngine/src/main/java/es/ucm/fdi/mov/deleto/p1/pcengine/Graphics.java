@@ -7,11 +7,6 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -39,15 +34,13 @@ public class Graphics implements IGraphics {
     protected static int WINDOW_MENU_HEIGHT = 23;
     protected static int WINDOW_BORDER = 8;
 
-    protected int    _refWidth;
-    protected int    _refHeight;
-    protected double _refFactor;
+    protected int _logicW;
+    protected int _logicH;
+    protected double _scale;
 
-    protected int _originX=0;
-    protected int _originY=0;
+    protected int _translateX=0;
+    protected int _translateY=0;
 
-    protected int _endX=0;
-    protected int _endY=0;
 
     private Dimension _size;
 
@@ -116,12 +109,12 @@ public class Graphics implements IGraphics {
      **************************/
     @Override
     public void fillCircle(int x, int y, double r) {
-        _buffer.fillOval((int)realPositionX(x-r), (int)realPositionY(y-r), realLength(r*2.0), realLength(r*2.0));
+        _buffer.fillOval((int)(x-r), (int)(y-r), (int)(r*2), (int)(r*2));
     }
 
     @Override
     public void fillRect(int x, int y, int w, int h) {
-        _buffer.fillRect(realPositionX(x-w/2), realPositionY(y-h/2), realLength(w), realLength(h));
+        _buffer.fillRect((x-w/2), (y-h/2), (w), (h));
     }
 
     @Override
@@ -135,7 +128,7 @@ public class Graphics implements IGraphics {
     @Override
     public Vec2<Integer>  drawText(String text, int x, int y, double scale) {
         String[] splits = text.split("\n");
-        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),realLength((int)(_actualFont.getSize()*scale))));
+        _buffer.setFont(_actualFont.deriveFont(_actualFont.getStyle(),((int)(_actualFont.getSize()*scale))));
         FontMetrics fm = _buffer.getFontMetrics();
         int fY = fm.getHeight()/2;
         int i = 0;
@@ -148,20 +141,20 @@ public class Graphics implements IGraphics {
             fY+= (fm.getHeight()+fm.getLeading()+fm.getMaxAscent())*i++;
 
             fX = (fm.stringWidth(s))/2;
-            _buffer.drawString(s, realPositionX(x)-fX, realPositionY(y)+fY/2);
+            _buffer.drawString(s, (x)-fX, (y)+fY/2);
         }
-        int xX, yY;
-        xX = realPositionX(x)-fX;
-        yY = realPositionY(y)+fY/2;
-        return new Vec2<>(refPositionX(xX+(fm.stringWidth(splits[splits.length-1]))),refPositionY(yY));
+        int xX=0, yY=0;
+        xX = (int)(x+fX);
+        yY = (int)(y+fY/2);
+        return new Vec2<>(xX,(yY));
     }
 
     @Override
     public void drawImage(IImage image, int posX, int posY, float scaleX, float scaleY) {
         Image im   = (Image) image;
-        int width  = (int) (realLength(im.getWidth()) * scaleX);
-        int height = (int) (realLength(im.getHeight())* scaleY);
-        _buffer.drawImage(im.getImage(), realPositionX(posX)-width/2, realPositionY(posY)-height/2,width,height, null);
+        int width  = (int) ((im.getWidth()) * scaleX);
+        int height = (int) ((im.getHeight())* scaleY);
+        _buffer.drawImage(im.getImage(), (posX)-width/2, (posY)-height/2,width,height, null);
     }
 
 
@@ -196,6 +189,8 @@ public class Graphics implements IGraphics {
         setColor(color);
         _buffer.fillRect(0, 0, _window.getWidth(), _window.getHeight());
         setColor(aux.getRGB());
+        ((Graphics2D)_buffer).translate(_translateX,_translateY);
+        ((Graphics2D)_buffer).scale(_scale,_scale);
     }
 
     /*******************
@@ -247,58 +242,27 @@ public class Graphics implements IGraphics {
         int actualW = w;
         int actualH = h;
 
-        int leftOffset = 0;
-        int topOffset = 0;
+        actualH-=WINDOW_MENU_HEIGHT;
+        actualW-=(WINDOW_BORDER*2);
 
-        //We start the canvas skipping the window decorations
-        _originX= WINDOW_BORDER;
-        _originY= WINDOW_MENU_HEIGHT + WINDOW_BORDER;
+        //We try width, then height
+        int expectedHeight = (int)((_logicH * actualW)/ (float)_logicW);
+        int expectedWidth  = (int)((_logicW * actualH)/ (float)_logicH);
 
-        //Respecting the aspect ratio this would be the expected width and height
-        int expectedWidth  = (int)(actualH * _refFactor);
-        int expectedHeight = (int)(actualW / _refFactor);
+        int barWidth = 0;
+        int barHeight = 0;
 
-        //If the expectedWidth doesn't fit we add height to the bars
-        //Otherwise add width
-        if( expectedWidth > actualW+ WINDOW_BORDER)
-            topOffset = (actualH- WINDOW_MENU_HEIGHT + WINDOW_BORDER - expectedHeight)/2;
-        else
-            leftOffset = (actualW+ WINDOW_BORDER - expectedWidth)/2;
+        if(actualH >= expectedHeight) {
+            barHeight = (actualH - expectedHeight) / 2;
+            _scale = actualW /(float)_logicW;
+        }
+        else {
+            barWidth = (actualW - expectedWidth) / 2;
+            _scale = actualH /(float)_logicH;
+        }
 
-        _originX += leftOffset;
-        _originY +=  topOffset;
-
-        _endX = actualW-_originX;
-        _endY = actualH-_originY;
-    }
-
-    private int realPositionX(int x) {
-        return _originX+ (x * (_endX-_originX)/_refWidth);
-    }
-
-    private double realPositionX(double x) {
-        return _originX+ (x * (_endX-_originX)/(double) _refWidth);
-    }
-
-    public int refPositionX(int x)
-    {
-        return (int)((x-_originX)*((double)_refWidth / (_endX-_originX)));
-    }
-
-    private int realPositionY(int y) {
-        return _originY+y * (_endY-_originY)/_refHeight;
-    }
-    private double realPositionY(double y) {
-        return _originY+y * (_endY-_originY)/(double)_refHeight;
-    }
-
-    protected int refPositionY(int y)
-    {
-        return (int)((y-_originY)*((double)_refHeight / (_endY-_originY)));
-    }
-
-    private  int realLength(double length){
-        return (int)((_endX-_originX) * length/(double)_refWidth);
+        _translateX=barWidth+WINDOW_BORDER;
+        _translateY=barHeight+WINDOW_MENU_HEIGHT;
     }
 
     @Override
@@ -323,19 +287,18 @@ public class Graphics implements IGraphics {
 
     @Override
     public int getLogicWidth() {
-        return _refWidth;
+        return _logicW;
     }
 
     @Override
     public int getLogicHeight() {
-        return _refHeight;
+        return _logicH;
     }
 
     @Override
     public void setResolution(int width, int height) {
-        _refWidth  = width;
-        _refHeight = height;
-        _refFactor = (double) width /(double) height;
+        _logicW = width;
+        _logicH = height;
     }
 
     public JFrame getWindow(){return  _window;};
