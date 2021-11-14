@@ -69,8 +69,8 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
         _exit = g.newImage("close.png");
         _logo = g.newImage("q42.png");
 
-        int c = 0xFF1CC0E0;
-        _startGameButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()/2,200,56,
+        int c = 0xffa0a0a0;
+        _startGameButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()/2,300,56,
                                         "Start game",0xff2c2c2c,c) {
             @Override
             protected void clickCallback() {
@@ -85,7 +85,7 @@ public class Menu implements  es.ucm.fdi.mov.deleto.p1.engine.IApplication{
             }
         };
 
-        _creditButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()-132,200,36,
+        _creditButton = new TextButton(g.getLogicWidth()/2,g.getLogicHeight()-132,300,36,
                                     "Deleto Studios copy of a Q42",0xffa0a0e0,0xff6060e0) {
             @Override
             protected void clickCallback() {

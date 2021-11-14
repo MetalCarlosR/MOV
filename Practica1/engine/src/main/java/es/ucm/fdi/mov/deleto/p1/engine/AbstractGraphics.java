@@ -12,13 +12,15 @@ public abstract class AbstractGraphics {
     protected AbstractGraphics(){}
     /**
      * Computes offsets and scale factor based on new dimensions and actual ref dimensions
+     * @param xOff the desktop window border width
+     * @param yOff the desktop window status bar height
      */
     protected void recalculateTransform(int w, int h, int xOff, int yOff)
     {
         int actualW = w;
         int actualH = h;
 
-        actualH-=yOff;
+        actualH-=(yOff+(xOff));
         actualW-=(xOff*2);
 
         //We try width, then height
@@ -42,7 +44,7 @@ public abstract class AbstractGraphics {
     }
 
     /**
-     * Android helper cos no window border needed
+     * Android helper because no window border needed
      */
     public void recalculateTransform(int w, int h)
     {
