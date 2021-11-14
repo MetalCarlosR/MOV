@@ -14,6 +14,7 @@ We have added some extra features:
 
 
 ## Module Dependencies
+![EngineArchitecture](https://user-images.githubusercontent.com/48621751/141697549-3dfd585b-6fee-4546-8798-9ea1c758eb2f.png)
 
 ### Engine
 
@@ -90,11 +91,9 @@ This module exposes interfaces that the application logic can use independent of
 
 ### Tweens
 
-- Tween: 
+- Tween: Simple class to facilitate animations. It takes a duration and an interpolation mode and on update it returns a number between 0 and 1 based on the time that has passed since it's creation. This number between 0 and 1 will follow te easing related to the interpolation mode selected. To facilitate the application of this tweenning system it has the possibility to get an ITweenTarget that applies the value as it sees it fit. 
 
-- ITweenTarget: 
-
-- ColorModulator:
+- ColorModulator: This is an ITweenTarget that a Tween can update with the 0 to 1 value corresponding to the duration. It modulates from initial to target color, component by component.
 
 
 ## Authors
