@@ -8,7 +8,7 @@ We have added some extra features:
 
 - Sound
 - Desktop stop consuming resources when window is minimized 
-- [Serialziation](#)
+- [Serialziation](#android-engine)
 - Android Application closing
 - Multiplatform link re-direct
 
@@ -28,7 +28,7 @@ This module exposes interfaces that the application logic can use independent of
 
 - IAudio: Similar to graphics abstracts audio resource creation on a factory method and allows reproducing sounds.
 
-- The Engine also simple interfaces for the management of resources that are implemented in each platform with the needed resource creation and management (ISound,IFont,IImage)
+- The Engine also defines simple interfaces for the management of resources that are implemented in each platform with the needed resource creation and management (ISound,IFont,IImage)
 
 #### Abstract Classes
 
