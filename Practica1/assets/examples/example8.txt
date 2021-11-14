@@ -1,0 +1,3 @@
+#Sun Nov 14 22:02:02 CET 2021
+Size=8
+Level=8l 7l 2g 0g 3l 5g 5l 7l \n7g 6g 0l 0l 0l 4l 4g 6l \n7l 6l 0g 0l 0l 4g 4g 6g \n8l 7g 2l 0g 0g 0g 0g 4l \n7l 6l 0g 7l 4l 6l 4l 8g \n7l 6l 0l 3g 0g 2g 0l 0g \n6l 0g 6l 8l 5l 7g 5g 5l \n0g 2g 3l 5g 0g 0g 0l 0g \n
