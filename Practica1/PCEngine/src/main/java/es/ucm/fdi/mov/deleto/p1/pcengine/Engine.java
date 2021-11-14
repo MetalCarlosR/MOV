@@ -16,9 +16,9 @@ import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
+import es.ucm.fdi.mov.deleto.p1.engine.AbstractEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IApplication;
 import es.ucm.fdi.mov.deleto.p1.engine.IAudio;
-import es.ucm.fdi.mov.deleto.p1.engine.IEngine;
 import es.ucm.fdi.mov.deleto.p1.engine.IGraphics;
 import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
 
@@ -26,7 +26,7 @@ import es.ucm.fdi.mov.deleto.p1.engine.TouchEvent;
  * All interface methods documented on the interface *
  *****************************************************/
 
-public class Engine implements IEngine {
+public class Engine extends AbstractEngine {
     /**
      * Reference to the corresponding platform interface implementations
      */
@@ -34,21 +34,8 @@ public class Engine implements IEngine {
     Input _input;
     Audio _audio;
 
-    /**
-     * Current running application
-     */
-    IApplication _app;
+    String _appName;
 
-    /**
-     * Next application, to switch between application states and abstract different states
-     *                   more easily
-     */
-    IApplication _nextApp = null;
-
-    /**
-     * Signals if we need to exit the current main loop
-     */
-    boolean running = true;
 
     /**
      *  Constructor, simply calls new on every platform engine
@@ -60,55 +47,39 @@ public class Engine implements IEngine {
      */
     public Engine(IApplication app, String appName, String assetsPath, int width, int height) {
         _app = app;
+        _appName = appName;
 
         _graphics = new Graphics(this,appName, assetsPath, width, height);
         _audio = new Audio(assetsPath);
         _input = new Input(_graphics);
 
-        if(restoreState());
-            System.out.println("Restoring State");
+        restoreState();
     }
 
-    /**
-     * Main loop will execute until exit() is called
-     */
-    public void run() {
 
-        /**
-         * Outer loop needed for app switching
-         */
-        while (running) {
-            long lastFrameTime = System.nanoTime();
-            _app.onInit(this);
-
-            while (running) {
-                //Get delta time and call update
-                long currentTime = System.nanoTime();
-                long nanoElapsedTime = currentTime - lastFrameTime;
-                lastFrameTime = currentTime;
-                double elapsedTime = (double) nanoElapsedTime / 1.0E9;
-                _app.onUpdate(elapsedTime);
-
-                //Synchronized call to get events and forward to application
-                List<TouchEvent> evs = _input.getTouchEvents();
-                for (TouchEvent ev : evs) {
-                    _app.onEvent(ev);
-                }
-                //We try to render in a loop because swing's swap buffer can fail
-                do {
-                    _graphics.clear(0xFFFFFFFF);
-                    _app.onRender();
-                }while(_graphics.swapBuffers());
-            }
-            //running has been set to false, even on switch app want to call onExit
-            _app.onExit();
-
-            //if we have a requested next app, then set running to true and switch to it
-            checkNextApp();
-        }
+    @Override
+    protected void closeEngine() {
         //Try to save the state of the game for later reopening
         saveState();
         _graphics.release();
+    }
+
+    @Override
+    protected void pollEvents() {
+        //Synchronized call to get events and forward to application
+        List<TouchEvent> evs = _input.getTouchEvents();
+        for (TouchEvent ev : evs) {
+            _app.onEvent(ev);
+        }
+    }
+
+    @Override
+    protected void render() {
+        //We try to render in a loop because swing's swap buffer can fail
+        do {
+            _graphics.clear(0xFFFFFFFF);
+            _app.onRender();
+        }while(_graphics.swapBuffers());
     }
 
     /**
@@ -118,7 +89,7 @@ public class Engine implements IEngine {
      */
     public void saveState()
     {
-        String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
+        String path = System.getProperty("java.io.tmpdir")+_appName + ".txt";
         System.err.println(path);
         Map<String, String> ldapContent = _app.serialize();
         if(ldapContent == null)
@@ -136,22 +107,21 @@ public class Engine implements IEngine {
         }
     }
 
-
     /**
      *  Try to find a previous saved state of a game to load.
      *  If it finds it, calls the app to deserialize its contents.
      *  Continues normally otherwise.
      */
-    public boolean restoreState()
+    public void restoreState()
     {
-        String path = System.getProperty("java.io.tmpdir")+"saved0hY3State.txt";
+        String path = System.getProperty("java.io.tmpdir")+_appName + ".txt";
         Map<String, String> ldapContent = new HashMap<String, String>();
         Properties properties = new Properties();
         try (FileInputStream stream = new FileInputStream(path)){
             properties.load(stream);
 
         } catch (IOException e) {
-            return false;
+            return ;
         }
 
         for (String key : properties.stringPropertyNames()) {
@@ -165,26 +135,11 @@ public class Engine implements IEngine {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return true;
-    }
-
-    private void checkNextApp() {
-        if (_nextApp != null) {
-            _app = _nextApp;
-            _nextApp = null;
-            running = true;
-        }
     }
 
     @Override
     public void exit() {
-        running = false;
-    }
-
-    @Override
-    public void changeApp(IApplication newApp) {
-        _nextApp = newApp;
-        exit();
+        _running = false;
     }
 
     @Override
