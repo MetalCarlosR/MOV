@@ -18,6 +18,9 @@ public class Cell : MonoBehaviour
     private SpriteRenderer _enterFlowSr;
     private SpriteRenderer _exitFlowSr;
 
+    private Color _color;
+    private bool _isCircle = false;
+    
     private void Awake()
     {
      _circleSr = circle.GetComponent<SpriteRenderer>();
@@ -35,6 +38,8 @@ public class Cell : MonoBehaviour
      circle.SetActive(true);
 
      _circleSr.color = c;
+     _color = c;
+     _isCircle = true;
     }
     /**
      * Renders enter flow with the given color and up vector direction
@@ -48,6 +53,7 @@ public class Cell : MonoBehaviour
      
      _enterFlowSr.color = c;
      enterFlow.transform.up = up;
+     _color = c;
     }
    
     /**
@@ -61,5 +67,16 @@ public class Cell : MonoBehaviour
 
      _exitFlowSr.color = c;
      exitFlow.transform.up = up;
+     _color = c;
+    }
+
+    public Color GetColor()
+    {
+     return _color;
+    }
+
+    public bool IsCircle()
+    {
+     return _isCircle;
     }
 }

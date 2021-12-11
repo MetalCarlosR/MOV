@@ -51,8 +51,8 @@ public class PuzzleParser
         Puzzle puzzle = null;
 
         //Remove all whitespace
-        Regex.Replace(data, @"\s+", "");
-
+        // Regex.Replace(data, @"(\r\n|\n|\r|\s)+", "");
+        Regex.Replace(data, @"\s+", string.Empty);
         //Divide data string by lines
         String[] splits = data.Split(';');
 
@@ -76,9 +76,9 @@ public class PuzzleParser
 
         puzzle = new Puzzle(size, levelNumber, flowCount);
 
-        for (int i = 1; i < splits.Length; i++)
+        for (int i = 0; i < flowCount; i++)
         {
-            String[] stringCoords = splits[i].Split(',');
+            String[] stringCoords = splits[i+1].Split(',');
             List<Vector2> list = new List<Vector2>(stringCoords.Length);
 
             for (int j = 0; j < stringCoords.Length; j++)
