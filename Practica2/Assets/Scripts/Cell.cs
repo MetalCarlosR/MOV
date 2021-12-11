@@ -5,18 +5,19 @@ using UnityEngine;
  */
 public class Cell : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject enterFlow;
-    
-    [SerializeField]
-    private GameObject exitFlow;
 
     [SerializeField]
     private GameObject circle;
-
     private SpriteRenderer _circleSr;
-    private SpriteRenderer _enterFlowSr;
-    private SpriteRenderer _exitFlowSr;
+
+    [SerializeField]
+    private GameObject right;
+    [SerializeField]
+    private GameObject left;
+    [SerializeField]
+    private GameObject up;
+    [SerializeField]
+    private GameObject down;
 
     private Color _color;
     private bool _isCircle = false;
@@ -24,8 +25,6 @@ public class Cell : MonoBehaviour
     private void Awake()
     {
      _circleSr = circle.GetComponent<SpriteRenderer>();
-     _enterFlowSr = enterFlow.GetComponent<SpriteRenderer>();
-     _exitFlowSr = exitFlow.GetComponent<SpriteRenderer>();
     }
 
     /**
@@ -33,50 +32,39 @@ public class Cell : MonoBehaviour
      */
     public void SetCircle(Color c)
     {
-     enterFlow.SetActive(false);
-     exitFlow.SetActive(false);
      circle.SetActive(true);
 
      _circleSr.color = c;
      _color = c;
      _isCircle = true;
     }
-    /**
-     * Renders enter flow with the given color and up vector direction
-     */
-    public void SetEnterFlow(Color c, Vector2 up)
+    public bool IsCircle()
     {
-     enterFlow.SetActive(true);
-     exitFlow.SetActive(false);
-     circle.SetActive(false);
-
-     
-     _enterFlowSr.color = c;
-     enterFlow.transform.up = up;
-     _color = c;
+     return _isCircle;
     }
-   
-    /**
-     * Renders exit flow with the given color and up vector direction
-     */
-    public void SetExitFlow(Color c, Vector2 up)
-    {
-     enterFlow.SetActive(false);
-     exitFlow.SetActive(true);
-     circle.SetActive(false);
-
-     _exitFlowSr.color = c;
-     exitFlow.transform.up = up;
-     _color = c;
-    }
-
     public Color GetColor()
     {
      return _color;
     }
 
-    public bool IsCircle()
+    //TODO: Estos métodos harán que se vea bien el flujo. Ale, que los implemente otro
+    public void ConnectUp()
     {
-     return _isCircle;
+     up.SetActive(true);
+    }
+
+    public void ConnectDown()
+    {
+     down.SetActive(true);
+    }
+
+    public void ConnectLeft()
+    {
+      left.SetActive(true);
+    }
+
+    public void ConnectRight()
+    {
+     right.SetActive(true);
     }
 }
