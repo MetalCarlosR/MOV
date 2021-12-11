@@ -131,8 +131,30 @@ public class BoardManager : MonoBehaviour
                     }
                     
                     Vector3 dir = actual.transform.position - prev.transform.position;
-                    if(!actual.IsCircle())
-                        actual.SetEnterFlow(_selectedCircle.GetColor(), new Vector2(dir.x, dir.y));
+                    if (!actual.IsCircle())
+                    {
+                        if(dir.x != 0)
+                            if(dir.x == -1)
+                                actual.ConnectLeft();
+                            else
+                                actual.ConnectRight();
+                        else
+                            if(dir.y == -1)
+                                actual.ConnectDown();
+                            else
+                                actual.ConnectUp();
+                    }
+                    
+                    if(dir.x != 0)
+                        if(dir.x == -1)
+                            prev.ConnectLeft();
+                        else
+                            prev.ConnectRight();
+                    else
+                        if(dir.y == -1)
+                            prev.ConnectDown();
+                        else
+                            prev.ConnectUp();
                 }
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
