@@ -23,15 +23,13 @@ public class BoardManager : MonoBehaviour
     private Cell _selectedCircle = null;
 
     private PuzzleParser.Puzzle _puzzle;
-    private PuzzleParser _parser;
     private readonly Color[] _colors = {Color.cyan, Color.magenta, Color.green, Color.yellow, Color.grey};
 
     // Start is called before the first frame update
     void Start()
     {
         string level = @"5,0,1,5;0,5,10,15,20,21;2,1,6,11,16;7,12,17,22;4,3,8,13,18;9,14,19,24,23;";
-        _parser = new PuzzleParser();
-        _puzzle = _parser.ParsePuzzle(level);
+        _puzzle = PuzzleParser.ParsePuzzle(level);
         //This wont be done once we have a level and game managers   
         StartLevel();
     }

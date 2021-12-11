@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class PuzzleParser
+[SuppressMessage("ReSharper", "RedundantCast")]
+public static class PuzzleParser
 {
     public class Puzzle
     {
         private readonly int _size;
-        private List<Vector2>[] _flows;
-        private int _levelNumber;
-        private int _flowCount;
+        private readonly List<Vector2>[] _flows;
+        private readonly int _levelNumber;
+        private readonly int _flowCount;
 
         public Puzzle(int s, int n, int flowCount)
         {
@@ -46,10 +48,8 @@ public class PuzzleParser
     }
 
     //TODO Read both width and height and stop assuming squares
-    public Puzzle ParsePuzzle(string data)
+    public static Puzzle ParsePuzzle(string data)
     {
-        Puzzle puzzle = null;
-
         //Remove all whitespace
         // Regex.Replace(data, @"(\r\n|\n|\r|\s)+", "");
         Regex.Replace(data, @"\s+", string.Empty);
@@ -74,7 +74,7 @@ public class PuzzleParser
             return null;
         }
 
-        puzzle = new Puzzle(size, levelNumber, flowCount);
+        var puzzle = new Puzzle(size, levelNumber, flowCount);
 
         for (int i = 0; i < flowCount; i++)
         {
@@ -83,8 +83,7 @@ public class PuzzleParser
 
             for (int j = 0; j < stringCoords.Length; j++)
             {
-                int coord;
-                if (!int.TryParse(stringCoords[j], out coord))
+                if (!int.TryParse(stringCoords[j], out var coord))
                 {
                     Debug.LogError($"Malformed coordinate${j}");
                     return null;

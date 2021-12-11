@@ -67,4 +67,12 @@ public class Cell : MonoBehaviour
     {
      right.SetActive(true);
     }
+
+    public void Clear()
+    {
+     right.SetActive(false);
+     left.SetActive(false);
+     up.SetActive(false);
+     down.SetActive(false);
+    }
 }
