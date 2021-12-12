@@ -200,86 +200,200 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    private bool TryAddingCellToFlowRec(Cell actual, Cell last)
+    {
+        if (_selectedFlow.Contains(actual))
+            return false;
+
+        Vector2 logicPosLast = WorldToLogic(last.transform.position);
+
+        Vector2 logicPosNew = WorldToLogic(actual.transform.position);
+
+        Vector2 dir = logicPosNew - logicPosLast;
+
+        Debug.Log(dir);
+
+        // if there is no distance add the cell
+        if (dir.magnitude == 0)
+        {
+            _selectedFlow.Add(last);
+            return true;
+        }
+
+        //if there is more x than y to travel, try that direction only
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+        {
+            Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+            {
+                if (TryAddingCellToFlowRec(actual, temp))
+                {
+                    if (!_selectedFlow.Contains(last))
+                        _selectedFlow.Add(last);
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+        //do the same but for y
+        else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
+        {
+            Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
+            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+            {
+                if(TryAddingCellToFlowRec(actual, temp))
+                {
+                    if (!_selectedFlow.Contains(last))
+                        _selectedFlow.Add(last);
+                    return true;
+                }
+                else return false;
+            }
+            else return false;
+        }
+        // perfect diagonal
+        else
+        {
+            // try both
+            Debug.Log("Diagonal");
+            Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+            {
+                if (TryAddingCellToFlowRec(actual, temp))
+                {
+                    if (!_selectedFlow.Contains(last))
+                        _selectedFlow.Add(last);
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
+                if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+                    if(TryAddingCellToFlowRec(actual, temp))
+                    {
+                        if (!_selectedFlow.Contains(last))
+                            _selectedFlow.Add(last);
+                        return true;
+                    }
+
+                return false;
+            }
+        }
+    }
+
+    // TODO: se pueden hacer diagonales y rompertelo, hay que mejorar el algoritmo (las diagonales del original pueden ser de mas de 1 bloque)
+    private bool TryAddingCellToFlow(Cell actual)
+    {
+        if (_selectedFlow.Contains(actual))
+            return false;
+
+        Cell last = _selectedFlow.Last();
+
+        // TODO: diagonales... 
+        //return TryAddingCellToFlowRec(actual, last);
+
+        Vector2 logicPosLast = WorldToLogic(last.transform.position);
+
+        if ((logicPosLast.y - 1 >= 0 && _cells[(int)logicPosLast.x, (int)logicPosLast.y - 1] == actual)
+            || (logicPosLast.y + 1 <= _puzzle.GetSize() && _cells[(int)logicPosLast.x, (int)logicPosLast.y + 1] == actual)
+            || (logicPosLast.x - 1 >= 0 && _cells[(int)logicPosLast.x - 1, (int)logicPosLast.y] == actual)
+            || (logicPosLast.x + 1 <= _puzzle.GetSize() && _cells[(int)logicPosLast.x + 1, (int)logicPosLast.y] == actual))
+        {
+            Debug.Log("Added");
+            _selectedFlow.Add(actual);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private void TryToExtendCurrentFlow(Cell actual)
     {
         //We collided with different color circle
         if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor() && !_selectedFlow.Contains(actual))
         {
-            BreakFlow();
-            return;
-        }
-        
-        //Add it to the selected list if it's not there yet
-        // TODO: se pueden hacer diagonales y rompertelo, hay que mejorar el algoritmo (las diagonales del original pueden ser de mas de 1 bloque)
-        if(!_selectedFlow.Contains(actual))
-            _selectedFlow.Add(actual);
-        
-        //CurrentList
-        var flow = GetFlowByCell(actual);
-
-        Cell prev = null;
-        
-        foreach (var cell in _selectedFlow.Where(cell => cell != actual))
-            prev = cell;
-
-        if(prev == null)
-        {
-            Debug.Log("Prev was null");
             return;
         }
 
-        Vector3 dir = actual.transform.position - prev.transform.position;
-        
-        //Check for loops and other flows
-
-        //Loop in flow
-        if(actual.GetColor() == _selectedCircle.GetColor())
+        //Loop in flow or going back in it
+        if (actual.GetColor() == _selectedCircle.GetColor())
         {
             if (actual != _selectedFlow.Last())
             {
-                clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual));
-                return;
+                Debug.Log("Loop");
+                int index = _selectedFlow.FindIndex(cell => cell == actual);
+                if(index >= 0)
+                    clearFlow(_selectedFlow, index);
             }
         }
-        //Cutting other flow?
-        // TODO: tiene que hacerlo solo al final, porque si lo descortas mientras arrastras, recuperas ese flow como estaba antes
-        else if(flow!=null && flow.Contains(actual) && actual.IsInUse())
-        {
-            clearFlow(flow,flow.FindIndex(cell => cell == actual));
-        }
 
-        bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor() && !actual.IsInUse();
-        
-        //Connected flow
-        if (!actual.IsCircle() || finishingCircle)
+        //Add it to the selected list if it's not there yet
+        if (TryAddingCellToFlow(actual))
         {
-            actual.SetColor(_selectedCircle.GetColor());
+            //CurrentList
+            var flow = GetFlowByCell(actual);
+
+            //Cutting other flow?
+            // TODO: tiene que hacerlo solo al final, porque si lo descortas mientras arrastras, recuperas ese flow como estaba antes
+            if (flow != null && actual.GetColor() != _selectedCircle.GetColor() && flow.Contains(actual) && actual.IsInUse())
+            {
+                int index = _selectedFlow.FindIndex(cell => cell == actual);
+                if (index >= 0)
+                    clearFlow(_selectedFlow, index);
+            }
+
+            bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor() && !actual.IsInUse();
+
+            Cell prev = null;
+
+            foreach (var cell in _selectedFlow.Where(cell => cell != actual))
+                prev = cell;
+
+            if (prev == null)
+            {
+                Debug.Log("Prev was null");
+                return;
+            }
+
+            Vector3 dir = actual.transform.position - prev.transform.position;
+
+            //Connected flow
+            if (!actual.IsCircle() || finishingCircle)
+            {
+                actual.SetColor(_selectedCircle.GetColor());
+
+                if (dir.x != 0)
+                    if (dir.x == -1)
+                        actual.ConnectRight();
+                    else
+                        actual.ConnectLeft();
+                else if (dir.y == -1)
+                    actual.ConnectUp();
+                else
+                    actual.ConnectDown();
+            }
 
             if (dir.x != 0)
                 if (dir.x == -1)
-                    actual.ConnectRight();
+                    prev.ConnectLeft();
                 else
-                    actual.ConnectLeft();
+                    prev.ConnectRight();
             else if (dir.y == -1)
-                actual.ConnectUp();
+                prev.ConnectDown();
             else
-                actual.ConnectDown();
-        }
-        
-        if (dir.x != 0)
-            if (dir.x == -1)
-                prev.ConnectLeft();
-            else
-                prev.ConnectRight();
-        else if (dir.y == -1)
-            prev.ConnectDown();
-        else
-            prev.ConnectUp();
+                prev.ConnectUp();
 
-        //We finished the flow
-        if (finishingCircle)
-        {
-            BreakFlow();
+            //We finished the flow
+            if (finishingCircle)
+            {
+                // TODO: no hace esto...
+                BreakFlow();
+            }
         }
     }
 
