@@ -134,9 +134,6 @@ public class BoardManager : MonoBehaviour
                     _selectedFlow = GetFlowByCell(actual);
                     _selectedCircle = _selectedFlow.Last();
                 }
-                // TODO:
-                //No circle, we can't start here
-                // unless is in the middle of an existing flow
                 else if (actual.IsCircle())
                 {
                     //ClearList
@@ -149,7 +146,7 @@ public class BoardManager : MonoBehaviour
             else if (_selectedCircle)
             {
                 if (_selectedCircle != actual)
-                    ConnectFlow(actual);
+                    TryToExtendCurrentFlow(actual);
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     BreakFlow();
@@ -157,11 +154,16 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void ConnectFlow(Cell actual)
+    private void TryToExtendCurrentFlow(Cell actual)
     {
-        //Add it to the selected list if it's not there yet
-        if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor())
+        //We collided with different color circle
+        if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor() && !_selectedFlow.Contains(actual))
+        {
             BreakFlow();
+            return;
+        }
+        
+        //Add it to the selected list if it's not there yet
         if(!_selectedFlow.Contains(actual))
             _selectedFlow.Add(actual);
         
@@ -180,18 +182,23 @@ public class BoardManager : MonoBehaviour
         //Loop in flow
         if(actual.GetColor() == _selectedCircle.GetColor())
         {
-            if(actual != _selectedFlow.Last())
+            if (actual != _selectedFlow.Last())
+            {
+                Debug.Log("AH");
                 clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual), _selectedFlow.Count);
+                return;
+            }
         }
         //Cutting other flow?
         else if(flow!=null && flow.Contains(actual) && actual.IsInUse())
         {
             clearFlow(flow,flow.FindIndex(cell => cell == actual), flow.Count);
         }
+
+        bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor() && !actual.IsInUse();
         
         //Connected flow
-        if (!actual.IsCircle() ||
-             actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor())
+        if (!actual.IsCircle() || finishingCircle)
         {
             actual.SetColor(_selectedCircle.GetColor());
 
@@ -215,6 +222,9 @@ public class BoardManager : MonoBehaviour
             prev.ConnectDown();
         else
             prev.ConnectUp();
+        
+        if(finishingCircle)
+            BreakFlow();
     }
 
     private void BreakFlow()
