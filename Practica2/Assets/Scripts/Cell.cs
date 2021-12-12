@@ -19,6 +19,9 @@ public class Cell : MonoBehaviour
     private SpriteRenderer left;
     [SerializeField]
     private SpriteRenderer right;
+    
+    [SerializeField]
+    private SpriteRenderer background;
 
     private Color _color;
     private bool _isCircle = false;
@@ -92,6 +95,11 @@ public class Cell : MonoBehaviour
         _inUse = true;
     }
 
+    public void Fill()
+    {
+        background.enabled = true;
+        background.color = _color;
+    }
     public void Clear()
     {
         up.enabled = false;
@@ -99,5 +107,6 @@ public class Cell : MonoBehaviour
         left.enabled = false;
         right.enabled = false;
         _inUse = false;
+        background.enabled = false;
     }
 }

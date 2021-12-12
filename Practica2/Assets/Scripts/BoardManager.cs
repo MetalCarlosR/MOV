@@ -184,7 +184,6 @@ public class BoardManager : MonoBehaviour
         {
             if (actual != _selectedFlow.Last())
             {
-                Debug.Log("AH");
                 clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual), _selectedFlow.Count);
                 return;
             }
@@ -222,9 +221,17 @@ public class BoardManager : MonoBehaviour
             prev.ConnectDown();
         else
             prev.ConnectUp();
-        
-        if(finishingCircle)
+
+        //We finished the flow
+        if (finishingCircle)
+        {
+            foreach (Cell cell in _selectedFlow)
+            {
+                cell.Fill();
+                Debug.Log("FILL");
+            }
             BreakFlow();
+        }
     }
 
     private void BreakFlow()
