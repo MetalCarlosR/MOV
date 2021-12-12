@@ -78,6 +78,15 @@ public class BoardManager : MonoBehaviour
         return new Vector2((float) Math.Round(position.x + offset), (float) Math.Round(offset - position.y));
     }
 
+    private void clearFlow(List<Cell> flow)
+    {
+        foreach(Cell c in flow)
+        {
+            c.Clear();
+        }
+        flow.Clear();
+    }
+
     private void Update()
     {
         int size = _cells.GetLength(0);
@@ -99,18 +108,24 @@ public class BoardManager : MonoBehaviour
             if (!_selectedCircle && touch.phase == TouchPhase.Began)
             {
                 //No circle, we can't start here
-                if (_flows[actual] == null)
-                {
-                    foreach (var pair in _flows)
-                        if (pair.Value.Find(cell => actual == cell))
-                            _selectedCircle = pair.Value[0];
+                List<Cell> flow;
+                if(!_flows.TryGetValue(actual, out flow)) return;
+                //if (_flows[actual] == null)
+                //{
+                //    foreach (var pair in _flows)
+                //        if (pair.Value.Find(cell => actual == cell))
+                //            _selectedCircle = pair.Value[0];
 
-                    return;
-                }
+                //    return;
+                //}
+                // TO DO:
+                // unless is in the middle of an existing flow
+
+                Debug.Log("It works");
 
                 if (_flows[actual].Count == 0 || _flows[actual].First() != actual)
                 {
-                    _flows[actual].Clear();
+                    clearFlow(_flows[actual]);
                     _flows[actual].Add(actual);
                 }
 
@@ -121,17 +136,20 @@ public class BoardManager : MonoBehaviour
                 if (_selectedCircle != actual)
                 {
                     _flows[_selectedCircle].Add(actual);
+                    Debug.Log(_flows[_selectedCircle].Count);
                     Cell prev = null;
                     foreach (Cell cell in _flows[_selectedCircle])
                     {
                         if(cell != actual)
                             prev = cell;
                     }
-                    
+
                     Vector3 dir = actual.transform.position - prev.transform.position;
                     if (!actual.IsCircle())
                     {
-                        if(dir.x != 0)
+                        actual.SetColor(_selectedCircle.GetColor());
+
+                        if (dir.x != 0)
                             if(dir.x == -1)
                                 actual.ConnectRight();
                             else

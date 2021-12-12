@@ -11,13 +11,14 @@ public class Cell : MonoBehaviour
     private SpriteRenderer _circleSr;
 
     [SerializeField]
-    private GameObject right;
+    private SpriteRenderer up;
+
     [SerializeField]
-    private GameObject left;
+    private SpriteRenderer down;
     [SerializeField]
-    private GameObject up;
+    private SpriteRenderer left;
     [SerializeField]
-    private GameObject down;
+    private SpriteRenderer right;
 
     private Color _color;
     private bool _isCircle = false;
@@ -36,7 +37,11 @@ public class Cell : MonoBehaviour
 
      _circleSr.color = c;
      _color = c;
-     _isCircle = true;
+        right.color = c;
+        left.color = c;
+        up.color = c;
+        down.color = c;
+        _isCircle = true;
     }
     public bool IsCircle()
     {
@@ -47,32 +52,42 @@ public class Cell : MonoBehaviour
      return _color;
     }
 
+    public void SetColor(Color c)
+    {
+        _circleSr.color = c;
+        _color = c;
+        right.color = c;
+        left.color = c;
+        up.color = c;
+        down.color = c;
+    }
+
     //TODO: Estos métodos harán que se vea bien el flujo. Ale, que los implemente otro
     public void ConnectUp()
     {
-     up.SetActive(true);
+        up.enabled = true;
     }
 
     public void ConnectDown()
     {
-     down.SetActive(true);
+        down.enabled = true;
     }
 
     public void ConnectLeft()
     {
-      left.SetActive(true);
+        left.enabled = true;
     }
 
     public void ConnectRight()
     {
-     right.SetActive(true);
+        right.enabled = true;
     }
 
     public void Clear()
     {
-     right.SetActive(false);
-     left.SetActive(false);
-     up.SetActive(false);
-     down.SetActive(false);
+        up.enabled = true;
+        down.enabled = true;
+        left.enabled = true;
+        right.enabled = true;
     }
 }
