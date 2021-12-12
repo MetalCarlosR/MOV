@@ -38,19 +38,21 @@ public class BoardManager : MonoBehaviour
     //Will be a level object later that has a full description of a level 
     private void StartLevel()
     {
-        int size = _puzzle.GetSize();
-        _cells = new Cell[size, size];
-        camera.orthographicSize = size / 2 + TopBarSize + BottomBarSize;
-        for (int i = 0; i < size; i++)
-        for (int j = 0; j < size; j++)
-        {
-            _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
-                grid.transform);
-            _cells[i, j].gameObject.name = $"({i},{j})";
-        }
+        int width = _puzzle.Width;
+        int height = _puzzle.Height;
+        _cells = new Cell[width, height];
+        camera.orthographicSize = width / 2 + TopBarSize + BottomBarSize;
+        
+        for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
+            {
+                _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
+                    grid.transform);
+                _cells[i, j].gameObject.name = $"({i},{j})";
+            }
 
         _flows = new List<List<Cell>>();
-        for (int i = 0; i < _puzzle.GetFlowCount(); i++)
+        for (int i = 0; i < _puzzle.FlowCount; i++)
         {
             var flow = _puzzle.GetFlow(i);
             Cell initial = _cells[(int) flow[0].x, (int) flow[0].y];
@@ -113,7 +115,7 @@ public class BoardManager : MonoBehaviour
             {
                 lastRemainingCell.DisconnectUp();
             }
-            else if (logicPos.y + 1 <= _puzzle.GetSize() && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
+            else if (logicPos.y + 1 <= _puzzle.Height && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
             {
                 lastRemainingCell.DisconnectDown();
             }
@@ -298,9 +300,9 @@ public class BoardManager : MonoBehaviour
         Vector2 logicPosLast = WorldToLogic(last.transform.position);
 
         if ((logicPosLast.y - 1 >= 0 && _cells[(int)logicPosLast.x, (int)logicPosLast.y - 1] == actual)
-            || (logicPosLast.y + 1 <= _puzzle.GetSize() && _cells[(int)logicPosLast.x, (int)logicPosLast.y + 1] == actual)
+            || (logicPosLast.y + 1 < _puzzle.Height && _cells[(int)logicPosLast.x, (int)logicPosLast.y + 1] == actual)
             || (logicPosLast.x - 1 >= 0 && _cells[(int)logicPosLast.x - 1, (int)logicPosLast.y] == actual)
-            || (logicPosLast.x + 1 <= _puzzle.GetSize() && _cells[(int)logicPosLast.x + 1, (int)logicPosLast.y] == actual))
+            || (logicPosLast.x + 1 < _puzzle.Width && _cells[(int)logicPosLast.x + 1, (int)logicPosLast.y] == actual))
         {
             Debug.Log("Added");
             _selectedFlow.Add(actual);
