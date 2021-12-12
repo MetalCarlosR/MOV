@@ -70,11 +70,15 @@ public class Cell : MonoBehaviour
         down.color = c;
     }
 
-    //TODO: Estos métodos harán que se vea bien el flujo. Ale, que los implemente otro
     public void ConnectUp()
     {
         up.enabled = true;
         _inUse = true;
+    }
+
+    public void DisconnectUp()
+    {
+        up.enabled = false;
     }
 
     public void ConnectDown()
@@ -83,16 +87,31 @@ public class Cell : MonoBehaviour
         _inUse = true;
     }
 
+    public void DisconnectDown()
+    {
+        down.enabled = false;
+    }
+
     public void ConnectLeft()
     {
         left.enabled = true;
         _inUse = true;
     }
 
+    public void DisconnectLeft()
+    {
+        left.enabled = false;
+    }
+
     public void ConnectRight()
     {
         right.enabled = true;
         _inUse = true;
+    }
+
+    public void DisconnectRight()
+    {
+        right.enabled = false;
     }
 
     public void Fill()
@@ -108,5 +127,22 @@ public class Cell : MonoBehaviour
         right.enabled = false;
         _inUse = false;
         background.enabled = false;
+        DespawnMiniCircle();
+    }
+
+    public void SpawnMiniCircle()
+    {
+        if (!_isCircle)
+        {
+            circle.transform.localScale = new Vector3(0.9f, 0.9f, 1.0f);
+            circle.SetActive(true);
+            _circleSr.color = _color;
+        }
+    }
+
+    public void DespawnMiniCircle()
+    {
+        if(!_isCircle)
+            circle.SetActive(false);
     }
 }

@@ -80,16 +80,52 @@ public class BoardManager : MonoBehaviour
 
     private void clearFlow(List<Cell> flow)
     {
-        clearFlow(flow, 0, flow.Count);
+        clearFlow(flow, 0);
     }
-    private void clearFlow(List<Cell> flow, int first, int last)
+    private void clearFlow(List<Cell> flow, int first)
     {
+        int last = flow.Count;
+
+        Cell firstCutCell = null;
+        if (flow.Count > 1)
+             firstCutCell = flow[first];
+
         for (int i = first; i<last;i++)
         {
             flow[i].Clear();
         }
 
         flow.RemoveRange(first,last-first);
+
+        // the origin is only remaining
+        if (flow.Count == 1)
+        {
+            flow[0].Clear();
+        }
+        // cut properly the rest of the chain
+        else if (flow.Count > 0)
+        {
+            Cell lastRemainingCell = flow.Last<Cell>();
+            Vector2 logicPos = WorldToLogic(lastRemainingCell.transform.position);
+            
+            // search the direction the last cell remaining and the first cut one were
+            if(logicPos.y - 1 >= 0 && _cells[(int)logicPos.x,(int)logicPos.y-1] == firstCutCell)
+            {
+                lastRemainingCell.DisconnectUp();
+            }
+            else if (logicPos.y + 1 <= _puzzle.GetSize() && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
+            {
+                lastRemainingCell.DisconnectDown();
+            }
+            else if (logicPos.x - 1 >= 0 && _cells[(int)logicPos.x-1, (int)logicPos.y] == firstCutCell)
+            {
+                lastRemainingCell.DisconnectLeft();
+            }
+            else
+            {
+                lastRemainingCell.DisconnectRight();
+            }
+        }
     }
 
     private List<Cell> GetFlowByCell(Cell cell)
@@ -128,11 +164,14 @@ public class BoardManager : MonoBehaviour
             //Selecting start of flow
             if (!_selectedCircle && touch.phase == TouchPhase.Began)
             {
-                List<Cell> flow;
                 if (!actual.IsCircle() && actual.IsInUse())
                 {
                     _selectedFlow = GetFlowByCell(actual);
                     _selectedCircle = _selectedFlow.Last();
+                    // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
+                    if(_selectedCircle.IsCircle())
+                        _selectedCircle = _selectedFlow.First();
+                    _selectedCircle.DespawnMiniCircle();
                 }
                 else if (actual.IsCircle())
                 {
@@ -147,9 +186,16 @@ public class BoardManager : MonoBehaviour
             {
                 if (_selectedCircle != actual)
                     TryToExtendCurrentFlow(actual);
+                else if(_selectedCircle == _selectedFlow[0] && _selectedFlow.Count > 1)
+                {
+                    Debug.Log("Update");
+                    clearFlow(_selectedFlow, 1);
+                }
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                {
                     BreakFlow();
+                }
             }
         }
     }
@@ -164,6 +210,7 @@ public class BoardManager : MonoBehaviour
         }
         
         //Add it to the selected list if it's not there yet
+        // TODO: se pueden hacer diagonales y rompertelo, hay que mejorar el algoritmo (las diagonales del original pueden ser de mas de 1 bloque)
         if(!_selectedFlow.Contains(actual))
             _selectedFlow.Add(actual);
         
@@ -175,6 +222,12 @@ public class BoardManager : MonoBehaviour
         foreach (var cell in _selectedFlow.Where(cell => cell != actual))
             prev = cell;
 
+        if(prev == null)
+        {
+            Debug.Log("Prev was null");
+            return;
+        }
+
         Vector3 dir = actual.transform.position - prev.transform.position;
         
         //Check for loops and other flows
@@ -184,14 +237,15 @@ public class BoardManager : MonoBehaviour
         {
             if (actual != _selectedFlow.Last())
             {
-                clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual), _selectedFlow.Count);
+                clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual));
                 return;
             }
         }
         //Cutting other flow?
+        // TODO: tiene que hacerlo solo al final, porque si lo descortas mientras arrastras, recuperas ese flow como estaba antes
         else if(flow!=null && flow.Contains(actual) && actual.IsInUse())
         {
-            clearFlow(flow,flow.FindIndex(cell => cell == actual), flow.Count);
+            clearFlow(flow,flow.FindIndex(cell => cell == actual));
         }
 
         bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor() && !actual.IsInUse();
@@ -225,17 +279,22 @@ public class BoardManager : MonoBehaviour
         //We finished the flow
         if (finishingCircle)
         {
-            foreach (Cell cell in _selectedFlow)
-            {
-                cell.Fill();
-                Debug.Log("FILL");
-            }
             BreakFlow();
         }
     }
 
     private void BreakFlow()
     {
+        if(_selectedFlow == null || _selectedCircle == null)
+        {
+            Debug.Log("Breaking non existing flow");
+            return;
+        }
+        foreach (Cell cell in _selectedFlow)
+        {
+            cell.Fill();
+        }
+        _selectedFlow.Last<Cell>().SpawnMiniCircle();
         _selectedCircle = null;
         _selectedFlow = null;
     }
