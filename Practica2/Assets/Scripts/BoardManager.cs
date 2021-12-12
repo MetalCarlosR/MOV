@@ -17,11 +17,12 @@ public class BoardManager : MonoBehaviour
     private const int BottomBarSize = 1;
 
 
-    private Dictionary<Cell, List<Cell>> _flows;
+    private List<List<Cell>> _flows;
 
     private Cell[,] _cells;
     private Cell _selectedCircle = null;
-
+    private List<Cell> _selectedFlow = null;
+        
     private PuzzleParser.Puzzle _puzzle;
     private readonly Color[] _colors = {Color.cyan, Color.magenta, Color.green, Color.yellow, Color.grey};
 
@@ -48,7 +49,7 @@ public class BoardManager : MonoBehaviour
             _cells[i, j].gameObject.name = $"({i},{j})";
         }
 
-        _flows = new Dictionary<Cell, List<Cell>>();
+        _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.GetFlowCount(); i++)
         {
             var flow = _puzzle.GetFlow(i);
@@ -59,8 +60,7 @@ public class BoardManager : MonoBehaviour
             final.SetCircle(_colors[i]);
 
             var path = new List<Cell>();
-            _flows[final] = path;
-            _flows[initial] = path;
+            _flows.Add(path);
         }
     }
 
@@ -80,11 +80,28 @@ public class BoardManager : MonoBehaviour
 
     private void clearFlow(List<Cell> flow)
     {
-        foreach(Cell c in flow)
+        clearFlow(flow, 0, flow.Count);
+    }
+    private void clearFlow(List<Cell> flow, int first, int last)
+    {
+        for (int i = first; i<last;i++)
         {
-            c.Clear();
+            flow[i].Clear();
         }
-        flow.Clear();
+
+        flow.RemoveRange(first,last-first);
+    }
+
+    private List<Cell> GetFlowByCell(Cell cell)
+    {
+        int i = 0;
+        foreach (Color color in _colors)
+        {
+            if (color == cell.GetColor())
+                return _flows[i];
+            i++;
+        }
+        return null;
     }
 
     private void Update()
@@ -101,83 +118,108 @@ public class BoardManager : MonoBehaviour
             int logicY = (int) trv.y;
 
             //If we click outside the grid we break out
-            if (logicX < 0 || logicX >= size || logicY < 0 || logicY >= size) return;
+            if (logicX < 0 || logicX >= size || logicY < 0 || logicY >= size)
+            {
+                BreakFlow();
+                return;
+            }
 
             Cell actual = _cells[logicX, logicY];
             //Selecting start of flow
             if (!_selectedCircle && touch.phase == TouchPhase.Began)
             {
-                //No circle, we can't start here
                 List<Cell> flow;
-                if(!_flows.TryGetValue(actual, out flow)) return;
-                //if (_flows[actual] == null)
-                //{
-                //    foreach (var pair in _flows)
-                //        if (pair.Value.Find(cell => actual == cell))
-                //            _selectedCircle = pair.Value[0];
-
-                //    return;
-                //}
-                // TO DO:
-                // unless is in the middle of an existing flow
-
-                Debug.Log("It works");
-
-                if (_flows[actual].Count == 0 || _flows[actual].First() != actual)
+                if (!actual.IsCircle() && actual.IsInUse())
                 {
-                    clearFlow(_flows[actual]);
-                    _flows[actual].Add(actual);
+                    _selectedFlow = GetFlowByCell(actual);
+                    _selectedCircle = _selectedFlow.Last();
                 }
-
-                _selectedCircle = _cells[logicX, logicY];
+                // TODO:
+                //No circle, we can't start here
+                // unless is in the middle of an existing flow
+                else if (actual.IsCircle())
+                {
+                    //ClearList
+                    clearFlow(GetFlowByCell(actual));
+                    _selectedCircle = _cells[logicX, logicY];
+                    _selectedFlow = GetFlowByCell(_selectedCircle);
+                    _selectedFlow.Add(actual);
+                }
             }
             else if (_selectedCircle)
             {
                 if (_selectedCircle != actual)
-                {
-                    _flows[_selectedCircle].Add(actual);
-                    Debug.Log(_flows[_selectedCircle].Count);
-                    Cell prev = null;
-                    foreach (Cell cell in _flows[_selectedCircle])
-                    {
-                        if(cell != actual)
-                            prev = cell;
-                    }
-
-                    Vector3 dir = actual.transform.position - prev.transform.position;
-                    if (!actual.IsCircle())
-                    {
-                        actual.SetColor(_selectedCircle.GetColor());
-
-                        if (dir.x != 0)
-                            if(dir.x == -1)
-                                actual.ConnectRight();
-                            else
-                                actual.ConnectLeft();
-                        else
-                            if(dir.y == -1)
-                                actual.ConnectUp();
-                            else
-                                actual.ConnectDown();
-                    }
-                    
-                    if(dir.x != 0)
-                        if(dir.x == -1)
-                            prev.ConnectLeft();
-                        else
-                            prev.ConnectRight();
-                    else
-                        if(dir.y == -1)
-                            prev.ConnectDown();
-                        else
-                            prev.ConnectUp();
-                }
+                    ConnectFlow(actual);
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
-                {
-                    _selectedCircle = null;
-                }
+                    BreakFlow();
             }
         }
+    }
+
+    private void ConnectFlow(Cell actual)
+    {
+        //Add it to the selected list if it's not there yet
+        if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor())
+            BreakFlow();
+        if(!_selectedFlow.Contains(actual))
+            _selectedFlow.Add(actual);
+        
+        //CurrentList
+        var flow = GetFlowByCell(actual);
+
+        Cell prev = null;
+        
+        foreach (var cell in _selectedFlow.Where(cell => cell != actual))
+            prev = cell;
+
+        Vector3 dir = actual.transform.position - prev.transform.position;
+        
+        //Check for loops and other flows
+
+        //Loop in flow
+        if(actual.GetColor() == _selectedCircle.GetColor())
+        {
+            if(actual != _selectedFlow.Last())
+                clearFlow(_selectedFlow,_selectedFlow.FindIndex(cell => cell == actual), _selectedFlow.Count);
+        }
+        //Cutting other flow?
+        else if(flow!=null && flow.Contains(actual) && actual.IsInUse())
+        {
+            clearFlow(flow,flow.FindIndex(cell => cell == actual), flow.Count);
+        }
+        
+        //Connected flow
+        if (!actual.IsCircle() ||
+             actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor())
+        {
+            actual.SetColor(_selectedCircle.GetColor());
+
+            if (dir.x != 0)
+                if (dir.x == -1)
+                    actual.ConnectRight();
+                else
+                    actual.ConnectLeft();
+            else if (dir.y == -1)
+                actual.ConnectUp();
+            else
+                actual.ConnectDown();
+        }
+        
+        if (dir.x != 0)
+            if (dir.x == -1)
+                prev.ConnectLeft();
+            else
+                prev.ConnectRight();
+        else if (dir.y == -1)
+            prev.ConnectDown();
+        else
+            prev.ConnectUp();
+    }
+
+    private void BreakFlow()
+    {
+        _selectedCircle = null;
+        _selectedFlow = null;
     }
 }

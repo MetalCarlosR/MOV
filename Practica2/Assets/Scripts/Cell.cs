@@ -22,6 +22,7 @@ public class Cell : MonoBehaviour
 
     private Color _color;
     private bool _isCircle = false;
+    private bool _inUse = false;
     
     private void Awake()
     {
@@ -33,10 +34,9 @@ public class Cell : MonoBehaviour
      */
     public void SetCircle(Color c)
     {
-     circle.SetActive(true);
-
-     _circleSr.color = c;
-     _color = c;
+        circle.SetActive(true);
+        _circleSr.color = c;
+         _color = c;
         right.color = c;
         left.color = c;
         up.color = c;
@@ -46,6 +46,11 @@ public class Cell : MonoBehaviour
     public bool IsCircle()
     {
      return _isCircle;
+    }
+    public bool IsInUse()
+    {
+        return _inUse;
+        
     }
     public Color GetColor()
     {
@@ -66,28 +71,33 @@ public class Cell : MonoBehaviour
     public void ConnectUp()
     {
         up.enabled = true;
+        _inUse = true;
     }
 
     public void ConnectDown()
     {
         down.enabled = true;
+        _inUse = true;
     }
 
     public void ConnectLeft()
     {
         left.enabled = true;
+        _inUse = true;
     }
 
     public void ConnectRight()
     {
         right.enabled = true;
+        _inUse = true;
     }
 
     public void Clear()
     {
-        up.enabled = true;
-        down.enabled = true;
-        left.enabled = true;
-        right.enabled = true;
+        up.enabled = false;
+        down.enabled = false;
+        left.enabled = false;
+        right.enabled = false;
+        _inUse = false;
     }
 }
