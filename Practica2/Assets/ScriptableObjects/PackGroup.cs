@@ -7,4 +7,5 @@ public class PackGroup : ScriptableObject
 {
     public string name;
     public LevelPack[] packs;
+    public Color color;
 }
