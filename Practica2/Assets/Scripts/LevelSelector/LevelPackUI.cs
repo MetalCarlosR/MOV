@@ -16,6 +16,6 @@ public class LevelPackUI : MonoBehaviour
 
     public void ShowPack()
     {
-        
+        GameManager.Instance.levelSelectorManager.LoadPackGrid(_pack);
     }
 }

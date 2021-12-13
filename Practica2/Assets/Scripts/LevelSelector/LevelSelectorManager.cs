@@ -5,8 +5,8 @@ using UnityEngine;
 public class LevelSelectorManager : MonoBehaviour
 {
     [SerializeField] private List<PackGroup> groups;
-    [SerializeField] private GameObject groupPrefab;
-    [SerializeField] private RectTransform packsGroup, scrollGroup, heightOffset;
+    [SerializeField] private GameObject groupPrefab, pagePrefab, circleIndicatorPrefab , levelSelectorGrid, levelSelectorList;
+    [SerializeField] private RectTransform packsGroup, scrollGroup, heightOffset, pagesGroup, indicatorGroup;
 
     void Start()
     {
@@ -19,7 +19,24 @@ public class LevelSelectorManager : MonoBehaviour
         }
         
         scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height-75) - groupSize);
+    }
 
+    public void LoadPackGrid(LevelPack pack)
+    {
+        levelSelectorGrid.SetActive(true);
+        levelSelectorList.SetActive(false);
+        string[] data = pack.file.ToString().Split('\n');
+        for (int i = 0; i < pack.pages.Length; i++)
+        {
+            PageUI page = Instantiate(pagePrefab, pagesGroup).GetComponent<PageUI>();
+            string[] pageData = new string[30];
+            for (int j = 0; j < 30; j++)
+            {
+                pageData[j] = data[30 * i + j];
+            }
+            page.SetupPage(pageData,pack.pages[i], i * 30 + 1);
+            Instantiate(circleIndicatorPrefab, indicatorGroup);
+        }
     }
     
 }
