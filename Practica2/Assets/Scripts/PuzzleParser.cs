@@ -35,7 +35,7 @@ public static class PuzzleParser
         }
         public List<Vector2> GetFlow(int n)
         {
-            return _flows[n];
+            return n==-1 ? null: _flows[n];
         }
     }
 
