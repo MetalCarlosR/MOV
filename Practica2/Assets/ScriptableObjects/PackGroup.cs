@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Flow/PackGroup")]
 public class PackGroup : ScriptableObject
 {
-    public string name;
+    public new string name;
     public LevelPack[] packs;
     public Color color;
 }

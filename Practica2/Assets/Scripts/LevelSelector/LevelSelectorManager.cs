@@ -18,7 +18,7 @@ public class LevelSelectorManager : MonoBehaviour
             groupSize += 75 * (g.packs.Length + 1);
         }
         
-        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height-25) - groupSize);
+        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height-75) - groupSize);
 
     }
     

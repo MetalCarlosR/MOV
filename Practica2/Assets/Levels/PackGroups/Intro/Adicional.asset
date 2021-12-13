@@ -14,3 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Paquete Adicional
   file: {fileID: 4900000, guid: 4f1c8f6f2f5e00048a69bf3a6e06394d, type: 3}
+  pages:
+  - pageName: "5x5 - f\xE1cil"
+    pageColor: {r: 0, g: 1, b: 0, a: 1}
+  - pageName: 6x6
+    pageColor: {r: 0, g: 0, b: 1, a: 1}
+  - pageName: 7x7 - medio
+    pageColor: {r: 1, g: 1, b: 0, a: 1}
+  - pageName: 8x8
+    pageColor: {r: 1, g: 0.43137255, b: 0, a: 1}
+  - pageName: 9x9 - dificil
+    pageColor: {r: 1, g: 0, b: 0, a: 1}

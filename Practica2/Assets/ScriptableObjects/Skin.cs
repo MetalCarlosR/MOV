@@ -5,6 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Flow/Skin")]
 public class Skin : ScriptableObject
 {
-    public string name;
+    public new string name;
     public Color[] colors = new Color[16];
 }
