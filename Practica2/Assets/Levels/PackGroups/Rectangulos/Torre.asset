@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0d2192befdcbe742ab0a0504d09df8e, type: 3}
+  m_Name: Torre
+  m_EditorClassIdentifier: 
+  name: Paquete Torre
+  file: {fileID: 4900000, guid: 424c10b9ad187764b9351a36fe6510cd, type: 3}
+  pages:
+  - pageName: 5x6 - 5x11
+    pageColor: {r: 1, g: 0, b: 0, a: 1}
+  - pageName: 6x7 - 6x12
+    pageColor: {r: 0, g: 1, b: 0, a: 1}
+  - pageName: 7x8 - 7x13
+    pageColor: {r: 0, g: 0, b: 1, a: 1}
+  - pageName: 8x9 - 8x14
+    pageColor: {r: 1, g: 1, b: 0, a: 1}
+  - pageName: 9x10 - 9x15
+    pageColor: {r: 1, g: 0.43137255, b: 0, a: 1}

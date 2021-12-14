@@ -8,6 +8,20 @@ using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
+    public struct LevelData
+    {
+        public string data;
+        public string name;
+        public Color color;
+
+        public LevelData(string data, string name, Color color)
+        {
+            this.data = data;
+            this.name = name;
+            this.color = color;
+        }
+    }
+    
     [SerializeField] private BoardManager boardManager;
     [SerializeField] private Text text;
 
@@ -15,5 +29,10 @@ public class LevelManager : MonoBehaviour
     public void Update()
     {
         text.text ="Steps " + boardManager.GetStepCount().ToString();
+    }
+
+    public void LoadLevel(LevelData data)
+    {
+        boardManager.SetupLevel(data.data);
     }
 }

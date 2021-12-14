@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3fe49ea37920c74d8359a3c9ee7f79f, type: 3}
+  m_Name: Muros
+  m_EditorClassIdentifier: 
+  name: Muros
+  packs:
+  - {fileID: 11400000, guid: b70ace0e45f286f49894d80dbba0e68a, type: 2}
+  - {fileID: 11400000, guid: f378e85919106624d98b73516521e3ab, type: 2}
+  - {fileID: 11400000, guid: 73496534a89091f46af01d070d286d01, type: 2}
+  - {fileID: 11400000, guid: 31481d9d21e5f064c832642b6dd90e51, type: 2}
+  - {fileID: 11400000, guid: 0a255b1c55d61e84bbf5b9454acc1197, type: 2}
+  color: {r: 0, g: 1, b: 0, a: 1}

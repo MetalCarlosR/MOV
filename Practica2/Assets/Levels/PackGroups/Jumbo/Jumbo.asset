@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3fe49ea37920c74d8359a3c9ee7f79f, type: 3}
+  m_Name: Jumbo
+  m_EditorClassIdentifier: 
+  name: Jumbo
+  packs:
+  - {fileID: 11400000, guid: d84ae974355c7d044aba9b5f679f8791, type: 2}
+  - {fileID: 11400000, guid: 1bb914f6bd45fae42ba74fd08e7d5f3d, type: 2}
+  - {fileID: 11400000, guid: 340288d6b2a56d94ea0744b924a57bbc, type: 2}
+  color: {r: 1, g: 0.41960785, b: 0, a: 1}

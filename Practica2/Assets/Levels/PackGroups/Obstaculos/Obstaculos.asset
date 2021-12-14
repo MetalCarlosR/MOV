@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3fe49ea37920c74d8359a3c9ee7f79f, type: 3}
+  m_Name: Obstaculos
+  m_EditorClassIdentifier: 
+  name: "Obst\xE1culos"
+  packs:
+  - {fileID: 11400000, guid: b1949d6adaa98e8478bd930f0b4a6e93, type: 2}
+  - {fileID: 11400000, guid: 42910d2f1228efc4dac3fd8f9260d320, type: 2}
+  - {fileID: 11400000, guid: 242a5c15edd5bfa4b820d9e3a1bc3149, type: 2}
+  - {fileID: 11400000, guid: 412436ba8905ff144a8cb0ce8b23389a, type: 2}
+  color: {r: 1, g: 0, b: 0, a: 1}

@@ -34,7 +34,13 @@ public class BoardManager : MonoBehaviour
     //TODO(Ricky): LevelPack and not string 
     void Start()
     {
-        string level = @"5,0,1,5;0,5,10,15,20,21;2,1,6,11,16;7,12,17,22;4,3,8,13,18;9,14,19,24,23;";
+        // string level = @"5,0,1,5;0,5,10,15,20,21;2,1,6,11,16;7,12,17,22;4,3,8,13,18;9,14,19,24,23;";
+        // _puzzle = PuzzleParser.ParsePuzzle(level);
+        // StartLevel();
+    }
+
+    public void SetupLevel(string level)
+    {
         _puzzle = PuzzleParser.ParsePuzzle(level);
         StartLevel();
     }
