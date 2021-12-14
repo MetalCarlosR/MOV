@@ -169,7 +169,7 @@ public class BoardManager : MonoBehaviour
                 if (!actual.IsCircle() && actual.IsInUse())
                 {
                     _selectedFlow = GetFlowByCell(actual);
-                    _selectedCircle = _selectedFlow.Last();
+                    _selectedCircle = _selectedFlow.First();
                     // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
                     if(_selectedCircle.IsCircle())
                         _selectedCircle = _selectedFlow.First();
@@ -254,7 +254,7 @@ public class BoardManager : MonoBehaviour
         bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor();
 
         //Connected flow
-        if (!actual.IsCircle() || finishingCircle)
+        // if (!actual.IsCircle() || finishingCircle)
         {
             if (dir.x != 0)
                 if (dir.x == -1)
@@ -266,7 +266,6 @@ public class BoardManager : MonoBehaviour
             else
                 actual.ConnectDown();
         }
-
         // connects the previous one as well
         if (dir.x != 0)
             if (dir.x == -1)
@@ -377,6 +376,9 @@ public class BoardManager : MonoBehaviour
         if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor())
             return;
 
+        actual.GetCoords(out int x, out int y);
+        Debug.Log($"Trying ({x} {y}) Color({actual.GetColor()}) SelectedColor({_selectedCircle.GetColor()})");
+        
         //Loop in flow or going back in it
         if (actual.GetColor() == _selectedCircle.GetColor())
         {
@@ -394,7 +396,7 @@ public class BoardManager : MonoBehaviour
 
                 foreach (Cell cell in CutCells)
                 {
-                    TryToRecoverPreviousFlow(cell);
+                    TryToRecoverPreviousFlow(cell, GetColorIndexByCell(actual));
                 }
             }
         }
@@ -427,7 +429,7 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void TryToRecoverPreviousFlow(Cell actual)
+    private void TryToRecoverPreviousFlow(Cell actual, int colorIndex)
     {
         actual.GetCoords(out int x, out int y);
 
@@ -435,7 +437,6 @@ public class BoardManager : MonoBehaviour
         bool found = false;
         foreach (var flow in _previousFlows)
         {
-
             foreach (Cell cell in flow)
             {
                 cell.GetCoords(out int ouxX, out int ouxY);
@@ -450,7 +451,7 @@ public class BoardManager : MonoBehaviour
             index++;
         }
         
-        if(!found)
+        if(!found || index == colorIndex)
             return;
         
         //We expand until we get one cell of the current state with the current color colliding with what we want to
@@ -470,10 +471,14 @@ public class BoardManager : MonoBehaviour
             if (!actualFlow.Contains(cellToAdd))
             {
                 cellToAdd.SetColor(_colors[index]);
+                cellToAdd.Fill();
                 UpdateCellConnections(cellToAdd, actualFlow.Last());
                 actualFlow.Add(cellToAdd);
             }
         }
+        //We set the rectangle on the ones that came before the one we are adding
+        for(int i =0; i<index;i++)
+            actualFlow[i].Fill();
     }
 
     private void BreakFlow()
