@@ -122,6 +122,10 @@ public class Cell : MonoBehaviour
         background.enabled = true;
         background.color = _color;
     }
+    public void Empty()
+    {
+        background.enabled = false;
+    }
     public void ResetCell()
     {
         up.enabled = false;

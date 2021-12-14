@@ -164,7 +164,7 @@ public class BoardManager : MonoBehaviour
 
             Cell actual = _cells[logicX, logicY];
             //Selecting start of flow
-            if (!_selectedCircle && touch.phase == TouchPhase.Began)
+            if (_selectedCircle==null && touch.phase == TouchPhase.Began)
             {
                 if (!actual.IsCircle() && actual.IsInUse())
                 {
@@ -173,7 +173,10 @@ public class BoardManager : MonoBehaviour
                     // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
                     if(_selectedCircle.IsCircle())
                         _selectedCircle = _selectedFlow.First();
-                    _selectedCircle.DespawnMiniCircle();
+                    actual.DespawnMiniCircle();
+                    foreach (Cell cell in _selectedFlow)
+                        cell.Empty();
+                    
                 }
                 else if (actual.IsCircle())
                 {
@@ -182,6 +185,20 @@ public class BoardManager : MonoBehaviour
                     _selectedCircle = _cells[logicX, logicY];
                     _selectedFlow = GetFlowByCell(_selectedCircle);
                     _selectedFlow.Add(actual);
+                    
+                    bool differ = StatesDiffer();
+        
+                    //If they differ we count one step up, only when it's not the same color we touched last round
+                    if (differ)
+                        _stepCount++;
+
+                    //Copy the current state to previous when there are changes on any path
+                    if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
+                    {
+                        //Deep copy 
+                        UpdatePreviousState();
+                        _previousColor = GetColorIndexByCell(_selectedCircle);
+                    }
                 }
             }
             else if (_selectedCircle)
@@ -250,8 +267,6 @@ public class BoardManager : MonoBehaviour
     private void UpdateCellConnections(Cell actual, Cell prev)
     {
         Vector3 dir = actual.transform.position - prev.transform.position;
-
-        bool finishingCircle = actual.IsCircle() && actual.GetColor() == _selectedCircle.GetColor();
 
         //Connected flow
         // if (!actual.IsCircle() || finishingCircle)
@@ -377,8 +392,7 @@ public class BoardManager : MonoBehaviour
             return;
 
         actual.GetCoords(out int x, out int y);
-        Debug.Log($"Trying ({x} {y}) Color({actual.GetColor()}) SelectedColor({_selectedCircle.GetColor()})");
-        
+
         //Loop in flow or going back in it
         if (actual.GetColor() == _selectedCircle.GetColor())
         {
@@ -505,19 +519,7 @@ public class BoardManager : MonoBehaviour
         }
 
         
-        bool differ = StatesDiffer();
-        
-        //If they differ we count one step up, only when it's not the same color we touched last round
-        if (differ)
-            _stepCount++;
-
-        //Copy the current state to previous when there are changes on any path
-        if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
-        {
-            //Deep copy 
-            UpdatePreviousState();
-            _previousColor = GetColorIndexByCell(_selectedCircle);
-        }
+  
         _selectedCircle = null;
         _selectedFlow = null;
     }
@@ -541,41 +543,31 @@ public class BoardManager : MonoBehaviour
             return true;
         
         return false;
-        //TODO: with undos, we need more shit here, for now we count
-        bool changesOnSameColor = true;
-        int i;
-        
-        //They differ if any path has more flows than before. Unless its the same we were already updating last state
-        for (i = 0; i < _flows.Count; i++)
-            if (_previousFlows[i].Count != _flows[i].Count)
-            {
-                int index = GetColorIndexByCell(_selectedCircle);
-                //We have changes on color different than the one we hare selecting
-                if (i != index)
-                    return true;
-                changesOnSameColor = _flows[index].Count != _flows[index].Count;
-                break;                
-            }
-        
-        //We differ but are touching the same color
-        //Let's try to restore the havoc caused by our path without breaking our
-        //changes
-        if (i < _flows.Count && !changesOnSameColor)
-        {
-            for (int j = _previousFlows[i].Count-1; j>0;j--)
-            {
-                if (_selectedFlow.Contains(_previousFlows[i][j]))
-                    break;
-                //Here we try to restore 
-            }
-        }
-
-        return changesOnSameColor;
     }
 
     public void Undo()
     {
         Debug.Log("UNDO");
+        foreach (var flow in _flows)
+        {
+            foreach (Cell cell in flow)
+            {
+                cell.ResetCell();
+            }
+        }
+        _flows = new List<List<Cell>>();
+        foreach (List<Cell> flow in _previousFlows)
+            _flows.Add(new List<Cell>(flow));
+        
+        foreach (var flow in _flows)
+        {
+            for (int i = 1; i< flow.Count;i++)
+            {
+                UpdateCellConnections(flow[i-1],flow[i]);
+                flow[i-1].Fill();
+            }
+        }
+        
     }
 
     public int GetStepCount()
