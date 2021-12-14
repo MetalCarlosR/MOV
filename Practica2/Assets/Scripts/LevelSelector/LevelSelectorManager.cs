@@ -17,10 +17,10 @@ public class LevelSelectorManager : MonoBehaviour
         {
             PackGroupUI groupUI = Instantiate(groupPrefab, packsGroup).GetComponent<PackGroupUI>();
             groupUI.CreateGroup(g);
-            groupSize += 75 * (g.packs.Length + 1);
+            groupSize += 150 * (g.packs.Length + 1);
         }
         
-        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height-75) - groupSize);
+        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height - (heightOffset.rect.height *0.05f)) - groupSize);
     }
 
     public void LoadPackGrid(LevelPack pack, Color color)

@@ -25,7 +25,7 @@ public class PackGroupUI : MonoBehaviour
         bar.color = barColor;
         lowerBar.color = group.color;
         packText.text = group.name;
-        _rectTransform.sizeDelta = new Vector2(600, 75 * (group.packs.Length + 1));
+        _rectTransform.sizeDelta = new Vector2(600, 150 * (group.packs.Length + 1));
         foreach (LevelPack pack in group.packs)
         {
             LevelPackUI packUI = Instantiate(levelPackPrefab, _rectTransform).GetComponent<LevelPackUI>();
