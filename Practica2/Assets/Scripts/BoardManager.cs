@@ -269,18 +269,16 @@ public class BoardManager : MonoBehaviour
         Vector3 dir = actual.transform.position - prev.transform.position;
 
         //Connected flow
-        // if (!actual.IsCircle() || finishingCircle)
-        {
-            if (dir.x != 0)
-                if (dir.x == -1)
-                    actual.ConnectRight();
-                else
-                    actual.ConnectLeft();
-            else if (dir.y == -1)
-                actual.ConnectUp();
+        if (dir.x != 0)
+            if (dir.x == -1)
+                actual.ConnectRight();
             else
-                actual.ConnectDown();
-        }
+                actual.ConnectLeft();
+        else if (dir.y == -1)
+            actual.ConnectUp();
+        else
+            actual.ConnectDown();
+        
         // connects the previous one as well
         if (dir.x != 0)
             if (dir.x == -1)
@@ -547,7 +545,6 @@ public class BoardManager : MonoBehaviour
 
     public void Undo()
     {
-        Debug.Log("UNDO");
         foreach (var flow in _flows)
         {
             foreach (Cell cell in flow)
@@ -563,9 +560,11 @@ public class BoardManager : MonoBehaviour
         {
             for (int i = 1; i< flow.Count;i++)
             {
-                UpdateCellConnections(flow[i-1],flow[i]);
+                flow[i].SetColor(flow[0].GetColor());
+                UpdateCellConnections(flow[i],flow[i-1]);
                 flow[i-1].Fill();
             }
+            flow.Last().Fill();
         }
         
     }
