@@ -209,31 +209,45 @@ public class BoardManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 
+    /// Adds the cell to the flow and returns if the algorithm should keep searching
     /// </summary>
-    /// <returns> if the algorithm should break</returns>
-    private bool AddCellToFlowIfPossible(List<Cell> f, Cell actual, Cell temp, bool diagonal)
+    /// <param name="flow"></param>
+    /// <param name="objective"></param>
+    /// <param name="actual"></param>
+    /// <param name="diagonal">if true, it won't break if it can't go in one direction</param>
+    /// <returns> if the algorithm should stop searching (it found the end, actual, or the path was blocked)</returns>
+    private bool AddCellToFlowIfPossible(List<Cell> flow, Cell objective, Cell actual, bool diagonal)
     {
-        Cell first = f.First();
-        if (!temp.IsCircle() || first.GetColor() == temp.GetColor())
+        Cell first = flow.First();
+        // if its not a circle or is a circle of the flow's color
+        if (!actual.IsCircle() || first.GetColor() == actual.GetColor())
         {
-            if (!f.Contains(temp))
+            // check if the flow already owns the cell
+            if (!flow.Contains(actual))
             {
-                f.Add(temp);
+                flow.Add(actual);
             }
+            // if it does, clear the flow and add that cell
             else
             {
-                ClearFlow(f, f.FindIndex(cell => cell == temp));
-                f.Add(temp);
+                ClearFlow(flow, flow.FindIndex(cell => cell == actual));
+                flow.Add(actual);
             }
-            if (temp == actual || (temp.IsCircle() && f.Count > 1 && temp.GetColor() == first.GetColor()))
+            // if you encounter either the objective, or the other end of the flow
+            if (actual == objective || (actual.IsCircle() && flow.Count > 1 && actual.GetColor() == first.GetColor()))
+                // signal that the algorithm is done
                 return true;
             return false;
         }
-        //else return true;
+        // if you can't continue, also signal the algorithm to stop, unless its in a perfect diagonal
         else return !diagonal;
     }
 
+    /// <summary>
+    /// checks if the end of a flow is only in the middle of a flow, not at the beginning or end
+    /// </summary>
+    /// <param name="flow"></param>
+    /// <returns></returns>
     private bool HasTheEndInMiddleOfFlow(List<Cell> flow)
     {
         for (int i = 1; i< flow.Count-1; i++)
@@ -244,115 +258,11 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
-    private bool TryAddingCellToFlowV2(Cell actual, ref List<Cell> flow)
-    {
-        if (flow.Contains(actual))
-            return false;
-
-        List<Cell> f = new List<Cell>(flow);
-
-        Cell last = null;
-
-        while (true)
-        {
-            last = f.Last();
-
-            Vector2 logicPosLast = WorldToLogic(last.transform.position);
-
-            Vector2 dir = WorldToLogic(actual.transform.position) - logicPosLast;
-
-            if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-            {
-                Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
-                if (AddCellToFlowIfPossible(f, actual, temp, false))
-                    break;
-            }
-            //do the same but for y
-            else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
-            {
-                Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-                if (AddCellToFlowIfPossible(f, actual, temp, false))
-                    break;
-            }
-            // perfect diagonal
-            else
-            {
-                // try both
-                Debug.Log("Diagonal");
-                Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
-                if (AddCellToFlowIfPossible(f, actual, temp, true))
-                    break;
-                else
-                {
-                    temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-                    if (AddCellToFlowIfPossible(f, actual, temp, true))
-                        break;
-                }
-            }
-        }
-
-        last = flow.Last();
-        Cell first = flow.First();
-
-        // if it has it or it reached the end
-        if (f.Contains(actual) && !HasTheEndInMiddleOfFlow(f))
-        {
-            flow = f;
-            return true;
-        }
-        else return false;
-    }
-
-    private bool TryAddingCellToFlow(Cell actual, ref List<Cell> flow)
-    {
-        if (flow.Contains(actual))
-            return false;
-
-        Cell last = flow.Last();
-
-        int prevIndex = flow.Count;
-
-        bool res = TryAddingCellToFlowV2(actual, ref flow);
-
-        int index = flow.FindIndex(cell => cell == actual);
-
-        // updates all conections
-        // must do all cause previous method doesn't respect original flow, and may be shortened beforehand
-        for (int i = 1; i < flow.Count; i++)
-        {
-            UpdateCellConnections(flow[i], flow[i - 1]);
-        }
-        return res;
-
-        //Vector2 logicPosLast = WorldToLogic(last.transform.position);
-
-        //if ((logicPosLast.y - 1 >= 0 && _cells[(int)logicPosLast.x, (int)logicPosLast.y - 1] == actual)
-        //    || (logicPosLast.y + 1 < _puzzle.Height && _cells[(int)logicPosLast.x, (int)logicPosLast.y + 1] == actual)
-        //    || (logicPosLast.x - 1 >= 0 && _cells[(int)logicPosLast.x - 1, (int)logicPosLast.y] == actual)
-        //    || (logicPosLast.x + 1 < _puzzle.Width && _cells[(int)logicPosLast.x + 1, (int)logicPosLast.y] == actual))
-        //{
-        //    Debug.Log("Added");
-        //    flow.Add(actual);
-        //    return true;
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-    }
-
-    // Depricated
-    private void cleanFlowOfRepeats(List<Cell> flow)
-    {
-        List<Cell> cleaned = new List<Cell>();
-        foreach(Cell c in flow)
-        {
-            if (!cleaned.Contains(c))
-                cleaned.Add(c);
-        }
-        flow = cleaned;
-    }
-
+    /// <summary>
+    /// updates the connections between 2 cells
+    /// </summary>
+    /// <param name="actual"></param>
+    /// <param name="prev"></param>
     private void UpdateCellConnections(Cell actual, Cell prev)
     {
         Vector3 dir = actual.transform.position - prev.transform.position;
@@ -374,6 +284,8 @@ public class BoardManager : MonoBehaviour
             else
                 actual.ConnectDown();
         }
+
+        // connects the previous one as well
         if (dir.x != 0)
             if (dir.x == -1)
                 prev.ConnectLeft();
@@ -385,89 +297,91 @@ public class BoardManager : MonoBehaviour
             prev.ConnectUp();
     }
 
-    // Depricated
-    private bool TryAddingCellToFlowRec(int index, Cell actual, Cell last)
+    /// <summary>
+    /// builds a path if posible to an objective, and connects it to a flow.
+    /// It may eliminate existing cells previously connected to a flow
+    /// </summary>
+    /// <param name="objective"></param>
+    /// <param name="flow"> must be ref because its pointer may change</param>
+    /// <returns></returns>
+    private bool TryCreatingPathToObjective(Cell objective, ref List<Cell> flow)
     {
-        if (_selectedFlow.Contains(actual))
+        if (flow.Contains(objective))
             return false;
 
-        Vector2 logicPosLast = WorldToLogic(last.transform.position);
+        List<Cell> f = new List<Cell>(flow);
 
-        Vector2 logicPosNew = WorldToLogic(actual.transform.position);
-
-        Vector2 dir = logicPosNew - logicPosLast;
-
-        Debug.Log(dir);
-
-        // if there is no distance add the cell
-        if (dir.magnitude == 0)
+        while (true)
         {
-            _selectedFlow.Add(last);
-            return true;
-        }
+            Vector2 logicPosLast = WorldToLogic(f.Last().transform.position);
 
-        //if there is more x than y to travel, try that direction only
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-        {
-            Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
-            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+            Vector2 dir = WorldToLogic(objective.transform.position) - logicPosLast;
+
+            // if there is more x than y to travel, try that direction only
+            if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
             {
-                if (TryAddingCellToFlowRec(index, actual, temp))
-                {
-                    if (!_selectedFlow.Contains(last))
-                        _selectedFlow.Insert(index, last);
-                    return true;
-                }
-                else return false;
+                Cell actual = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+                // if its not able to add it for any reason, stop trying to build a path
+                if (AddCellToFlowIfPossible(f, objective, actual, false))
+                    break;
             }
-            else return false;
-        }
-        //do the same but for y
-        else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
-        {
-            Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
+            // do the same but for y
+            else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
             {
-                if(TryAddingCellToFlowRec(index, actual, temp))
-                {
-                    if (!_selectedFlow.Contains(last))
-                        _selectedFlow.Insert(index, last);
-                    return true;
-                }
-                else return false;
+                Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
+                if (AddCellToFlowIfPossible(f, objective, temp, false))
+                    break;
             }
-            else return false;
-        }
-        // perfect diagonal
-        else
-        {
-            // try both
-            Debug.Log("Diagonal");
-            Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
-            if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
-            {
-                if (TryAddingCellToFlowRec(index, actual, temp))
-                {
-                    if (!_selectedFlow.Contains(last))
-                        _selectedFlow.Insert(index, last);
-                    return true;
-                }
-                return false;
-            }
+            // perfect diagonal
             else
             {
-                temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-                if (!temp.IsCircle() || actual.GetColor() == temp.GetColor())
-                    if(TryAddingCellToFlowRec(index, actual, temp))
-                    {
-                        if (!_selectedFlow.Contains(last))
-                            _selectedFlow.Insert(index, last);
-                        return true;
-                    }
-
-                return false;
+                // try both x and y
+                Debug.Log("Diagonal");
+                Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+                if (AddCellToFlowIfPossible(f, objective, temp, true))
+                    break;
+                else
+                {
+                    // just in case the previous diagonal was able to do it
+                    logicPosLast = WorldToLogic(f.Last().transform.position);
+                    temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
+                    if (AddCellToFlowIfPossible(f, objective, temp, true))
+                        break;
+                }
             }
         }
+
+        // if it has it or it reached the end previously
+        if (f.Contains(objective) && !HasTheEndInMiddleOfFlow(f))
+        {
+            flow = f;
+            return true;
+        }
+        else return false;
+    }
+
+    /// <summary>
+    /// Try adding a cell to the flow and, if its able to, updates its connections
+    /// </summary>
+    /// <param name="actual"></param>
+    /// <param name="flow"> must be ref because the pointer may change</param>
+    /// <returns>if the adding was succesfull or not</returns>
+    private bool TryAddingCellToFlow(Cell actual, ref List<Cell> flow)
+    {
+        if (flow.Contains(actual))
+            return false;
+
+        Cell last = flow.Last();
+
+        bool res = TryCreatingPathToObjective(actual, ref flow);
+
+        // updates all conections
+        // must do all because previous method doesn't respect original flow, and may alter previous cells
+        for (int i = 1; i < flow.Count; i++)
+        {
+            UpdateCellConnections(flow[i], flow[i - 1]);
+        }
+        return res;
     }
 
     private void TryToExtendCurrentFlow(Cell actual)
