@@ -53,6 +53,7 @@ public class BoardManager : MonoBehaviour
                 _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
                     grid.transform);
                 _cells[i, j].gameObject.name = $"({i},{j})";
+                _cells[i, j].SetCoords(i,j);
             }
 
         _flows = new List<List<Cell>>();
@@ -68,6 +69,7 @@ public class BoardManager : MonoBehaviour
             var path = new List<Cell>();
             _flows.Add(path);
         }
+        UpdatePreviousState();
     }
 
     private Vector3 LogicToWorld(Vector2 position)
@@ -83,12 +85,6 @@ public class BoardManager : MonoBehaviour
         float offset = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
         return new Vector2((float) Math.Round(position.x + offset), (float) Math.Round(offset - position.y));
     }
-    
-    private void ClearFlow(List<Cell> flow)
-    {
-        ClearFlow(flow, 0);
-
-    }
 
     private void ClearFlow(List<Cell> flow, int first)
     {
@@ -96,7 +92,7 @@ public class BoardManager : MonoBehaviour
 
         for (int i = first; i<last;i++)
         {
-            flow[i].Clear();
+            flow[i].ResetCell();
         }
 
         Cell firstCutCell = null;
@@ -108,7 +104,7 @@ public class BoardManager : MonoBehaviour
         // the origin is only remaining
         if (flow.Count == 1)
         {
-            flow[0].Clear();
+            flow[0].ResetCell();
         }
         // cut properly the rest of the chain
         else if (flow.Count > 1)
@@ -164,10 +160,7 @@ public class BoardManager : MonoBehaviour
 
             //If we click outside the grid we break out
             if (logicX < 0 || logicX >= size || logicY < 0 || logicY >= size)
-            {
-                //BreakFlow();
                 return;
-            }
 
             Cell actual = _cells[logicX, logicY];
             //Selecting start of flow
@@ -185,7 +178,7 @@ public class BoardManager : MonoBehaviour
                 else if (actual.IsCircle())
                 {
                     //ClearList
-                    ClearFlow(GetFlowByCell(actual));
+                    ClearFlow(GetFlowByCell(actual),0);
                     _selectedCircle = _cells[logicX, logicY];
                     _selectedFlow = GetFlowByCell(_selectedCircle);
                     _selectedFlow.Add(actual);
@@ -193,12 +186,7 @@ public class BoardManager : MonoBehaviour
             }
             else if (_selectedCircle)
             {
-                if (_selectedCircle != actual)
-                    TryToExtendCurrentFlow(actual);
-                else if(_selectedCircle == _selectedFlow[0] && _selectedFlow.Count > 1)
-                {
-                    ClearFlow(_selectedFlow, 1);
-                }
+                TryToExtendCurrentFlow(actual);
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                 {
@@ -223,16 +211,12 @@ public class BoardManager : MonoBehaviour
         if (!actual.IsCircle() || first.GetColor() == actual.GetColor())
         {
             // check if the flow already owns the cell
-            if (!flow.Contains(actual))
-            {
-                flow.Add(actual);
-            }
             // if it does, clear the flow and add that cell
-            else
-            {
+            if (flow.Contains(actual))
                 ClearFlow(flow, flow.FindIndex(cell => cell == actual));
-                flow.Add(actual);
-            }
+
+            flow.Add(actual);
+
             // if you encounter either the objective, or the other end of the flow
             if (actual == objective || (actual.IsCircle() && flow.Count > 1 && actual.GetColor() == first.GetColor()))
                 // signal that the algorithm is done
@@ -272,8 +256,6 @@ public class BoardManager : MonoBehaviour
         //Connected flow
         if (!actual.IsCircle() || finishingCircle)
         {
-            actual.SetColor(_selectedCircle.GetColor());
-
             if (dir.x != 0)
                 if (dir.x == -1)
                     actual.ConnectRight();
@@ -354,7 +336,11 @@ public class BoardManager : MonoBehaviour
         // if it has it or it reached the end previously
         if (f.Contains(objective) && !HasTheEndInMiddleOfFlow(f))
         {
-            flow = f;
+            flow.Clear();
+            foreach (Cell c in f)
+            {
+                flow.Add(c);
+            }
             return true;
         }
         else return false;
@@ -379,6 +365,7 @@ public class BoardManager : MonoBehaviour
         // must do all because previous method doesn't respect original flow, and may alter previous cells
         for (int i = 1; i < flow.Count; i++)
         {
+            flow[i].SetColor(_selectedCircle.GetColor());
             UpdateCellConnections(flow[i], flow[i - 1]);
         }
         return res;
@@ -389,39 +376,37 @@ public class BoardManager : MonoBehaviour
         //We collided with different color circle
         if (actual.IsCircle() && actual.GetColor() != _selectedCircle.GetColor())
             return;
-        
-        //Already finished and we are not undoing path
-        if (AreTwoCirclesAlready(GetFlowByCell(_selectedCircle), actual) && !GetFlowByCell(_selectedCircle).Contains(actual))
-        {
-            Debug.LogError("You shall not pass");
-            return;
-        }
-        
+
         //Loop in flow or going back in it
         if (actual.GetColor() == _selectedCircle.GetColor())
         {
             //We ignore it if it's the last
-            if (_selectedFlow.Count > 0 &&  actual != _selectedFlow.Last())
+            if (_selectedFlow.Count > 0 &&  (actual != _selectedFlow.Last() || _selectedFlow.First() == _selectedFlow.Last()) 
+                                        || (actual.IsCircle() && actual == _selectedCircle))
             {
-                Debug.Log("Loop");
+                Debug.Log($"Loop {_selectedFlow.Count}");
                 int index = _selectedFlow.FindIndex(cell => cell == actual);
+
+                List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count-(index + 1));
+
                 if(index >= 0)
                     ClearFlow(_selectedFlow, index + 1);
+
+                foreach (Cell cell in CutCells)
+                {
+                    TryToRecoverPreviousFlow(cell);
+                }
             }
         }
         
         var previousFlow = GetFlowByCell(actual);
+        if (previousFlow != null && !previousFlow.Contains(actual))
+            previousFlow = null;
 
         //Add it to the selected list if it's not there yet
         if (TryAddingCellToFlow(actual, ref _selectedFlow))
         {
-
-            //Cutting other flow?
-            // TODO(Nico): tiene que hacerlo solo al final, porque si lo descortas mientras arrastras, recuperas ese flow como estaba antes
-            // NOTE(Ricky): No sé de qué hablas aquí Nico
-            // NOTE(Nico): que los cortes no son reales hasta que sueltas el dedo. Si cortas un flow, pero vas para atras, el flow que has cortado se regenera
-            // tambien los fondos solo cambian con los valores reales. prueba a cortar uno y echar para atras sin soltar el dedo en el juego real y me entenderas
-            if (previousFlow != null /*&& actual.GetColor() != _selectedCircle.GetColor()*/ && previousFlow.Contains(actual))
+            if (previousFlow != null)
             {
                 ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual));
 
@@ -435,33 +420,64 @@ public class BoardManager : MonoBehaviour
                     Debug.Log("Prev was null");
                     return;
                 }
-
+                
+                actual.SetColor(_selectedCircle.GetColor());
                 UpdateCellConnections(actual, prev);
             }
-
-            //Cell last = _selectedFlow.Last();
-            //// TODO: lo tiene que hacer el diagonal
-            //if (last.IsCircle() && last != _selectedFlow.First())
-            //    BreakFlow();
         }
     }
 
-    private bool AreTwoCirclesAlready(List<Cell> flow, Cell actual)
+    private void TryToRecoverPreviousFlow(Cell actual)
     {
-        if (flow.Count < 2)
-            return false;
-        int index = GetColorIndexByCell(flow.First());
+        actual.GetCoords(out int x, out int y);
+
+        int index = 0;
+        bool found = false;
+        foreach (var flow in _previousFlows)
+        {
+
+            foreach (Cell cell in flow)
+            {
+                cell.GetCoords(out int ouxX, out int ouxY);
+                if (ouxX == x && ouxY == y)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+            index++;
+        }
         
-        var correct = _puzzle.GetFlow(index);
-        Vector2 first = correct.First();
-        Vector2 last = correct.Last();
-        return (flow.Contains(_cells[(int)first.x,(int)first.y]) && flow.Contains(_cells[(int)last.x,(int)last.y]));
+        if(!found)
+            return;
+        
+        //We expand until we get one cell of the current state with the current color colliding with what we want to
+        //restore
+
+        var previousFlow = _previousFlows[index];
+        var actualFlow = _flows[index];
+        foreach (Cell cell in previousFlow)
+        {
+            cell.GetCoords(out int ouxX, out int ouxY);
+            //Collision, break out
+            if (_cells[ouxX, ouxY].GetColor() == _selectedCircle.GetColor())
+                break;
+            
+            //All good, add it in the current state
+            Cell cellToAdd = _cells[ouxX, ouxY];
+            if (!actualFlow.Contains(cellToAdd))
+            {
+                cellToAdd.SetColor(_colors[index]);
+                UpdateCellConnections(cellToAdd, actualFlow.Last());
+                actualFlow.Add(cellToAdd);
+            }
+        }
     }
 
     private void BreakFlow()
     {
-        _flows[GetColorIndexByCell(_selectedCircle)] = _selectedFlow;
-
         if (_selectedFlow == null || _selectedCircle == null)
         {
             Debug.Log("Breaking non existing flow");
@@ -479,64 +495,86 @@ public class BoardManager : MonoBehaviour
         //If we only had one its the circle, clear it and clear the list
         if (_selectedFlow.Count == 1)
         {
-            _selectedCircle.Clear();
+            _selectedCircle.ResetCell();
             _selectedFlow.Clear();
         }
 
-        //Copy the current state to previous
-        if (StatesDiffer())
-        {
-            //Deep copy?
-            _previousFlows = new List<List<Cell>>();
-            foreach (List<Cell> flow in _flows)
-                _previousFlows.Add(new List<Cell>(flow));
-            _previousColor = GetColorIndexByCell(_selectedCircle);
+        
+        bool differ = StatesDiffer();
+        
+        //If they differ we count one step up, only when it's not the same color we touched last round
+        if (differ)
             _stepCount++;
-            Debug.Log(_stepCount);
+
+        //Copy the current state to previous when there are changes on any path
+        if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
+        {
+            //Deep copy 
+            UpdatePreviousState();
+            _previousColor = GetColorIndexByCell(_selectedCircle);
         }
         _selectedCircle = null;
         _selectedFlow = null;
     }
 
+    private void UpdatePreviousState()
+    {
+        _previousFlows = new List<List<Cell>>();
+        foreach (List<Cell> flow in _flows)
+            _previousFlows.Add(new List<Cell>(flow));
+    }
+
+    //Returns whether previous state and current differ. With the exception of modifying consecutively the same color.
+    //Because we don't count that as steps.
     private bool StatesDiffer()
     {
-        
         //Easy check for early exit
         if (_previousFlows == null)
             return true;
 
-        bool flag = true;
+        if (_previousColor != GetColorIndexByCell(_selectedCircle))
+            return true;
+        
+        return false;
+        //TODO: with undos, we need more shit here, for now we count
+        bool changesOnSameColor = true;
         int i;
         
         //They differ if any path has more flows than before. Unless its the same we were already updating last state
         for (i = 0; i < _flows.Count; i++)
             if (_previousFlows[i].Count != _flows[i].Count)
             {
-                flag = _previousColor != i;
+                int index = GetColorIndexByCell(_selectedCircle);
+                //We have changes on color different than the one we hare selecting
+                if (i != index)
+                    return true;
+                changesOnSameColor = _flows[index].Count != _flows[index].Count;
                 break;                
             }
         
         //We differ but are touching the same color
         //Let's try to restore the havoc caused by our path without breaking our
         //changes
-        if (i < _flows.Count && !flag)
+        if (i < _flows.Count && !changesOnSameColor)
         {
             for (int j = _previousFlows[i].Count-1; j>0;j--)
             {
                 if (_selectedFlow.Contains(_previousFlows[i][j]))
                     break;
-                //TryAddingCellToFlow(_previousFlows[i][j], _flows[i]);
+                //Here we try to restore 
             }
         }
 
-        return flag;
+        return changesOnSameColor;
     }
 
     public void Undo()
     {
         Debug.Log("UNDO");
-                
-        
-        
+    }
+
+    public int GetStepCount()
+    {
+        return _stepCount;
     }
 }

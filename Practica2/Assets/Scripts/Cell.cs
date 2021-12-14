@@ -1,3 +1,4 @@
+using UnityEditor.Il2Cpp;
 using UnityEngine;
 
 /**
@@ -26,7 +27,9 @@ public class Cell : MonoBehaviour
     private Color _color;
     private bool _isCircle = false;
     private bool _inUse = false;
-    
+    private int _x;
+    private int _y;
+
     private void Awake()
     {
      _circleSr = circle.GetComponent<SpriteRenderer>();
@@ -119,7 +122,7 @@ public class Cell : MonoBehaviour
         background.enabled = true;
         background.color = _color;
     }
-    public void Clear()
+    public void ResetCell()
     {
         up.enabled = false;
         down.enabled = false;
@@ -127,6 +130,8 @@ public class Cell : MonoBehaviour
         right.enabled = false;
         _inUse = false;
         background.enabled = false;
+        if(!_isCircle)
+            _color = Color.black;
         DespawnMiniCircle();
     }
 
@@ -144,5 +149,17 @@ public class Cell : MonoBehaviour
     {
         if(!_isCircle)
             circle.SetActive(false);
+    }
+
+    public void SetCoords(int i, int j)
+    {
+        _x = i;
+        _y = j;
+    }
+
+    public void GetCoords(out int i, out int j)
+    {
+        i = _x;
+        j = _y;
     }
 }
