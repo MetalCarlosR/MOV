@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Mania7x7
   m_EditorClassIdentifier: 
   name: "7x7 Man\xEDa"
-  file: {fileID: 4900000, guid: bbf5fa09ea86eff4cb17a6c8c636f6dc, type: 3}
+  file: {fileID: 4900000, guid: 7ba97094492461d42ae87ccb3cb8e5f2, type: 3}
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 1, b: 1, a: 1}

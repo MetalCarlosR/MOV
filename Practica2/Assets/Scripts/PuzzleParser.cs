@@ -11,14 +11,15 @@ public static class PuzzleParser
     {
         public int Width { get; private set; }
         public int Height { get; private set; }
-        private readonly List<Vector2>[] _flows;
         public int LevelNumber { get; private set; }
         public int FlowCount { get; private set; }
         public List<Vector2> Holes { get; private set; }
-
         public List<Vector2> Walls { get; private set; }
+        public bool Surrounded { get; private set; }
 
-        public Puzzle(int w,int h, int n, int flowCount, List<Vector2> holes, List<Vector2> walls)
+        private readonly List<Vector2>[] _flows;
+
+        public Puzzle(int w,int h, int n, int flowCount, List<Vector2> holes, List<Vector2> walls, bool surrounded)
         {
             Width = w;
             Height = h;
@@ -26,6 +27,8 @@ public static class PuzzleParser
             FlowCount = flowCount;
             Holes = holes;
             Walls = walls;
+            Surrounded = surrounded;
+
             _flows = new List<Vector2>[FlowCount];
         }
 
@@ -35,7 +38,7 @@ public static class PuzzleParser
         }
         public List<Vector2> GetFlow(int n)
         {
-            return n==-1 ? null: _flows[n];
+            return n==-1 || n >= _flows.Length ? null: _flows[n];
         }
     }
 
@@ -58,11 +61,20 @@ public static class PuzzleParser
             Debug.LogError("Badly formatted width");
             return null;
         }
+
+        bool surroundMap = false;
+        
         int height = width;
-        if (sizes.Length == 2 && !int.TryParse(sizes[0], out height))
+        if (sizes.Length == 2)
         {
-            Debug.LogError("Badly formatted height (:)");
-            return null;
+            String[] heights = sizes[1].Split('+');
+            if (heights.Length > 1 && heights[1] == "B")
+                surroundMap = true;
+            if(!int.TryParse(heights[0], out height))
+            {
+                Debug.LogError("Badly formatted height (:)");
+                return null;
+            }
         }
 
         if (!int.TryParse(info[2], out int levelNumber))
@@ -80,7 +92,7 @@ public static class PuzzleParser
         List<Vector2> holes = null;
         //We ignore 5, not required 
         //Holes divided by :
-        if (info.Length > 6)
+        if (info.Length >= 6)
         {
             holes = new List<Vector2>();
             var stringHoles = info[5].Split(':');
@@ -93,13 +105,11 @@ public static class PuzzleParser
                 }
                 holes.Add(GetVecFromCoord(coord, width));
             }
-            Debug.LogError("Could not load hole count");
-            return null;
         }
         
         List<Vector2> walls = null;
         //Walls divided by : I guess, who knows haha
-        if (info.Length > 7)
+        if (info.Length >= 7)
         {
             walls = new List<Vector2>();
             var stringWalls = info[5].Split(':');
@@ -119,13 +129,13 @@ public static class PuzzleParser
                     return null;
                 }
                 walls.Add(GetVecFromCoord(coordB, width));
-
             }
-            Debug.LogError("Could not load hole count");
-            return null;
         }
+
+        if (surroundMap)
+            Debug.Log("SURROUND MAP");
         
-        var puzzle = new Puzzle(width, height, levelNumber, flowCount, holes, walls);
+        var puzzle = new Puzzle(width, height, levelNumber, flowCount, holes, walls, surroundMap);
 
         //---------------FLOWS---------------
         for (int i = 0; i < flowCount; i++)

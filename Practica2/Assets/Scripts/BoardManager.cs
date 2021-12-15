@@ -13,6 +13,9 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private GameObject grid;
 
+    // TODO(Nico): esto se tiene que ir al GameManager
+    [SerializeField] private Skin currentSkin;
+
     private const int TopBarSize = 1;
     private const int BottomBarSize = 1;
 
@@ -26,7 +29,7 @@ public class BoardManager : MonoBehaviour
     private List<Cell> _selectedFlow = null;
         
     private PuzzleParser.Puzzle _puzzle;
-    private readonly Color[] _colors = {Color.cyan, Color.magenta, Color.green, Color.yellow, Color.grey};
+    private /*readonly*/ Color[] _colors;
     private int _stepCount = 0;
 
     //This wont be done here, once we have a game manager he should set level and call startLevel 
@@ -41,6 +44,7 @@ public class BoardManager : MonoBehaviour
 
     public void SetupLevel(string level)
     {
+        _colors = currentSkin.colors;
         _puzzle = PuzzleParser.ParsePuzzle(level);
         StartLevel();
     }
@@ -62,6 +66,9 @@ public class BoardManager : MonoBehaviour
                 _cells[i, j].SetCoords(i,j);
             }
 
+        // TODO(Nico): reescalado ahora que no solo son 5x5 y ademas el de las pantallas
+        //grid.transform.localScale = new Vector3(5f / width, 5f / height, 1);
+
         _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.FlowCount; i++)
         {
@@ -75,6 +82,39 @@ public class BoardManager : MonoBehaviour
             var path = new List<Cell>();
             _flows.Add(path);
         }
+
+        List<Vector2> holes = _puzzle.Holes;
+        for (int i = 0; i < holes.Count; i++)
+        {
+            _cells[(int)holes[i].x, (int)holes[i].y].SetAsHole();
+        }
+
+        if(_puzzle.Surrounded)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                Cell c = _cells[i, 0];
+                if (!c.IsHole())
+                    c.WallUp();
+                c = _cells[i, height-1];
+                if (!c.IsHole())
+                    c.WallDown();
+            }
+            for (int i = 0; i < height; i++)
+            {
+                Cell c = _cells[0, i];
+                if (!c.IsHole())
+                    c.WallLeft();
+                c = _cells[width-1, i];
+                if (!c.IsHole())
+                    c.WallRight();
+            }
+            //foreach(Vector2 h in holes)
+            //{
+                
+            //}
+        }
+
         UpdatePreviousState();
     }
 

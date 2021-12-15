@@ -155,6 +155,7 @@ MonoBehaviour:
   camera: {fileID: 519420031}
   cellPrefab: {fileID: 5426303877525312557, guid: 4401716eab178c346b1e271c31d466f7, type: 3}
   grid: {fileID: 1549792928}
+  currentSkin: {fileID: 11400000, guid: 2409708557566974cb5a8da7254fec19, type: 2}
 --- !u!4 &4103345
 Transform:
   m_ObjectHideFlags: 0

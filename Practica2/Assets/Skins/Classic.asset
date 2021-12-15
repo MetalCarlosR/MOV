@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dbf8fc1e9e17fc419500397d0a7d927, type: 3}
+  m_Name: Classic
+  m_EditorClassIdentifier: 
+  name: Classic
+  colors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0, g: 0.5529412, b: 0, a: 1}
+  - {r: 0.047058824, g: 0.16078432, b: 0.99607843, a: 1}
+  - {r: 0.91764706, g: 0.8784314, b: 0, a: 1}
+  - {r: 0.9843137, g: 0.5372549, b: 0, a: 1}
+  - {r: 0, g: 1, b: 1, a: 1}
+  - {r: 1, g: 0.039215688, b: 0.7882353, a: 1}
+  - {r: 0.64705884, g: 0.16470589, b: 0.16470589, a: 1}
+  - {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0.62352943, g: 0.62352943, b: 0.7411765, a: 1}
+  - {r: 0, g: 1, b: 0, a: 1}
+  - {r: 0.6313726, g: 0.5411765, b: 0.31764707, a: 1}
+  - {r: 0.03529412, g: 0.09803922, b: 0.62352943, a: 1}
+  - {r: 0, g: 0.5019608, b: 0.5019608, a: 1}
+  - {r: 0.99607843, g: 0.4862745, b: 0.9254902, a: 1}

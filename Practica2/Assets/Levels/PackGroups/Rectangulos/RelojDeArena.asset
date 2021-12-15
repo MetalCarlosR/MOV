@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0d2192befdcbe742ab0a0504d09df8e, type: 3}
   m_Name: RelojDeArena
   m_EditorClassIdentifier: 
-  name: Paquete Relok de Arena
-  file: {fileID: 4900000, guid: a0dacc979db84b64ab131e0ffc282f41, type: 3}
+  name: Paquete Reloj de Arena
+  file: {fileID: 4900000, guid: 06b82576d191c574d8bf9ed237d9add3, type: 3}
   pages:
   - pageName: 9x11
     pageColor: {r: 1, g: 0.43137255, b: 0, a: 1}
