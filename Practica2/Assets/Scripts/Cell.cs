@@ -185,8 +185,6 @@ public class Cell : MonoBehaviour
     public void SetAsHole()
     {
         border.enabled = false;
-        _color = Color.black;
-        _isCircle = true;
         _isHole = true;
     }
 

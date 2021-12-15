@@ -92,7 +92,7 @@ public static class PuzzleParser
         List<Vector2> holes = null;
         //We ignore 5, not required 
         //Holes divided by :
-        if (info.Length >= 6)
+        if (info.Length >= 6 && info[5] != "")
         {
             holes = new List<Vector2>();
             var stringHoles = info[5].Split(':');
@@ -109,10 +109,10 @@ public static class PuzzleParser
         
         List<Vector2> walls = null;
         //Walls divided by : I guess, who knows haha
-        if (info.Length >= 7)
+        if (info.Length >= 7 && info[6] != "")
         {
             walls = new List<Vector2>();
-            var stringWalls = info[5].Split(':');
+            var stringWalls = info[6].Split(':');
             foreach (string wall in stringWalls)
             {
                 var pair = wall.Split('|');
@@ -131,9 +131,6 @@ public static class PuzzleParser
                 walls.Add(GetVecFromCoord(coordB, width));
             }
         }
-
-        if (surroundMap)
-            Debug.Log("SURROUND MAP");
         
         var puzzle = new Puzzle(width, height, levelNumber, flowCount, holes, walls, surroundMap);
 

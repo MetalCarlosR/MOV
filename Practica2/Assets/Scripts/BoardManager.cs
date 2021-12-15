@@ -46,7 +46,10 @@ public class BoardManager : MonoBehaviour
     {
         _colors = currentSkin.colors;
         _puzzle = PuzzleParser.ParsePuzzle(level);
-        StartLevel();
+        if (_puzzle != null)
+            StartLevel();
+        //TODO(Nico): estaria bien que vuelva para atras
+        else Debug.LogError("ERROR: Couldn't load map properly!");
     }
 
     //Will be a level object later that has a full description of a level 
@@ -83,14 +86,53 @@ public class BoardManager : MonoBehaviour
             _flows.Add(path);
         }
 
+        // adds holes to the map
         List<Vector2> holes = _puzzle.Holes;
-        for (int i = 0; i < holes.Count; i++)
-        {
-            _cells[(int)holes[i].x, (int)holes[i].y].SetAsHole();
-        }
+        if(holes != null)
+            for (int i = 0; i < holes.Count; i++)
+            {
+                _cells[(int)holes[i].x, (int)holes[i].y].SetAsHole();
+            }
 
-        if(_puzzle.Surrounded)
+        // adds walls to the map
+        List<Vector2> walls = _puzzle.Walls;
+        if(walls != null)
+            for (int i = 0; i < walls.Count; i+=2) // is +2 cause the vector stores pairs of cells to add walls to
+            {
+                Vector2 first = walls[i];
+                Vector2 second = walls[i+1];
+
+                // first is to the left
+                if(first.x < second.x)
+                {
+                    _cells[(int)first.x, (int)first.y].WallRight();
+                    _cells[(int)second.x, (int)second.y].WallLeft();
+                }
+                // first is to the right
+                else if (first.x < second.x)
+                {
+                    _cells[(int)first.x, (int)first.y].WallLeft();
+                    _cells[(int)second.x, (int)second.y].WallRight();
+                }
+                // first is above 
+                if (first.y < second.y)
+                {
+                    _cells[(int)first.x, (int)first.y].WallDown();
+                    _cells[(int)second.x, (int)second.y].WallUp();
+                }
+                // first is below
+                else if (first.y < second.y)
+                {
+                    _cells[(int)first.x, (int)first.y].WallUp();
+                    _cells[(int)second.x, (int)second.y].WallDown();
+                }
+                else Debug.LogError("ERROR: Trying to wall to itself");
+            }
+
+        // if its surrounded, add the walls to board
+        if (_puzzle.Surrounded)
         {
+            // in the first and last row
             for (int i = 0; i < width; i++)
             {
                 Cell c = _cells[i, 0];
@@ -100,6 +142,7 @@ public class BoardManager : MonoBehaviour
                 if (!c.IsHole())
                     c.WallDown();
             }
+            // in the first and last column
             for (int i = 0; i < height; i++)
             {
                 Cell c = _cells[0, i];
@@ -109,10 +152,50 @@ public class BoardManager : MonoBehaviour
                 if (!c.IsHole())
                     c.WallRight();
             }
-            //foreach(Vector2 h in holes)
-            //{
-                
-            //}
+            // and if there is holes
+            // to every hole connected to a non hole board cell
+            if(holes != null)
+            foreach(Vector2 h in holes)
+            {
+                Cell holeCell = _cells[(int)h.x, (int)h.y];
+                Cell c = null;
+                if (h.y > 0)
+                {
+                    c = _cells[(int)h.x, (int)h.y - 1];
+                    if (!c.IsHole())
+                    {
+                        holeCell.WallUp();
+                        c.WallDown();
+                    }
+                }
+                if (h.y < height - 1)
+                {
+                    c = _cells[(int)h.x, (int)h.y + 1];
+                    if (!c.IsHole())
+                    {
+                        holeCell.WallDown();
+                        c.WallUp();
+                    }
+                }
+                if (h.x > 0)
+                {
+                    c = _cells[(int)h.x - 1, (int)h.y];
+                    if (!c.IsHole())
+                    {
+                        holeCell.WallLeft();
+                        c.WallRight();
+                    }
+                }
+                if (h.x < width - 1)
+                {
+                    c = _cells[(int)h.x + 1, (int)h.y];
+                    if (!c.IsHole())
+                    {
+                        holeCell.WallRight();
+                        c.WallLeft();
+                    }
+                }
+            }
         }
 
         UpdatePreviousState();
@@ -267,11 +350,22 @@ public class BoardManager : MonoBehaviour
     /// <param name="actual"></param>
     /// <param name="diagonal">if true, it won't break if it can't go in one direction</param>
     /// <returns> if the algorithm should stop searching (it found the end, actual, or the path was blocked)</returns>
-    private bool AddCellToFlowIfPossible(List<Cell> flow, Cell objective, Cell actual, bool diagonal)
+    private bool AddCellToFlowIfPossible(List<Cell> flow, Cell objective, Cell actual, Vector2 dir, bool diagonal)
     {
         Cell first = flow.First();
+        bool[] walls = actual.getWalls();
+        int index = 0;
+        if (dir.x > 0)
+            index = (int)Cell.WallsDirs.left;
+        else if (dir.x < 0)
+            index = (int)Cell.WallsDirs.right;
+        else if (dir.y > 0)
+            index = (int)Cell.WallsDirs.up;
+        else index = (int)Cell.WallsDirs.down;
         // if its not a circle or is a circle of the flow's color
-        if (!actual.IsCircle() || first.GetColor() == actual.GetColor())
+        // and if its not a hole or a wall coming next
+        if ((!actual.IsCircle() || first.GetColor() == actual.GetColor())
+            && !actual.IsHole() && !walls[index])
         {
             // check if the flow already owns the cell
             // if it does, clear the flow and add that cell
@@ -360,32 +454,35 @@ public class BoardManager : MonoBehaviour
             // if there is more x than y to travel, try that direction only
             if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
             {
-                Cell actual = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+                Vector2 d = new Vector2(dir.x / Mathf.Abs(dir.x), 0f);
+                Cell actual = _cells[(int)(logicPosLast.x + 1 * d.x), (int)logicPosLast.y];
                 // if its not able to add it for any reason, stop trying to build a path
-                if (AddCellToFlowIfPossible(f, objective, actual, false))
+                if (AddCellToFlowIfPossible(f, objective, actual, d, false))
                     break;
             }
             // do the same but for y
             else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
             {
-                Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-                if (AddCellToFlowIfPossible(f, objective, temp, false))
+                Vector2 d = new Vector2(0f, dir.y / Mathf.Abs(dir.y));
+                Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * d.y)];
+                if (AddCellToFlowIfPossible(f, objective, temp, d, false))
                     break;
             }
             // perfect diagonal
             else
             {
                 // try both x and y
-                Debug.Log("Diagonal");
+                Vector2 d = new Vector2(dir.x / Mathf.Abs(dir.x), 0f);
                 Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
-                if (AddCellToFlowIfPossible(f, objective, temp, true))
+                if (AddCellToFlowIfPossible(f, objective, temp, d, true))
                     break;
                 else
                 {
                     // just in case the previous diagonal was able to do it
                     logicPosLast = WorldToLogic(f.Last().transform.position);
+                    d = new Vector2(0f, dir.y / Mathf.Abs(dir.y));
                     temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
-                    if (AddCellToFlowIfPossible(f, objective, temp, true))
+                    if (AddCellToFlowIfPossible(f, objective, temp, d, true))
                         break;
                 }
             }
