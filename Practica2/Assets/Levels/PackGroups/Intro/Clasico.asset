@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Paquete Clasico
   file: {fileID: 4900000, guid: 8c96ab01f81fcf64793b7617498914eb, type: 3}
+  locked: 0
   pages:
   - pageName: "5x5 - f\xE1cil"
     pageColor: {r: 0, g: 1, b: 0, a: 1}

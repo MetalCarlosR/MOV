@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: "6x6 Man\xEDa"
   file: {fileID: 4900000, guid: ca82b81dd4466f4448930aa7350feec2, type: 3}
+  locked: 1
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 1, b: 1, a: 1}
