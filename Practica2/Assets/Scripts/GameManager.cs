@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance;
+    public static GameManager Instance { get; private set; }
     public LevelSelectorManager levelSelectorManager = null;
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
