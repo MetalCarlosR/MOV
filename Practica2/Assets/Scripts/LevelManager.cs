@@ -19,13 +19,13 @@ public class LevelManager : MonoBehaviour
         StepCount.text = "Steps " + boardManager.GetStepCount().ToString();
     }
 
-    public void LoadLevel(DataManager.LevelCellData data)
+    public void LoadLevel(DataManager.LevelData data)
     {
         var lvl = PuzzleParser.ParsePuzzle(data.data);
         boardManager.SetupLevel(lvl);
         SetLevelName(lvl.Width +"x"+lvl.Height);
         SetLevelColor(data.color);
-        SetLevelNumber(data.index);
+        SetLevelNumber(data.name);
     }
 
     private void SetLevelColor(Color dataColor)

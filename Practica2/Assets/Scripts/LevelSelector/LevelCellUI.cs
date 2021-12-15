@@ -7,16 +7,16 @@ using UnityEngine.UI;
 
 public class LevelCellUI : MonoBehaviour
 {
-    private DataManager.LevelCellData _levelData;
+    private DataManager.LevelData _levelData;
     private bool _locked;
     [SerializeField] private TextMeshProUGUI lvlNumber;
     [SerializeField] private Image border, perfectUI, lockedUI, completedUI;
 
-    public void SetupCell(DataManager.LevelCellData data, bool locked)
+    public void SetupCell(DataManager.LevelData data, bool locked)
     {
         _levelData = data;
         _locked = locked;
-        lvlNumber.text = data.name;
+        lvlNumber.text = data.name.ToString();
         Color aColor = data.color;
         aColor.a = 0.4f;
         border.color = aColor;
@@ -26,14 +26,14 @@ public class LevelCellUI : MonoBehaviour
         
         switch (data.state)
         {
-            case DataManager.LevelCellData.CellState.FREE:
+            case DataManager.LevelData.LevelState.UNCOMPLETED:
                 if (locked)
                     this.lockedUI.enabled = true;
                 break;
-            case DataManager.LevelCellData.CellState.COMPLETED:
+            case DataManager.LevelData.LevelState.COMPLETED:
                 completedUI.enabled = true;
                 break;
-            case DataManager.LevelCellData.CellState.PERFECT:
+            case DataManager.LevelData.LevelState.PERFECT:
                 perfectUI.enabled = true;
                 break;
         }

@@ -5,53 +5,53 @@ using System.IO;
 
 public static class DataManager
 {
-   public struct LevelCellData
+   public struct LevelData
    {
-      public enum CellState
+      public enum LevelState
       {
-         FREE,
+         UNCOMPLETED,
          COMPLETED,
          PERFECT
       }
       
       public string data;
-      public string name;
-      public int index;
+      public int name;
+      public string packName;
       public Color color;
       public int bestMovements;
-      public CellState state;
+      public LevelState state;
 
-      public LevelCellData(string data, string name, Color color, int index, int bestMovements = -1,
-         CellState state = CellState.FREE)
+      public LevelData(string data, int name, string packName, Color color, int bestMovements = -1,
+         LevelState state = LevelState.UNCOMPLETED)
       {
          this.data = data;
          this.name = name;
+         this.packName = packName;
          this.color = color;
          this.bestMovements = bestMovements;
          this.state = state;
-         this.index = index;
       }
    }
 
    public struct PackData
    {
-      public List<List<LevelCellData>> pagesData;
+      public List<List<LevelData>> pagesData;
       public int completed;
       public string name;
 
       public PackData(string name)
       {
-         pagesData = new List<List<LevelCellData>>();
+         pagesData = new List<List<LevelData>>();
          this.completed = 0;
          this.name = name;
       }
    }
    
-   private static List<PackData> _packDatas = new List<PackData>();
+   private static List<PackData> _packsData = new List<PackData>();
 
    public static void LoadSaveData(List<PackGroup> groups)
    {
-      if (_packDatas.Count != 0)
+      if (_packsData.Count != 0)
          return;
       
       foreach (PackGroup group in groups)
@@ -63,11 +63,11 @@ public static class DataManager
             string[] data = pack.file.ToString().Split('\n');
             for (int i = 0; i < pack.pages.Length; i++)
             {
-               List<LevelCellData> levelCellData = new List<LevelCellData>();
+               List<LevelData> levelCellData = new List<LevelData>();
                for (int j = 0; j < 30; j++)
                {
                   string cellData = data[30 * i + j];
-                  levelCellData.Add(new LevelCellData(cellData,((i*30)+ j+1).ToString(),pack.pages[i].pageColor,30 * i + j+1));
+                  levelCellData.Add(new LevelData(cellData,((i*30)+ j+1),pack.name,pack.pages[i].pageColor));
                }
                packData.pagesData.Add(levelCellData);
             }
@@ -83,31 +83,47 @@ public static class DataManager
                for (int i = 1; i <= nFinished; i++)
                {
                   string[] line = lines[i].Split(' ');
-                  int level = int.Parse(line[0]);
+                  int level = int.Parse(line[0]) - 1;
                   bool perfect = line[1] == "0";
                   int movements = int.Parse(line[2]);
                   int listPos = level / 30;
                   int gridPos = level - listPos * 30;
                   var levelCellData = packData.pagesData[listPos][gridPos];
                   levelCellData.bestMovements = movements;
-                  levelCellData.state = perfect ? LevelCellData.CellState.PERFECT : LevelCellData.CellState.COMPLETED;
+                  levelCellData.state = perfect ? LevelData.LevelState.PERFECT : LevelData.LevelState.COMPLETED;
                   packData.pagesData[listPos][gridPos] = levelCellData;
                }
             }
-            _packDatas.Add(packData);
+            _packsData.Add(packData);
          }
       }
    }
 
+   public static void LevelPassed(LevelData data)
+   {
+      foreach (PackData pack in _packsData)
+      {
+         if (pack.name == data.packName)
+         {
+            int listPos = data.name / 30;
+            int gridPos = data.name - listPos * 30;
+            var levelCellData = pack.pagesData[listPos][gridPos];
+            levelCellData.bestMovements = data.bestMovements;
+            levelCellData.state = data.state;
+            pack.pagesData[listPos][gridPos] = levelCellData;
+            return;
+         }
+      }
+      Debug.LogError("Couldn't find that level");
+   }
 
    public static PackData GetPackData(string name)
    {
-      foreach (PackData data in _packDatas)
+      foreach (PackData pack in _packsData)
       {
-         if(data.name == name)
-            return data;
+         if(pack.name == name)
+            return pack;
       }
-
       throw new Exception("No pack found, oh oh");
    }
 }

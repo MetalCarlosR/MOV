@@ -91,6 +91,18 @@ public class Cell : MonoBehaviour
         DespawnMiniCircle();
     }
 
+    public void ResetCellNoBackground()
+    {
+        upConnection.enabled = false;
+        downConnection.enabled = false;
+        leftConnection.enabled = false;
+        rightConnection.enabled = false;
+        _inUse = false;
+        if (!_isCircle)
+            _color = Color.black;
+        DespawnMiniCircle();
+    }
+
     /**
      * Sets the sprite to render a circle of the given color
      */

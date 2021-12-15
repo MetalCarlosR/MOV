@@ -8,6 +8,7 @@ public class LevelSelectorManager : MonoBehaviour
     [SerializeField] private GameObject groupPrefab, pagePrefab, circleIndicatorPrefab , levelSelectorGrid, levelSelectorList;
     [SerializeField] private RectTransform packsGroup, scrollGroup, heightOffset, pagesGroup, indicatorGroup;
     [SerializeField] private TextMeshProUGUI levelPackName;
+    [SerializeField] private GridScroll gridScroll;
 
     void Start()
     {
@@ -20,7 +21,7 @@ public class LevelSelectorManager : MonoBehaviour
             groupSize += 150 * (g.packs.Length + 1);
         }
         
-        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height - (heightOffset.rect.height *0.05f)) - groupSize);
+        scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height*0.95f ) - groupSize);
     }
 
     public void LoadPackGrid(LevelPack pack, Color color)
@@ -37,8 +38,7 @@ public class LevelSelectorManager : MonoBehaviour
             page.SetupPage(pack.pages[i].pageName,packData.pagesData[i], pack.locked);
             Instantiate(circleIndicatorPrefab, indicatorGroup);
         }
-
-        pagesGroup.offsetMax = new Vector2(1080 * (pack.pages.Length - 1),0);
+        gridScroll.SetupScroll(indicatorGroup.transform);
     }
 
     public void Back()
