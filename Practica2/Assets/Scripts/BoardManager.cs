@@ -227,13 +227,15 @@ public class BoardManager : MonoBehaviour
         return new Vector2((float) Math.Round(position.x + offsetX), (float) Math.Round(offsetY - position.y));
     }
 
-    private void ClearFlow(List<Cell> flow, int first)
+    private void ClearFlow(List<Cell> flow, int first, bool withBackground)
     {
         int last = flow.Count;
 
         for (int i = first; i<last;i++)
         {
-            flow[i].ResetCell();
+            if (withBackground)
+                flow[i].ResetCell();
+            else flow[i].ResetCellNoBackground();
         }
 
         Cell firstCutCell = null;
@@ -245,7 +247,9 @@ public class BoardManager : MonoBehaviour
         // the origin is only remaining
         if (flow.Count == 1)
         {
-            flow[0].ResetCell();
+            if (withBackground)
+                flow[0].ResetCell();
+            else flow[0].ResetCellNoBackground();
         }
         // cut properly the rest of the chain
         else if (flow.Count > 1)
@@ -258,7 +262,7 @@ public class BoardManager : MonoBehaviour
             {
                 lastRemainingCell.DisconnectUp();
             }
-            else if (logicPos.y + 1 <= _puzzle.Height && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
+            else if (logicPos.y + 1 < _puzzle.Height && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
             {
                 lastRemainingCell.DisconnectDown();
             }
@@ -325,7 +329,7 @@ public class BoardManager : MonoBehaviour
                 else if (actual.IsCircle())
                 {
                     //ClearList
-                    ClearFlow(GetFlowByCell(actual),0);
+                    ClearFlow(GetFlowByCell(actual),0,true);
                     _selectedCircle = _cells[logicX, logicY];
                     _selectedFlow = GetFlowByCell(_selectedCircle);
                     _selectedFlow.Add(actual);
@@ -385,7 +389,7 @@ public class BoardManager : MonoBehaviour
             // check if the flow already owns the cell
             // if it does, clear the flow and add that cell
             if (flow.Contains(actual))
-                ClearFlow(flow, flow.FindIndex(cell => cell == actual));
+                ClearFlow(flow, flow.FindIndex(cell => cell == actual), false);
 
             flow.Add(actual);
 
@@ -562,7 +566,7 @@ public class BoardManager : MonoBehaviour
                 List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count-(index + 1));
 
                 if(index >= 0)
-                    ClearFlow(_selectedFlow, index + 1);
+                    ClearFlow(_selectedFlow, index + 1, false);
 
                 foreach (Cell cell in CutCells)
                 {
@@ -580,7 +584,7 @@ public class BoardManager : MonoBehaviour
         {
             if (previousFlow != null)
             {
-                ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual));
+                ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual), false);
 
                 Cell prev = null;
 
@@ -641,14 +645,11 @@ public class BoardManager : MonoBehaviour
             if (!actualFlow.Contains(cellToAdd))
             {
                 cellToAdd.SetColor(_colors[index]);
-                cellToAdd.Fill();
+                //cellToAdd.Fill();
                 UpdateCellConnections(cellToAdd, actualFlow.Last());
                 actualFlow.Add(cellToAdd);
             }
         }
-        //We set the rectangle on the ones that came before the one we are adding
-        for(int i =0; i<index;i++)
-            actualFlow[i].Fill();
     }
 
     private void BreakFlow()
@@ -658,7 +659,16 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Breaking non existing flow");
             return;
         }
-        
+
+        // if the flow has been cut in the creation of the new one, clear the backgrounds
+        for (int i = 0; i < _flows.Count; i++)
+        {
+            for (int j = _flows[i].Count; j < _previousFlows[i].Count; j++)
+            {
+                _previousFlows[i][j].Empty();
+            }
+        }
+
         if (_selectedFlow.Count > 1)
         {
             foreach (Cell cell in _selectedFlow)
@@ -673,8 +683,6 @@ public class BoardManager : MonoBehaviour
             _selectedCircle.ResetCell();
             _selectedFlow.Clear();
         }
-
-        
   
         _selectedCircle = null;
         _selectedFlow = null;
@@ -722,9 +730,9 @@ public class BoardManager : MonoBehaviour
                 UpdateCellConnections(flow[i],flow[i-1]);
                 flow[i-1].Fill();
             }
-            flow.Last().Fill();
+            if(flow.Count > 0)
+                flow.Last().Fill();
         }
-        
     }
 
     public int GetStepCount()
