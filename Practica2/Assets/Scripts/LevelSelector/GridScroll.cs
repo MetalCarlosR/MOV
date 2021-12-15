@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class GridScroll : MonoBehaviour
+public class GridScroll : ScrollRect
 {
     [SerializeField] private RectTransform _transform;
     private HorizontalLayoutGroup _group;
@@ -48,7 +49,7 @@ public class GridScroll : MonoBehaviour
 
         if (!_cooldown)
         {
-            if (Math.Abs(leftOffset) > _logicWidth / 3)
+            if (Math.Abs(leftOffset) > _logicWidth / 4)
             {
                 if (index + dir >= _dots.Count || index + dir < 0)
                     return;
@@ -69,12 +70,36 @@ public class GridScroll : MonoBehaviour
                 _transform.offsetMax = new Vector2(newLeftOffset, 0);
                 _scrollRect.Rebuild(CanvasUpdate.Layout);
                 _cooldown = true;
+                PointerEventData point = new PointerEventData(EventSystem.current);
+                point.button = PointerEventData.InputButton.Left;
+                base.OnEndDrag(point);
                 LayoutRebuilder.MarkLayoutForRebuild(_transform);
             }
         }
-        else if (Math.Abs(leftOffset) < _logicWidth / 3)
+        else if (Math.Abs(leftOffset) < _logicWidth / 4)
         {
             _cooldown = false;
         }
+    }
+
+    public override void OnBeginDrag(PointerEventData eventData)
+    {
+        if(_cooldown)
+            return;
+        base.OnBeginDrag(eventData);
+    }
+    
+    public override void OnDrag(PointerEventData eventData)
+    {
+        if(_cooldown)
+            return;
+        base.OnDrag(eventData);
+    }
+    
+    public override void OnEndDrag(PointerEventData eventData)
+    {
+        if(_cooldown)
+            return;
+        base.OnEndDrag(eventData);
     }
 }
