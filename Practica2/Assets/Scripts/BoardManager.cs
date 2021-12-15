@@ -32,24 +32,23 @@ public class BoardManager : MonoBehaviour
     private /*readonly*/ Color[] _colors;
     private int _stepCount = 0;
 
-    //This wont be done here, once we have a game manager he should set level and call startLevel 
-    //TODO(Ricky): GameManaer support
-    //TODO(Ricky): LevelPack and not string 
-    void Start()
-    {
-        // string level = @"5,0,1,5;0,5,10,15,20,21;2,1,6,11,16;7,12,17,22;4,3,8,13,18;9,14,19,24,23;";
-        // _puzzle = PuzzleParser.ParsePuzzle(level);
-        // StartLevel();
-    }
+    [SerializeField]
+    private LevelManager levelManager;
+    
 
-    public void SetupLevel(string level)
+    public void SetupLevel(PuzzleParser.Puzzle level)
     {
         _colors = currentSkin.colors;
-        _puzzle = PuzzleParser.ParsePuzzle(level);
+        _puzzle = level;
         if (_puzzle != null)
+        {
             StartLevel();
-        //TODO(Nico): estaria bien que vuelva para atras
-        else Debug.LogError("ERROR: Couldn't load map properly!");
+        }
+        else
+        {
+            Debug.LogError("ERROR: Couldn't load map properly!");
+            GameManager.Instance.LoadScene(1);
+        }
     }
 
     //Will be a level object later that has a full description of a level 
@@ -62,7 +61,6 @@ public class BoardManager : MonoBehaviour
 
         if (camera.aspect * (camera.orthographicSize) < width/2)
         {
-            Debug.Log("PITO");
             camera.orthographicSize = (width / (camera.aspect*2));
         }
         
@@ -288,10 +286,11 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        int width = _cells.GetLength(0);
-        int height = _cells.GetLength(1);
-        if (Input.touchCount > 0)
+        if (Input.touchCount > 0 && _cells!=null)
         {
+            int width = _cells.GetLength(0);
+            int height = _cells.GetLength(1);
+            
             Touch touch = Input.GetTouch(0);
             float x = camera.ScreenToWorldPoint(touch.position).x;
             float y = camera.ScreenToWorldPoint(touch.position).y;
@@ -724,7 +723,8 @@ public class BoardManager : MonoBehaviour
             }
             flow.Last().Fill();
         }
-        
+
+        _stepCount--;
     }
 
     public int GetStepCount()

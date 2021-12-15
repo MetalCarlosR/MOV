@@ -16,11 +16,12 @@ public static class DataManager
       
       public string data;
       public string name;
+      public int index;
       public Color color;
       public int bestMovements;
       public CellState state;
 
-      public LevelCellData(string data, string name, Color color, int bestMovements = -1,
+      public LevelCellData(string data, string name, Color color, int index, int bestMovements = -1,
          CellState state = CellState.FREE)
       {
          this.data = data;
@@ -28,6 +29,7 @@ public static class DataManager
          this.color = color;
          this.bestMovements = bestMovements;
          this.state = state;
+         this.index = index;
       }
    }
 
@@ -65,7 +67,7 @@ public static class DataManager
                for (int j = 0; j < 30; j++)
                {
                   string cellData = data[30 * i + j];
-                  levelCellData.Add(new LevelCellData(cellData,((i*30)+ j+1).ToString(),pack.pages[i].pageColor));
+                  levelCellData.Add(new LevelCellData(cellData,((i*30)+ j+1).ToString(),pack.pages[i].pageColor,30 * i + j+1));
                }
                packData.pagesData.Add(levelCellData);
             }
