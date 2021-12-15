@@ -20,4 +20,9 @@ public class PlayButton : MonoBehaviour
         block.pressedColor = Random.ColorHSV();
         b.colors = block;
     }
+
+    public void Play()
+    {
+        GameManager.Instance.LoadScene(1);
+    }
 }
