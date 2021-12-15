@@ -58,7 +58,13 @@ public class BoardManager : MonoBehaviour
         int width = _puzzle.Width;
         int height = _puzzle.Height;
         _cells = new Cell[width, height];
-        camera.orthographicSize = width / 2 + TopBarSize + BottomBarSize;
+        camera.orthographicSize = height / 2 + (TopBarSize + BottomBarSize);
+
+        if (camera.aspect * (camera.orthographicSize) < width/2)
+        {
+            Debug.Log("PITO");
+            camera.orthographicSize = (width / (camera.aspect*2));
+        }
         
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
@@ -70,7 +76,6 @@ public class BoardManager : MonoBehaviour
             }
 
         // TODO(Nico): reescalado ahora que no solo son 5x5 y ademas el de las pantallas
-        //grid.transform.localScale = new Vector3(5f / width, 5f / height, 1);
 
         _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.FlowCount; i++)
@@ -204,15 +209,22 @@ public class BoardManager : MonoBehaviour
     private Vector3 LogicToWorld(Vector2 position)
     {
         int size = _cells.GetLength(0);
-        float offset = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
-        return new Vector3(position.x - offset, offset - position.y, 0);
+        float offsetX = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
+        
+        size = _cells.GetLength(1);
+        float offsetY = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
+        
+        return new Vector3(position.x - offsetX, offsetY - position.y, 0);
     }
 
     private Vector2 WorldToLogic(Vector3 position)
     {
         int size = _cells.GetLength(0);
-        float offset = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
-        return new Vector2((float) Math.Round(position.x + offset), (float) Math.Round(offset - position.y));
+        float offsetX = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
+        
+        size = _cells.GetLength(1);
+        float offsetY = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
+        return new Vector2((float) Math.Round(position.x + offsetX), (float) Math.Round(offsetY - position.y));
     }
 
     private void ClearFlow(List<Cell> flow, int first)
@@ -276,7 +288,8 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        int size = _cells.GetLength(0);
+        int width = _cells.GetLength(0);
+        int height = _cells.GetLength(1);
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
@@ -287,8 +300,10 @@ public class BoardManager : MonoBehaviour
             int logicX = (int) trv.x;
             int logicY = (int) trv.y;
 
+            Debug.Log($"Logic({logicX}{logicY}) Real({x}{y})");
+
             //If we click outside the grid we break out
-            if (logicX < 0 || logicX >= size || logicY < 0 || logicY >= size)
+            if (logicX < 0 || logicX >= width || logicY < 0 || logicY >= height)
                 return;
 
             Cell actual = _cells[logicX, logicY];
