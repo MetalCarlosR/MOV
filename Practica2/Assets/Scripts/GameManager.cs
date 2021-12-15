@@ -3,14 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public LevelSelectorManager levelSelectorManager = null;
     public LevelManager levelManager = null;
-    private LevelManager.LevelData _dataToLoad;
+    private DataManager.LevelCellData _dataToLoad;
 
     private void Awake()
     {
@@ -40,7 +39,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(index);
     }
 
-    public void StartLevel(LevelManager.LevelData data)
+    public void StartLevel(DataManager.LevelCellData data)
     {
         _dataToLoad = data;
         LoadScene(2);

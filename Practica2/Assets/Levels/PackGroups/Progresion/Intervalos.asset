@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Paquete Intervalos
   file: {fileID: 4900000, guid: 85b493925cae8fb46a656e98ce0a0f69, type: 3}
+  locked: 1
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 1, b: 1, a: 1}

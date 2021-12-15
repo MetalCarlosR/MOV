@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Rectangulo
   m_EditorClassIdentifier: 
   name: "Rect\xE1ngulo Jumbo"
-  file: {fileID: 4900000, guid: a0dacc979db84b64ab131e0ffc282f41, type: 3}
+  file: {fileID: 4900000, guid: 3e3f1deb4fa2f524c956da3d26d06887, type: 3}
+  locked: 0
   pages:
   - pageName: 11x14
     pageColor: {r: 1, g: 0.43137255, b: 0, a: 1}

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Arcoiris
   m_EditorClassIdentifier: 
   name: Arcoiris Jumbo
-  file: {fileID: 4900000, guid: 424c10b9ad187764b9351a36fe6510cd, type: 3}
+  file: {fileID: 4900000, guid: 7ad0910dfec18094ea0c0032567dd4b6, type: 3}
+  locked: 0
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 0, b: 0, a: 1}

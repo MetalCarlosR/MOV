@@ -12,7 +12,6 @@ public class PackGroupUI : MonoBehaviour
 
     private RectTransform _rectTransform;
 
-    
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();

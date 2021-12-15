@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -13,6 +12,7 @@ public class LevelSelectorManager : MonoBehaviour
     void Start()
     {
         float groupSize = 0;
+        DataManager.LoadSaveData(groups);
         foreach (PackGroup g in groups)
         {
             PackGroupUI groupUI = Instantiate(groupPrefab, packsGroup).GetComponent<PackGroupUI>();
@@ -30,18 +30,15 @@ public class LevelSelectorManager : MonoBehaviour
         levelPackName.text = pack.name;
         levelPackName.color = color;
         levelSelectorList.SetActive(false);
-        string[] data = pack.file.ToString().Split('\n');
-        for (int i = 0; i < pack.pages.Length; i++)
+        DataManager.PackData packData = DataManager.GetPackData(pack.name);
+        for(int i = 0; i < packData.pagesData.Count; i++ )
         {
             PageUI page = Instantiate(pagePrefab, pagesGroup).GetComponent<PageUI>();
-            string[] pageData = new string[30];
-            for (int j = 0; j < 30; j++)
-            {
-                pageData[j] = data[30 * i + j];
-            }
-            page.SetupPage(pageData,pack.pages[i], i * 30 + 1);
+            page.SetupPage(pack.pages[i].pageName,packData.pagesData[i], pack.locked);
             Instantiate(circleIndicatorPrefab, indicatorGroup);
         }
+
+        pagesGroup.offsetMax = new Vector2(1080 * (pack.pages.Length - 1),0);
     }
 
     public void Back()
@@ -63,5 +60,4 @@ public class LevelSelectorManager : MonoBehaviour
             levelSelectorList.SetActive(true);
         }
     }
-    
 }

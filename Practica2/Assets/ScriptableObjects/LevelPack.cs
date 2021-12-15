@@ -8,6 +8,8 @@ public class LevelPack : ScriptableObject
 {
     public new string name;
     public TextAsset file;
+    public bool locked;
+    
     [Serializable]
     public struct LevelPage
     {
