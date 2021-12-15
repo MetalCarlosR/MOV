@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     public LevelSelectorManager levelSelectorManager = null;
     public LevelManager levelManager = null;
-    private DataManager.LevelCellData _dataToLoad;
+    private DataManager.LevelData _currentLevel;
 
     private void Awake()
     {
@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
             if(levelManager)
-                levelManager.LoadLevel(Instance._dataToLoad);
+                levelManager.LoadLevel(Instance._currentLevel);
             Destroy(gameObject);
         }
         else
@@ -39,10 +39,9 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(index);
     }
 
-    public void StartLevel(DataManager.LevelCellData data)
+    public void StartLevel(DataManager.LevelData data)
     {
-        _dataToLoad = data;
+        _currentLevel = data;
         LoadScene(2);
     }
-    
 }

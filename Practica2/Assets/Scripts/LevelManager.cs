@@ -18,7 +18,7 @@ public class LevelManager : MonoBehaviour
         text.text ="Steps " + boardManager.GetStepCount().ToString();
     }
 
-    public void LoadLevel(DataManager.LevelCellData data)
+    public void LoadLevel(DataManager.LevelData data)
     {
         boardManager.SetupLevel(data.data);
     }
