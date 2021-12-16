@@ -9,10 +9,11 @@ public class PageUI : MonoBehaviour
 {
     [SerializeField] private List<LevelCellUI> cells;
     [SerializeField] private TextMeshProUGUI pageName;
+    [SerializeField] private RectTransform pageNameParent;
     [SerializeField] private GridLayoutGroup grid;
 
 
-    public void SetupPage(string name, List<DataManager.LevelData> cellsData, float tileWidth, bool locked)
+    public void SetupPage(string name, List<DataManager.LevelData> cellsData, float tileWidth, float targetWidth, bool locked)
     {
         pageName.text = name;
         for (int i = 0; i < cellsData.Count; i++)
@@ -22,6 +23,9 @@ public class PageUI : MonoBehaviour
                                                DataManager.LevelData.LevelState.UNCOMPLETED));
             cells[i].SetupCell(cellsData[i], lockedCheck);
         }
+
+        float textLeft = ((targetWidth - ((5 + 4f / 3) * tileWidth)) * 0.85f) / 2;
+        pageNameParent.offsetMin = new Vector2(textLeft, 0);
 
         grid.spacing = Vector2.one * (tileWidth / 3);
         grid.cellSize = Vector2.one * tileWidth;

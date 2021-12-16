@@ -47,6 +47,7 @@ public static class DataManager
       }
    }
    
+   private static readonly string path = Application.persistentDataPath + "/";
    private static List<PackData> _packsData = new List<PackData>();
 
    public static void LoadSaveData(List<PackGroup> groups)
@@ -71,13 +72,13 @@ public static class DataManager
                }
                packData.pagesData.Add(levelCellData);
             }
-            string path = Application.persistentDataPath + "/" + pack.name + ".txt";
-            if (File.Exists(path))
+            string openPath = path + pack.name + ".txt";
+            if (File.Exists(openPath))
             {
                // nCompletados (ej: 10)
                // ..... nivel completado por linea (nivel estado nMovimientos)
                //  nivel (1-150) /////// estado (0(perfecto) , 1(completado)) ///// nMovimientos (ej: 6)
-               string[] lines = File.ReadAllLines(path);
+               string[] lines = File.ReadAllLines(openPath);
                int nFinished = int.Parse(lines[0]);
                packData.completed = nFinished;
                for (int i = 1; i <= nFinished; i++)
@@ -105,8 +106,9 @@ public static class DataManager
       {
          if (pack.name == data.packName)
          {
-            int listPos = data.name / 30;
-            int gridPos = data.name - listPos * 30;
+            int realPos = data.name - 1;
+            int listPos = realPos / 30;
+            int gridPos = realPos - listPos * 30;
             var levelCellData = pack.pagesData[listPos][gridPos];
             levelCellData.bestMovements = data.bestMovements;
             levelCellData.state = data.state;
@@ -125,5 +127,34 @@ public static class DataManager
             return pack;
       }
       throw new Exception("No pack found, oh oh");
+   }
+
+
+   public static void SaveCurrentData()
+   {
+      List<string> dataToSave = new List<string>();
+      foreach (PackData pack in _packsData)
+      {
+         dataToSave.Clear();
+         // Counter
+         dataToSave.Add("");
+         foreach (List<LevelData> page in pack.pagesData)
+         {
+            foreach (LevelData data in page)
+            {
+               if (data.state != LevelData.LevelState.UNCOMPLETED)
+               {
+                  string state = data.state == LevelData.LevelState.PERFECT ? "0" : "1";
+                  dataToSave.Add(data.name.ToString() + " " + state + " " + data.bestMovements.ToString());
+               }
+            }
+         }
+
+         if (dataToSave.Count != 1)
+         {
+            dataToSave[0] = (dataToSave.Count - 1).ToString();
+            File.WriteAllLines(path + pack.name + ".txt",dataToSave);
+         }
+      }
    }
 }

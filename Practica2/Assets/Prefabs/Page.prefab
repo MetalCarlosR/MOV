@@ -193,8 +193,8 @@ MonoBehaviour:
   - {fileID: 1662145837924519660}
   - {fileID: 928225851985064000}
   pageName: {fileID: 1635447361094824448}
+  pageNameParent: {fileID: 1635447360906360779}
   grid: {fileID: 1635447362092849576}
-  _rectTransform: {fileID: 1635447361013347890}
 --- !u!1 &1635447361094824454
 GameObject:
   m_ObjectHideFlags: 0

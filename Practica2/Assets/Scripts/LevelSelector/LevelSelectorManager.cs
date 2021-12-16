@@ -32,18 +32,19 @@ public class LevelSelectorManager : MonoBehaviour
         levelPackName.color = color;
         levelSelectorList.SetActive(false);
         DataManager.PackData packData = DataManager.GetPackData(pack.name);
+        
         float targetWidth = pagesGroup.rect.width;
         float targetHeigth = pagesGroup.rect.height;
 
-        float tileWidth = (targetWidth * 0.88f) / (5 + 4 / 3);
+        float tileWidth = (targetWidth * 0.85f) / (5 + 4 / 3);
 
-        if (tileWidth * (6 + 5 / 3) > targetHeigth - 200)
+        if (tileWidth * (6 + 5 / 3) > targetHeigth*0.85f)
             tileWidth = (targetHeigth * 0.85f) / (6 + 5 / 3);
         
         for(int i = 0; i < packData.pagesData.Count; i++ )
         {
             PageUI page = Instantiate(pagePrefab, pagesGroup).GetComponent<PageUI>();
-            page.SetupPage(pack.pages[i].pageName,packData.pagesData[i],tileWidth, pack.locked);
+            page.SetupPage(pack.pages[i].pageName,packData.pagesData[i],tileWidth, targetWidth,pack.locked);
             Instantiate(circleIndicatorPrefab, indicatorGroup);
         }
         gridScroll.SetupScroll(indicatorGroup.transform);

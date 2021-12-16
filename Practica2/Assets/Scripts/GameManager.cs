@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Advertisements;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,8 +20,15 @@ public class GameManager : MonoBehaviour
             //TODO pasarle las cosas
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
-            if(levelManager)
+            if (levelManager)
+            {
                 levelManager.LoadLevel(Instance._currentLevel);
+                
+                //TODO BORRAR ESTE DEBUG
+                Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
+                Instance._currentLevel.bestMovements = Random.Range(5,12);
+                DataManager.LevelPassed(Instance._currentLevel);
+            }
             Destroy(gameObject);
         }
         else
@@ -44,5 +52,11 @@ public class GameManager : MonoBehaviour
     {
         _currentLevel = data;
         LoadScene(2);
+    }
+
+    private void OnDestroy()
+    {
+        if(Instance == this)
+            DataManager.SaveCurrentData();
     }
 }
