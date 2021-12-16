@@ -23,11 +23,19 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private Button undoButton;
     
     [SerializeField] private GameObject finishPanel;
+    [SerializeField] private TextMeshProUGUI finishPanelStepCount;
+    [SerializeField] private TextMeshProUGUI finishPanelTitle;
+
+    [SerializeField] private RawImage finishPanelBar;
+    [SerializeField] private RawImage finishPanelMiniBar;
+
 
     // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
     private int best = -1;
     private int totalFlows = 0;
 
+    private Color _themeColor;
+    
     public void LoadLevel(DataManager.LevelData data)
     {
         var lvl = PuzzleParser.ParsePuzzle(data.data);
@@ -37,6 +45,8 @@ public class LevelManager : MonoBehaviour
         SetLevelColor(data.color);
         SetLevelNumber(data.name);
 
+        _themeColor = data.color;
+        
         SetConnectedFlowsText(0);
         SetStepsText(0);
         SetProgressText(0);
@@ -101,8 +111,17 @@ public class LevelManager : MonoBehaviour
         undoButton.interactable = true;
     }
 
-    public void GameFinished()
+    public void GameFinished(bool perfect, int count)
     {
         finishPanel.SetActive(true);
+        finishPanelStepCount.text = $"Has completado el nivel en {count} pasos";
+        finishPanelTitle.text = (perfect ? "¡Perfecto!" : "Nivel Completado");
+        
+        Color aux = _themeColor;
+        aux.a = 0.4f;
+        
+        finishPanelBar.color = aux;
+        finishPanelMiniBar.color = _themeColor;
+
     }
 }

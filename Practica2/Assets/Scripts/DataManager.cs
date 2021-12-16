@@ -33,12 +33,12 @@ public static class DataManager
         }
     }
 
-    public struct PackData
+    public class PackData
     {
         public List<List<LevelData>> pagesData;
         public int completed;
         public string name;
-
+        
         public PackData(string name)
         {
             pagesData = new List<List<LevelData>>();
@@ -110,7 +110,7 @@ public static class DataManager
         return new Vector2Int(pos / 30, pos - (pos / 30) * 30);
     }
 
-    private static void GetPack(out PackData? data, string packName)
+    private static void GetPack(out PackData data, string packName)
     {
         foreach (PackData pack in _packsData)
         {
@@ -127,26 +127,32 @@ public static class DataManager
 
     public static void LevelPassed(LevelData data)
     {
-        GetPack(out PackData? dataPack, data.packName);
+        GetPack(out PackData dataPack, data.packName);
 
         if (dataPack == null)
             throw new Exception("Couldn't find that level, oh oh");
 
         Vector2Int pos = GetRealPos(data.name - 1);
-        var levelCellData = dataPack.Value.pagesData[pos.x][pos.y];
+        var levelCellData =  dataPack.pagesData[pos.x][pos.y];
         levelCellData.bestMovements = data.bestMovements;
+
+        if (levelCellData.state == LevelData.LevelState.UNCOMPLETED && data.state != LevelData.LevelState.UNCOMPLETED)
+            dataPack.completed++;
+        
         levelCellData.state = data.state;
-        dataPack.Value.pagesData[pos.x][pos.y] = levelCellData;
+        
+        dataPack.pagesData[pos.x][pos.y] = levelCellData;
+        
     }
 
     public static bool ThereIsNextLevel(LevelData data, bool previous = false)
     {
-        GetPack(out PackData? dataPack, data.packName);
+        GetPack(out PackData dataPack, data.packName);
 
         if (dataPack == null)
             throw new Exception("No next level, oh oh");
 
-        int max = dataPack.Value.pagesData.Count * 30;
+        int max = dataPack.pagesData.Count * 30;
         int targetPos = data.name + (previous ? -2 : 0);
 
         return targetPos >= 0 && targetPos < max;
@@ -154,29 +160,29 @@ public static class DataManager
     
     public static LevelData NextLevel(LevelData data, bool previous = false)
     {
-        GetPack(out PackData? dataPack, data.packName);
+        GetPack(out PackData dataPack, data.packName);
 
         if (dataPack == null)
             throw new Exception("No next level, oh oh");
 
-        int max = dataPack.Value.pagesData.Count * 30;
+        int max = dataPack.pagesData.Count * 30;
         int targetPos = data.name + (previous ? -2 : 0);
         
         int clampedPos = targetPos >= 0 ? targetPos % max : max + targetPos;
         
         Vector2Int pos = GetRealPos(clampedPos);
 
-        return dataPack.Value.pagesData[pos.x][pos.y];
+        return dataPack.pagesData[pos.x][pos.y];
     }
 
     public static PackData GetPackData(string name)
     {
-        GetPack(out PackData? dataPack, name);
+        GetPack(out PackData dataPack, name);
 
         if (dataPack == null)
             throw new Exception("No pack found, oh oh");
 
-        return dataPack.Value;
+        return dataPack;
     }
 
 

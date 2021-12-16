@@ -716,7 +716,7 @@ public class BoardManager : MonoBehaviour
         {
             _handleInput = false;
             GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
-            levelManager.GameFinished();
+            levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
         }
 
         _selectedCircle = null;

@@ -26,11 +26,10 @@ public class GameManager : MonoBehaviour
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
-                //TODO BORRAR ESTE DEBUG
-                
-                Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
-                Instance._currentLevel.bestMovements = Random.Range(5,12);
-                DataManager.LevelPassed(Instance._currentLevel);
+                // //TODO BORRAR ESTE DEBUG
+                // Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
+                // Instance._currentLevel.bestMovements = Random.Range(5,12);
+                // DataManager.LevelPassed(Instance._currentLevel);
             }
             Destroy(gameObject);
         }
