@@ -22,7 +22,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private Button cluesButton;
     [SerializeField] private Button undoButton;
     
-    [SerializeField] private Button rewardedButton;
     [SerializeField] private GameObject finishPanel;
 
     // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
@@ -78,15 +77,6 @@ public class LevelManager : MonoBehaviour
     {
         levelSize.text = name;
     }
-
-    public void LinkRewardedAdWithButton(RewardedAdsButton rewardedAdButton)
-    {
-        if (rewardedButton == null)
-            Debug.Log("ME TIRO POR UNA VENTANA");
-        else Debug.Log("NO ME TIRO");
-        rewardedAdButton.SetButton(rewardedButton);
-    }
-
     public void GoBackCallback()
     {
         GameManager.Instance.LoadScene(1);

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Advertisements;
@@ -7,8 +8,8 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
     [SerializeField] string _androidAdUnitId = "Rewarded_Android";
     [SerializeField] string _iOSAdUnitId = "Rewarded_iOS";
     string _adUnitId;
-    
-    Button _showAdButton;
+
+    [SerializeField] private Button showAdButton;
 
     bool buttonInteractable = false;
 
@@ -24,10 +25,16 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 #if UNITY_IOS
 		_adUnitId = _iOsAdUnitId;
 #elif UNITY_ANDROID
-		_adUnitId = _androidAdUnitId;
+        _adUnitId = _androidAdUnitId;
 #endif
         //Disable button until ad is ready to show
         buttonInteractable = false;
+    }
+
+    private void Start()
+    {
+        //TODO ver si hay que moverlo o hacerlo direcamente aquí
+        LoadAd();
     }
 
     // Load content to the Ad Unit:
@@ -45,11 +52,12 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
         if (adUnitId.Equals(_adUnitId))
         {
-            if(_showAdButton != null)
+            if (showAdButton != null)
             {
                 // Enable the button for users to click:
-                _showAdButton.interactable = true;
+                showAdButton.interactable = true;
             }
+
             buttonInteractable = true;
         }
     }
@@ -57,9 +65,9 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
     // Implement a method to execute when the user clicks the button.
     public void ShowAd()
     {
-        if (_showAdButton != null)
+        if (showAdButton != null)
             // Disable the button: 
-            _showAdButton.interactable = false;
+            showAdButton.interactable = false;
         // Then show the ad:
         Advertisement.Show(_adUnitId, this);
 
@@ -100,21 +108,19 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         // Use the error details to determine whether to try to load another ad.
     }
 
-    public void OnUnityAdsShowStart(string adUnitId) { }
-    public void OnUnityAdsShowClick(string adUnitId) { }
-
-    public void SetButton(Button b)
+    public void OnUnityAdsShowStart(string adUnitId)
     {
-        _showAdButton = b;
-        _showAdButton.interactable = buttonInteractable;
-        _showAdButton.onClick.AddListener(ShowAd);
-        Debug.Log("SetButton");
     }
+
+    public void OnUnityAdsShowClick(string adUnitId)
+    {
+    }
+    
 
     void OnDestroy()
     {
         // Clean up the button listeners:
-        if (_showAdButton != null)
-            _showAdButton.onClick.RemoveAllListeners();
+        if (showAdButton != null)
+            showAdButton.onClick.RemoveAllListeners();
     }
 }

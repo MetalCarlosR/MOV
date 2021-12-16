@@ -13,8 +13,6 @@ public class GameManager : MonoBehaviour
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
 
-    [SerializeField] private RewardedAdsButton rewardedAdsButton;
-
     int _clue = 3;
 
     private void Awake()
@@ -24,17 +22,12 @@ public class GameManager : MonoBehaviour
             //TODO pasarle las cosas
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
+            
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
-
-                if(rewardedAdsButton != null)
-                {
-                    levelManager.LinkRewardedAdWithButton(rewardedAdsButton);
-                    rewardedAdsButton.ShowAd();
-                }
-
                 //TODO BORRAR ESTE DEBUG
+                
                 Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
                 Instance._currentLevel.bestMovements = Random.Range(5,12);
                 DataManager.LevelPassed(Instance._currentLevel);
