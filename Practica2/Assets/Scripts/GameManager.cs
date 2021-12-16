@@ -13,6 +13,10 @@ public class GameManager : MonoBehaviour
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
 
+    [SerializeField] private RewardedAdsButton rewardedAdsButton;
+
+    int _clue = 3;
+
     private void Awake()
     {
         if (Instance)
@@ -23,7 +27,13 @@ public class GameManager : MonoBehaviour
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
-                
+
+                if(rewardedAdsButton != null)
+                {
+                    levelManager.LinkRewardedAdWithButton(rewardedAdsButton);
+                    rewardedAdsButton.ShowAd();
+                }
+
                 //TODO BORRAR ESTE DEBUG
                 Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
                 Instance._currentLevel.bestMovements = Random.Range(5,12);
@@ -52,6 +62,28 @@ public class GameManager : MonoBehaviour
     {
         _currentLevel = data;
         LoadScene(2);
+    }
+
+    public void addClue()
+    {
+        updateClue(1);
+    }
+
+    public bool ConsumeClue()
+    {
+        if(_clue > 0)
+        {
+            updateClue(-1);
+            return true;
+        }
+        return false;
+    }
+
+    private void updateClue(int inc)
+    {
+        _clue += inc;
+        if (levelManager != null)
+            levelManager.SetCluesText(_clue);
     }
 
     private void OnDestroy()

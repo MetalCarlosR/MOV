@@ -9,6 +9,7 @@ public class AdManager : MonoBehaviour
     [SerializeField] BannerAd _bannerAd;
 
     // Start is called before the first frame update
+    // is in start because the Advertisment intialization is in the awake of AdsInitializer
     void Start()
     {
         _interstitialAd.LoadAd();

@@ -81,9 +81,6 @@ public class BannerAd : MonoBehaviour
     void OnBannerClicked() 
     {
         Debug.Log("BANNER: Making money by the clicks");
-        // Reloads a new add so the user may press on another ad
-        HideBannerAd();
-        LoadBanner();
     }
     void OnBannerShown()
     {

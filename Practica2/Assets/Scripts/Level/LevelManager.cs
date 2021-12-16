@@ -17,6 +17,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI StepCount;
     [SerializeField] private TextMeshProUGUI Progress;
 
+    [SerializeField] private TextMeshProUGUI Clues;
+
+    [SerializeField] private Button RewardedButton;
+
     // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
     private int best = -1;
     private int totalFlows = 0;
@@ -61,9 +65,22 @@ public class LevelManager : MonoBehaviour
         Progress.text = "Pipe: " + progress + "%";
     }
 
+    public void SetCluesText(int clues)
+    {
+        Clues.text = clues + "X";
+    }
+
     private void SetLevelName(string name)
     {
         LevelSize.text = name;
+    }
+
+    public void LinkRewardedAdWithButton(RewardedAdsButton rewardedAdButton)
+    {
+        if (RewardedButton == null)
+            Debug.Log("ME TIRO POR UNA VENTANA");
+        else Debug.Log("NO ME TIRO");
+        rewardedAdButton.SetButton(RewardedButton);
     }
 
     public void GoBackCallback()
