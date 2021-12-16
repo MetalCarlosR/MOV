@@ -74,15 +74,7 @@ public class LevelManager : MonoBehaviour
     {
         LevelSize.text = name;
     }
-
-    public void LinkRewardedAdWithButton(RewardedAdsButton rewardedAdButton)
-    {
-        if (RewardedButton == null)
-            Debug.Log("ME TIRO POR UNA VENTANA");
-        else Debug.Log("NO ME TIRO");
-        rewardedAdButton.SetButton(RewardedButton);
-    }
-
+    
     public void GoBackCallback()
     {
         GameManager.Instance.LoadScene(1);

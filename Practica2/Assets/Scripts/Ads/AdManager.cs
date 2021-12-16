@@ -5,7 +5,6 @@ using UnityEngine;
 public class AdManager : MonoBehaviour
 {
     [SerializeField] InterstitialAd _interstitialAd;
-    [SerializeField] RewardedAdsButton _rewardedAd;
     [SerializeField] BannerAd _bannerAd;
 
     // Start is called before the first frame update
@@ -13,7 +12,6 @@ public class AdManager : MonoBehaviour
     void Start()
     {
         _interstitialAd.LoadAd();
-        _rewardedAd.LoadAd();
         _bannerAd.LoadBanner();
     }
 
