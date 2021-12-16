@@ -5,22 +5,25 @@ using UnityEngine.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor;
 
 public class LevelManager : MonoBehaviour
 {
     [SerializeField] private BoardManager boardManager;
 
-    [SerializeField] private TextMeshProUGUI LevelTag;
-    [SerializeField] private TextMeshProUGUI LevelSize;
+    [SerializeField] private TextMeshProUGUI levelTag;
+    [SerializeField] private TextMeshProUGUI levelSize;
     
-    [SerializeField] private TextMeshProUGUI ConnectedFlows;
-    [SerializeField] private TextMeshProUGUI StepCount;
-    [SerializeField] private TextMeshProUGUI Progress;
-
-    [SerializeField] private TextMeshProUGUI Clues;
-    [SerializeField] private Button CluesButton;
-
-    [SerializeField] private Button RewardedButton;
+    [SerializeField] private TextMeshProUGUI connectedFlows;
+    [SerializeField] private TextMeshProUGUI stepCount;
+    [SerializeField] private TextMeshProUGUI progress;
+    
+    [SerializeField] private TextMeshProUGUI clues;
+    [SerializeField] private Button cluesButton;
+    [SerializeField] private Button undoButton;
+    
+    [SerializeField] private Button rewardedButton;
+    [SerializeField] private GameObject finishPanel;
 
     // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
     private int best = -1;
@@ -31,7 +34,7 @@ public class LevelManager : MonoBehaviour
         var lvl = PuzzleParser.ParsePuzzle(data.data);
         boardManager.SetupLevel(lvl);
         totalFlows = lvl.FlowCount;
-        SetLevelName(lvl.Width +"x"+lvl.Height);
+        SetLevelName(lvl.Width + "x" + lvl.Height);
         SetLevelColor(data.color);
         SetLevelNumber(data.name);
 
@@ -42,46 +45,46 @@ public class LevelManager : MonoBehaviour
 
     private void SetLevelColor(Color dataColor)
     {
-        LevelTag.color = dataColor;
+        levelTag.color = dataColor;
     }
 
     private void SetLevelNumber(int number)
     {
-        LevelTag.text = "Nivel "+number.ToString();
+        levelTag.text = "Nivel " + number.ToString();
     }
 
     public void SetConnectedFlowsText(int actualFlows)
     {
-        ConnectedFlows.text = "Flows: " + actualFlows + "/" + totalFlows;
+        connectedFlows.text = "Flows: " + actualFlows + "/" + totalFlows;
     }
 
     public void SetStepsText(int steps)
     {
         string bestStr = (best > 0 ? best.ToString() : "-");
-        StepCount.text = "Moves: " + steps + " Best: " + bestStr;
+        stepCount.text = "Moves: " + steps + " Best: " + bestStr;
     }
 
     public void SetProgressText(int progress)
     {
-        Progress.text = "Pipe: " + progress + "%";
+        this.progress.text = "Pipe: " + progress + "%";
     }
 
     public void SetCluesText(int clues)
     {
-        Clues.text = clues + "X";
+        this.clues.text = clues + "X";
     }
 
     private void SetLevelName(string name)
     {
-        LevelSize.text = name;
+        levelSize.text = name;
     }
 
     public void LinkRewardedAdWithButton(RewardedAdsButton rewardedAdButton)
     {
-        if (RewardedButton == null)
+        if (rewardedButton == null)
             Debug.Log("ME TIRO POR UNA VENTANA");
         else Debug.Log("NO ME TIRO");
-        rewardedAdButton.SetButton(RewardedButton);
+        rewardedAdButton.SetButton(rewardedButton);
     }
 
     public void GoBackCallback()
@@ -89,16 +92,27 @@ public class LevelManager : MonoBehaviour
         GameManager.Instance.LoadScene(1);
     }
 
+    public void GoNextCallback()
+    {
+        GameManager.Instance.NextLevel();
+    }
+
     public void UseClue()
     {
         if (GameManager.Instance.ConsumeClue())
         {
             if (!boardManager.UseClue())
-                CluesButton.interactable = false;
+                cluesButton.interactable = false;
         }
-        else
-        {
-            Debug.Log("Paga por pistas crack");
-        }
+    }
+
+    public void EnableUndo()
+    {
+        undoButton.interactable = true;
+    }
+
+    public void GameFinished()
+    {
+        finishPanel.SetActive(true);
     }
 }

@@ -91,4 +91,22 @@ public class GameManager : MonoBehaviour
         if(Instance == this)
             DataManager.SaveCurrentData();
     }
+
+    public void NextLevel()
+    {
+        if (DataManager.ThereIsNextLevel(_currentLevel))
+        {
+            StartLevel(DataManager.NextLevel(_currentLevel));
+        }
+    }
+
+    public void LevelFinished(bool perfect, int steps)
+    {
+        if(_currentLevel.state != DataManager.LevelData.LevelState.PERFECT)
+            _currentLevel.state = perfect ? DataManager.LevelData.LevelState.PERFECT : DataManager.LevelData.LevelState.COMPLETED;
+        
+        if(steps < _currentLevel.bestMovements)
+            _currentLevel.bestMovements = steps;
+        DataManager.LevelPassed(_currentLevel);
+    }
 }

@@ -38,6 +38,8 @@ public class BoardManager : MonoBehaviour
 
     private List<int> _clues;
 
+    private bool _handleInput = true;
+    
     public void SetupLevel(PuzzleParser.Puzzle level)
     {
         _colors = currentSkin.colors;
@@ -77,7 +79,7 @@ public class BoardManager : MonoBehaviour
             _cells[i, j].SetCoords(i, j);
         }
 
-        // TODO(Nico): reescalado ahora que no solo son 5x5 y ademas el de las pantallas
+        // TODO(Ricky): Incluir ads en el cómputo chachi de escala y coloca los textos como en el juego
 
         _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.FlowCount; i++)
@@ -301,7 +303,7 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.touchCount > 0 && _cells != null)
+        if (_handleInput && Input.touchCount > 0 && _cells != null)
         {
             int width = _cells.GetLength(0);
             int height = _cells.GetLength(1);
@@ -348,6 +350,7 @@ public class BoardManager : MonoBehaviour
                     {
                         _stepCount++;
                         updateUITexts();
+                        levelManager.EnableUndo();
                     }
 
                     //Copy the current state to previous when there are changes on any path
@@ -709,6 +712,13 @@ public class BoardManager : MonoBehaviour
             _selectedFlow.Last().ShowStar();
         }
 
+        if (GetFirstWrongFlow() == -1)
+        {
+            _handleInput = false;
+            GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
+            levelManager.GameFinished();
+        }
+
         _selectedCircle = null;
         _selectedFlow = null;
     }
@@ -760,7 +770,7 @@ public class BoardManager : MonoBehaviour
             if (flow.Count > 0)
                 flow.Last().Fill();
         }
-
+        
         _stepCount--;
         updateUITexts();
     }
