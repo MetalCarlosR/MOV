@@ -30,7 +30,9 @@ public class BoardManager : MonoBehaviour
         
     private PuzzleParser.Puzzle _puzzle;
     private /*readonly*/ Color[] _colors;
+    private int _completedFlows = 0;
     private int _stepCount = 0;
+    private int _progress = 0;
 
     [SerializeField]
     private LevelManager levelManager;
@@ -334,10 +336,13 @@ public class BoardManager : MonoBehaviour
                     _selectedFlow.Add(actual);
                     
                     bool differ = StatesDiffer();
-        
+
                     //If they differ we count one step up, only when it's not the same color we touched last round
                     if (differ)
+                    {
                         _stepCount++;
+                        updateUITexts();
+                    }
 
                     //Copy the current state to previous when there are changes on any path
                     if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
@@ -733,10 +738,13 @@ public class BoardManager : MonoBehaviour
                 flow.Last().Fill();
         }
         _stepCount--;
+        updateUITexts();
     }
 
-    public int GetStepCount()
+    private void updateUITexts()
     {
-        return _stepCount;
+        levelManager.SetConnectedFlowsText(_completedFlows);
+        levelManager.SetStepsText(_stepCount);
+        levelManager.SetProgressText(_progress);
     }
 }
