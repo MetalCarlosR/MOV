@@ -18,6 +18,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI Progress;
 
     [SerializeField] private TextMeshProUGUI Clues;
+    [SerializeField] private Button CluesButton;
 
     [SerializeField] private Button RewardedButton;
 
@@ -78,5 +79,18 @@ public class LevelManager : MonoBehaviour
     public void GoBackCallback()
     {
         GameManager.Instance.LoadScene(1);
+    }
+
+    public void UseClue()
+    {
+        if (GameManager.Instance.ConsumeClue())
+        {
+            if (!boardManager.UseClue())
+                CluesButton.interactable = false;
+        }
+        else
+        {
+            Debug.Log("Paga por pistas crack");
+        }
     }
 }

@@ -462,6 +462,7 @@ MonoBehaviour:
   StepCount: {fileID: 1233686496}
   Progress: {fileID: 1018671466}
   Clues: {fileID: 1957246692}
+  CluesButton: {fileID: 688917161}
   RewardedButton: {fileID: 621560155}
 --- !u!4 &245919451
 Transform:
@@ -1327,10 +1328,10 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 21300000, guid: a9b9cc58c72bc4a4eace5edd919a43a6, type: 3}
-    m_PressedSprite: {fileID: 21300000, guid: e585a8cbf521e0c4aa8a7cc08f8e72c8, type: 3}
-    m_SelectedSprite: {fileID: 21300000, guid: a9b9cc58c72bc4a4eace5edd919a43a6, type: 3}
-    m_DisabledSprite: {fileID: 21300000, guid: a9b9cc58c72bc4a4eace5edd919a43a6, type: 3}
+    m_HighlightedSprite: {fileID: 21300000, guid: 3c9efe8593e236c488e2e77910256f13, type: 3}
+    m_PressedSprite: {fileID: 21300000, guid: 3c9efe8593e236c488e2e77910256f13, type: 3}
+    m_SelectedSprite: {fileID: 21300000, guid: 3c9efe8593e236c488e2e77910256f13, type: 3}
+    m_DisabledSprite: {fileID: 21300000, guid: 3c9efe8593e236c488e2e77910256f13, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Highlighted
@@ -1342,9 +1343,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1999118905}
-        m_TargetAssemblyTypeName: AdManager, Assembly-CSharp
-        m_MethodName: ShowInterstitialAd
+      - m_Target: {fileID: 245919450}
+        m_TargetAssemblyTypeName: LevelManager, Assembly-CSharp
+        m_MethodName: UseClue
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

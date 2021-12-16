@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 /**
  * This class will handle the visual representation of the flow in each cell
@@ -11,6 +12,10 @@ public class Cell : MonoBehaviour
     [SerializeField]
     private SpriteRenderer circle;
 
+    [SerializeField]
+    [Tooltip("Shown when a clue is given for this cell")]
+    private SpriteRenderer star;
+    
     [SerializeField]
     private SpriteRenderer background;
 
@@ -48,6 +53,8 @@ public class Cell : MonoBehaviour
     }
 
     private bool[] _walls = { false, false, false, false };
+    
+    
 
     public bool IsCircle()
     {
@@ -87,6 +94,8 @@ public class Cell : MonoBehaviour
         background.enabled = false;
         if (!_isCircle)
             _color = Color.black;
+        star.enabled = false;
+
         DespawnMiniCircle();
     }
 
@@ -243,4 +252,9 @@ public class Cell : MonoBehaviour
         j = _y;
     }
     #endregion Coords
+
+    public void ShowStar()
+    {
+        star.enabled = true;
+    }
 }

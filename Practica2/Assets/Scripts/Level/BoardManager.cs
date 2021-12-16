@@ -27,16 +27,16 @@ public class BoardManager : MonoBehaviour
     private Cell[,] _cells;
     private Cell _selectedCircle = null;
     private List<Cell> _selectedFlow = null;
-        
+
     private PuzzleParser.Puzzle _puzzle;
     private /*readonly*/ Color[] _colors;
     private int _completedFlows = 0;
     private int _stepCount = 0;
     private int _progress = 0;
 
-    [SerializeField]
-    private LevelManager levelManager;
-    
+    [SerializeField] private LevelManager levelManager;
+
+    private List<int> _clues;
 
     public void SetupLevel(PuzzleParser.Puzzle level)
     {
@@ -59,21 +59,23 @@ public class BoardManager : MonoBehaviour
         int width = _puzzle.Width;
         int height = _puzzle.Height;
         _cells = new Cell[width, height];
+        _clues = new List<int>();
+        
         camera.orthographicSize = height / 2 + (TopBarSize + BottomBarSize);
 
-        if (camera.aspect * (camera.orthographicSize) < width/2)
+        if (camera.aspect * (camera.orthographicSize) < width / 2)
         {
-            camera.orthographicSize = (width / (camera.aspect*2));
+            camera.orthographicSize = (width / (camera.aspect * 2));
         }
-        
+
         for (int i = 0; i < width; i++)
-            for (int j = 0; j < height; j++)
-            {
-                _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
-                    grid.transform);
-                _cells[i, j].gameObject.name = $"({i},{j})";
-                _cells[i, j].SetCoords(i,j);
-            }
+        for (int j = 0; j < height; j++)
+        {
+            _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
+                grid.transform);
+            _cells[i, j].gameObject.name = $"({i},{j})";
+            _cells[i, j].SetCoords(i, j);
+        }
 
         // TODO(Nico): reescalado ahora que no solo son 5x5 y ademas el de las pantallas
 
@@ -93,43 +95,44 @@ public class BoardManager : MonoBehaviour
 
         // adds holes to the map
         List<Vector2> holes = _puzzle.Holes;
-        if(holes != null)
+        if (holes != null)
             for (int i = 0; i < holes.Count; i++)
             {
-                _cells[(int)holes[i].x, (int)holes[i].y].SetAsHole();
+                _cells[(int) holes[i].x, (int) holes[i].y].SetAsHole();
             }
 
         // adds walls to the map
         List<Vector2> walls = _puzzle.Walls;
-        if(walls != null)
-            for (int i = 0; i < walls.Count; i+=2) // is +2 cause the vector stores pairs of cells to add walls to
+        if (walls != null)
+            for (int i = 0; i < walls.Count; i += 2) // is +2 cause the vector stores pairs of cells to add walls to
             {
                 Vector2 first = walls[i];
-                Vector2 second = walls[i+1];
+                Vector2 second = walls[i + 1];
 
                 // first is to the left
-                if(first.x < second.x)
+                if (first.x < second.x)
                 {
-                    _cells[(int)first.x, (int)first.y].WallRight();
-                    _cells[(int)second.x, (int)second.y].WallLeft();
+                    _cells[(int) first.x, (int) first.y].WallRight();
+                    _cells[(int) second.x, (int) second.y].WallLeft();
                 }
                 // first is to the right
                 else if (first.x < second.x)
                 {
-                    _cells[(int)first.x, (int)first.y].WallLeft();
-                    _cells[(int)second.x, (int)second.y].WallRight();
+                    _cells[(int) first.x, (int) first.y].WallLeft();
+                    _cells[(int) second.x, (int) second.y].WallRight();
                 }
+
                 // first is above 
                 if (first.y < second.y)
                 {
-                    _cells[(int)first.x, (int)first.y].WallDown();
-                    _cells[(int)second.x, (int)second.y].WallUp();
+                    _cells[(int) first.x, (int) first.y].WallDown();
+                    _cells[(int) second.x, (int) second.y].WallUp();
                 }
                 // first is below
                 else if (first.y < second.y)
                 {
-                    _cells[(int)first.x, (int)first.y].WallUp();
-                    _cells[(int)second.x, (int)second.y].WallDown();
+                    _cells[(int) first.x, (int) first.y].WallUp();
+                    _cells[(int) second.x, (int) second.y].WallDown();
                 }
                 else Debug.LogError("ERROR: Trying to wall to itself");
             }
@@ -143,64 +146,69 @@ public class BoardManager : MonoBehaviour
                 Cell c = _cells[i, 0];
                 if (!c.IsHole())
                     c.WallUp();
-                c = _cells[i, height-1];
+                c = _cells[i, height - 1];
                 if (!c.IsHole())
                     c.WallDown();
             }
+
             // in the first and last column
             for (int i = 0; i < height; i++)
             {
                 Cell c = _cells[0, i];
                 if (!c.IsHole())
                     c.WallLeft();
-                c = _cells[width-1, i];
+                c = _cells[width - 1, i];
                 if (!c.IsHole())
                     c.WallRight();
             }
+
             // and if there is holes
             // to every hole connected to a non hole board cell
-            if(holes != null)
-            foreach(Vector2 h in holes)
-            {
-                Cell holeCell = _cells[(int)h.x, (int)h.y];
-                Cell c = null;
-                if (h.y > 0)
+            if (holes != null)
+                foreach (Vector2 h in holes)
                 {
-                    c = _cells[(int)h.x, (int)h.y - 1];
-                    if (!c.IsHole())
+                    Cell holeCell = _cells[(int) h.x, (int) h.y];
+                    Cell c = null;
+                    if (h.y > 0)
                     {
-                        holeCell.WallUp();
-                        c.WallDown();
+                        c = _cells[(int) h.x, (int) h.y - 1];
+                        if (!c.IsHole())
+                        {
+                            holeCell.WallUp();
+                            c.WallDown();
+                        }
+                    }
+
+                    if (h.y < height - 1)
+                    {
+                        c = _cells[(int) h.x, (int) h.y + 1];
+                        if (!c.IsHole())
+                        {
+                            holeCell.WallDown();
+                            c.WallUp();
+                        }
+                    }
+
+                    if (h.x > 0)
+                    {
+                        c = _cells[(int) h.x - 1, (int) h.y];
+                        if (!c.IsHole())
+                        {
+                            holeCell.WallLeft();
+                            c.WallRight();
+                        }
+                    }
+
+                    if (h.x < width - 1)
+                    {
+                        c = _cells[(int) h.x + 1, (int) h.y];
+                        if (!c.IsHole())
+                        {
+                            holeCell.WallRight();
+                            c.WallLeft();
+                        }
                     }
                 }
-                if (h.y < height - 1)
-                {
-                    c = _cells[(int)h.x, (int)h.y + 1];
-                    if (!c.IsHole())
-                    {
-                        holeCell.WallDown();
-                        c.WallUp();
-                    }
-                }
-                if (h.x > 0)
-                {
-                    c = _cells[(int)h.x - 1, (int)h.y];
-                    if (!c.IsHole())
-                    {
-                        holeCell.WallLeft();
-                        c.WallRight();
-                    }
-                }
-                if (h.x < width - 1)
-                {
-                    c = _cells[(int)h.x + 1, (int)h.y];
-                    if (!c.IsHole())
-                    {
-                        holeCell.WallRight();
-                        c.WallLeft();
-                    }
-                }
-            }
         }
 
         UpdatePreviousState();
@@ -210,10 +218,10 @@ public class BoardManager : MonoBehaviour
     {
         int size = _cells.GetLength(0);
         float offsetX = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
-        
+
         size = _cells.GetLength(1);
         float offsetY = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
-        
+
         return new Vector3(position.x - offsetX, offsetY - position.y, 0);
     }
 
@@ -221,7 +229,7 @@ public class BoardManager : MonoBehaviour
     {
         int size = _cells.GetLength(0);
         float offsetX = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
-        
+
         size = _cells.GetLength(1);
         float offsetY = (float) (size % 2 == 1 ? (int) (size / 2) : (int) (size / 2) - 0.5);
         return new Vector2((float) Math.Round(position.x + offsetX), (float) Math.Round(offsetY - position.y));
@@ -231,7 +239,7 @@ public class BoardManager : MonoBehaviour
     {
         int last = flow.Count;
 
-        for (int i = first; i<last;i++)
+        for (int i = first; i < last; i++)
         {
             if (withBackground)
                 flow[i].ResetCell();
@@ -242,7 +250,7 @@ public class BoardManager : MonoBehaviour
         if (flow.Count > 1)
             firstCutCell = flow[first];
 
-        flow.RemoveRange(first,last-first);
+        flow.RemoveRange(first, last - first);
 
         // the origin is only remaining
         if (flow.Count == 1)
@@ -258,15 +266,15 @@ public class BoardManager : MonoBehaviour
             Vector2 logicPos = WorldToLogic(lastRemainingCell.transform.position);
 
             // search the direction the last cell remaining and the first cut one were
-            if (logicPos.y - 1 >= 0 && _cells[(int)logicPos.x, (int)logicPos.y - 1] == firstCutCell)
+            if (logicPos.y - 1 >= 0 && _cells[(int) logicPos.x, (int) logicPos.y - 1] == firstCutCell)
             {
                 lastRemainingCell.DisconnectUp();
             }
-            else if (logicPos.y + 1 < _puzzle.Height && _cells[(int)logicPos.x, (int)logicPos.y + 1] == firstCutCell)
+            else if (logicPos.y + 1 < _puzzle.Height && _cells[(int) logicPos.x, (int) logicPos.y + 1] == firstCutCell)
             {
                 lastRemainingCell.DisconnectDown();
             }
-            else if (logicPos.x - 1 >= 0 && _cells[(int)logicPos.x - 1, (int)logicPos.y] == firstCutCell)
+            else if (logicPos.x - 1 >= 0 && _cells[(int) logicPos.x - 1, (int) logicPos.y] == firstCutCell)
             {
                 lastRemainingCell.DisconnectLeft();
             }
@@ -279,11 +287,12 @@ public class BoardManager : MonoBehaviour
 
     private int GetColorIndexByCell(Cell cell)
     {
-        for(int i = 0;i<_colors.Length;i++)
+        for (int i = 0; i < _colors.Length; i++)
             if (_colors[i] == cell.GetColor())
                 return i;
         return -1;
     }
+
     private List<Cell> GetFlowByCell(Cell cell)
     {
         int i = GetColorIndexByCell(cell);
@@ -292,11 +301,11 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.touchCount > 0 && _cells!=null)
+        if (Input.touchCount > 0 && _cells != null)
         {
             int width = _cells.GetLength(0);
             int height = _cells.GetLength(1);
-            
+
             Touch touch = Input.GetTouch(0);
             float x = camera.ScreenToWorldPoint(touch.position).x;
             float y = camera.ScreenToWorldPoint(touch.position).y;
@@ -305,36 +314,33 @@ public class BoardManager : MonoBehaviour
             int logicX = (int) trv.x;
             int logicY = (int) trv.y;
 
-            Debug.Log($"Logic({logicX}{logicY}) Real({x}{y})");
-
             //If we click outside the grid we break out
             if (logicX < 0 || logicX >= width || logicY < 0 || logicY >= height)
                 return;
 
             Cell actual = _cells[logicX, logicY];
             //Selecting start of flow
-            if (_selectedCircle==null && touch.phase == TouchPhase.Began)
+            if (_selectedCircle == null && touch.phase == TouchPhase.Began)
             {
                 if (!actual.IsCircle() && actual.IsInUse())
                 {
                     _selectedFlow = GetFlowByCell(actual);
                     _selectedCircle = _selectedFlow.First();
                     // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
-                    if(_selectedCircle.IsCircle())
+                    if (_selectedCircle.IsCircle())
                         _selectedCircle = _selectedFlow.First();
                     actual.DespawnMiniCircle();
                     foreach (Cell cell in _selectedFlow)
                         cell.Empty();
-                    
                 }
                 else if (actual.IsCircle())
                 {
                     //ClearList
-                    ClearFlow(GetFlowByCell(actual),0,true);
+                    ClearFlow(GetFlowByCell(actual), 0, true);
                     _selectedCircle = _cells[logicX, logicY];
                     _selectedFlow = GetFlowByCell(_selectedCircle);
                     _selectedFlow.Add(actual);
-                    
+
                     bool differ = StatesDiffer();
 
                     //If they differ we count one step up, only when it's not the same color we touched last round
@@ -359,7 +365,7 @@ public class BoardManager : MonoBehaviour
 
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                 {
-                    BreakFlow();
+                    FinishFlow();
                 }
             }
         }
@@ -379,12 +385,12 @@ public class BoardManager : MonoBehaviour
         bool[] walls = actual.getWalls();
         int index = 0;
         if (dir.x > 0)
-            index = (int)Cell.WallsDirs.left;
+            index = (int) Cell.WallsDirs.left;
         else if (dir.x < 0)
-            index = (int)Cell.WallsDirs.right;
+            index = (int) Cell.WallsDirs.right;
         else if (dir.y > 0)
-            index = (int)Cell.WallsDirs.up;
-        else index = (int)Cell.WallsDirs.down;
+            index = (int) Cell.WallsDirs.up;
+        else index = (int) Cell.WallsDirs.down;
         // if its not a circle or is a circle of the flow's color
         // and if its not a hole or a wall coming next
         if ((!actual.IsCircle() || first.GetColor() == actual.GetColor())
@@ -414,11 +420,12 @@ public class BoardManager : MonoBehaviour
     /// <returns></returns>
     private bool HasTheEndInMiddleOfFlow(List<Cell> flow)
     {
-        for (int i = 1; i< flow.Count-1; i++)
+        for (int i = 1; i < flow.Count - 1; i++)
         {
             if (flow[i].IsCircle())
                 return true;
         }
+
         return false;
     }
 
@@ -441,7 +448,7 @@ public class BoardManager : MonoBehaviour
             actual.ConnectUp();
         else
             actual.ConnectDown();
-        
+
         // connects the previous one as well
         if (dir.x != 0)
             if (dir.x == -1)
@@ -478,7 +485,7 @@ public class BoardManager : MonoBehaviour
             if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
             {
                 Vector2 d = new Vector2(dir.x / Mathf.Abs(dir.x), 0f);
-                Cell actual = _cells[(int)(logicPosLast.x + 1 * d.x), (int)logicPosLast.y];
+                Cell actual = _cells[(int) (logicPosLast.x + 1 * d.x), (int) logicPosLast.y];
                 // if its not able to add it for any reason, stop trying to build a path
                 if (AddCellToFlowIfPossible(f, objective, actual, d, false))
                     break;
@@ -487,7 +494,7 @@ public class BoardManager : MonoBehaviour
             else if (Mathf.Abs(dir.x) < Mathf.Abs(dir.y))
             {
                 Vector2 d = new Vector2(0f, dir.y / Mathf.Abs(dir.y));
-                Cell temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * d.y)];
+                Cell temp = _cells[(int) logicPosLast.x, (int) (logicPosLast.y + 1 * d.y)];
                 if (AddCellToFlowIfPossible(f, objective, temp, d, false))
                     break;
             }
@@ -496,7 +503,7 @@ public class BoardManager : MonoBehaviour
             {
                 // try both x and y
                 Vector2 d = new Vector2(dir.x / Mathf.Abs(dir.x), 0f);
-                Cell temp = _cells[(int)(logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int)logicPosLast.y];
+                Cell temp = _cells[(int) (logicPosLast.x + 1 * (dir.x / Mathf.Abs(dir.x))), (int) logicPosLast.y];
                 if (AddCellToFlowIfPossible(f, objective, temp, d, true))
                     break;
                 else
@@ -504,7 +511,7 @@ public class BoardManager : MonoBehaviour
                     // just in case the previous diagonal was able to do it
                     logicPosLast = WorldToLogic(f.Last().transform.position);
                     d = new Vector2(0f, dir.y / Mathf.Abs(dir.y));
-                    temp = _cells[(int)logicPosLast.x, (int)(logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
+                    temp = _cells[(int) logicPosLast.x, (int) (logicPosLast.y + 1 * (dir.y / Mathf.Abs(dir.y)))];
                     if (AddCellToFlowIfPossible(f, objective, temp, d, true))
                         break;
                 }
@@ -519,6 +526,7 @@ public class BoardManager : MonoBehaviour
             {
                 flow.Add(c);
             }
+
             return true;
         }
         else return false;
@@ -546,6 +554,7 @@ public class BoardManager : MonoBehaviour
             flow[i].SetColor(_selectedCircle.GetColor());
             UpdateCellConnections(flow[i], flow[i - 1]);
         }
+
         return res;
     }
 
@@ -561,15 +570,15 @@ public class BoardManager : MonoBehaviour
         if (actual.GetColor() == _selectedCircle.GetColor())
         {
             //We ignore it if it's the last
-            if (_selectedFlow.Count > 0 &&  (actual != _selectedFlow.Last() || _selectedFlow.First() == _selectedFlow.Last()) 
-                                        || (actual.IsCircle() && actual == _selectedCircle))
+            if (_selectedFlow.Count > 0 &&
+                (actual != _selectedFlow.Last() || _selectedFlow.First() == _selectedFlow.Last())
+                || (actual.IsCircle() && actual == _selectedCircle))
             {
-                Debug.Log($"Loop {_selectedFlow.Count}");
                 int index = _selectedFlow.FindIndex(cell => cell == actual);
 
-                List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count-(index + 1));
+                List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count - (index + 1));
 
-                if(index >= 0)
+                if (index >= 0)
                     ClearFlow(_selectedFlow, index + 1, false);
 
                 foreach (Cell cell in CutCells)
@@ -578,7 +587,7 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
-        
+
         var previousFlow = GetFlowByCell(actual);
         if (previousFlow != null && !previousFlow.Contains(actual))
             previousFlow = null;
@@ -600,7 +609,7 @@ public class BoardManager : MonoBehaviour
                     Debug.Log("Prev was null");
                     return;
                 }
-                
+
                 actual.SetColor(_selectedCircle.GetColor());
                 UpdateCellConnections(actual, prev);
             }
@@ -624,14 +633,15 @@ public class BoardManager : MonoBehaviour
                     break;
                 }
             }
+
             if (found)
                 break;
             index++;
         }
-        
-        if(!found || index == colorIndex)
+
+        if (!found || index == colorIndex)
             return;
-        
+
         //We expand until we get one cell of the current state with the current color colliding with what we want to
         //restore
 
@@ -643,7 +653,7 @@ public class BoardManager : MonoBehaviour
             //Collision, break out
             if (_cells[ouxX, ouxY].GetColor() == _selectedCircle.GetColor())
                 break;
-            
+
             //All good, add it in the current state
             Cell cellToAdd = _cells[ouxX, ouxY];
             if (!actualFlow.Contains(cellToAdd))
@@ -656,7 +666,7 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    private void BreakFlow()
+    private void FinishFlow()
     {
         if (_selectedFlow == null || _selectedCircle == null)
         {
@@ -679,15 +689,26 @@ public class BoardManager : MonoBehaviour
             {
                 cell.Fill();
             }
-            _selectedFlow.Last().SpawnMiniCircle();  
+
+            _selectedFlow.Last().SpawnMiniCircle();
         }
+
+        int flowIndex = GetColorIndexByCell(_selectedFlow.First());
+        
         //If we only had one its the circle, clear it and clear the list
         if (_selectedFlow.Count == 1)
         {
             _selectedCircle.ResetCell();
             _selectedFlow.Clear();
         }
-  
+        //We have a finished flow for whom a clue was given
+        else if (_selectedFlow.Count > 1 && _selectedFlow.First().IsCircle() && _selectedFlow.Last().IsCircle() && 
+                _clues.Contains(flowIndex) && !FlowAndAnswerDiffer(flowIndex) )
+        {
+            _selectedFlow.First().ShowStar();
+            _selectedFlow.Last().ShowStar();
+        }
+
         _selectedCircle = null;
         _selectedFlow = null;
     }
@@ -709,7 +730,7 @@ public class BoardManager : MonoBehaviour
 
         if (_previousColor != GetColorIndexByCell(_selectedCircle))
             return true;
-        
+
         return false;
     }
 
@@ -722,23 +743,115 @@ public class BoardManager : MonoBehaviour
                 cell.ResetCell();
             }
         }
+
         _flows = new List<List<Cell>>();
         foreach (List<Cell> flow in _previousFlows)
             _flows.Add(new List<Cell>(flow));
-        
+
         foreach (var flow in _flows)
         {
-            for (int i = 1; i< flow.Count;i++)
+            for (int i = 1; i < flow.Count; i++)
             {
                 flow[i].SetColor(flow[0].GetColor());
-                UpdateCellConnections(flow[i],flow[i-1]);
-                flow[i-1].Fill();
+                UpdateCellConnections(flow[i], flow[i - 1]);
+                flow[i - 1].Fill();
             }
-            if(flow.Count > 0)
+
+            if (flow.Count > 0)
                 flow.Last().Fill();
         }
+
         _stepCount--;
         updateUITexts();
+    }
+
+    //Returns whether there are clues remaining or not 
+    public bool UseClue()
+    {
+        if (_clues.Count == _puzzle.FlowCount)
+            return false;
+        
+        int index = GetFirstWrongFlow();
+        if (index == -1)
+        {
+            Debug.LogError("Something really wrong went with clue generation");
+            return false;
+        }
+
+        //Apply First Wrong Flow
+        
+        Debug.Log($"Correcting{index}");
+        _clues.Add(index);
+        ApplySolution(index);
+        
+        return true;
+    }
+
+    private int GetFirstWrongFlow()
+    {
+        for (int i = 0; i < _flows.Count; i++)
+        {
+            if (FlowAndAnswerDiffer(i) && !_clues.Contains(i))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private bool FlowAndAnswerDiffer(int index)
+    {
+        var flow = _flows[index];
+        var solved = _puzzle.GetFlow(index);
+
+        if (flow.Count != solved.Count)
+            return true;
+        
+        int x, y;
+
+        if (flow.Count > 0)
+        {
+            flow.First().GetCoords(out x, out y);
+            if (!((int) (solved[0].x) == x && (int) (solved[0].y) == y))
+                solved.Reverse();
+        }
+
+        int i = 0;
+        foreach (Cell cell in flow)
+        {
+            cell.GetCoords(out x, out  y);
+            if (!((int) (solved[i].x) == x && (int) (solved[i].y) == y))
+                return true;
+            i++;
+        }
+        
+        return false;
+    }
+    
+    private void ApplySolution(int index)
+    {
+        var sol = _puzzle.GetFlow(index);
+        int i = 0;
+        
+        var flow = _flows[index];
+        ClearFlow(flow, 0, false);
+
+        foreach (Vector2 coord in sol)
+        {
+            flow.Add(_cells[(int)coord.x,(int)coord.y]);
+            i++;
+        }
+        for (i = 1; i < flow.Count; i++)
+        {
+            flow[i].SetColor(flow[0].GetColor());
+            UpdateCellConnections(flow[i], flow[i - 1]);
+            flow[i - 1].Fill();
+        }
+
+        if (flow.Count > 0)
+            flow.Last().Fill();
+
+        flow.First().ShowStar();
+        flow.Last().ShowStar();
     }
 
     private void updateUITexts()
