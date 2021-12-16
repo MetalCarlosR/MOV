@@ -509,7 +509,7 @@ MonoBehaviour:
   m_Horizontal: 1
   m_Vertical: 0
   m_MovementType: 1
-  m_Elasticity: 0.25
+  m_Elasticity: 0.15
   m_Inertia: 1
   m_DecelerationRate: 0.135
   m_ScrollSensitivity: 1

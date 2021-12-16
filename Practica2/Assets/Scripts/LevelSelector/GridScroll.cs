@@ -28,6 +28,7 @@ public class GridScroll : ScrollRect
     {
         _dots.Clear();
         index = 0;
+        _group.padding = new RectOffset();
         foreach (Transform dot in dotGroup)
         {
             Image i = dot.GetComponent<Image>();
