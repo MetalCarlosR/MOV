@@ -200,3 +200,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelSelectorManager: {fileID: 0}
   levelManager: {fileID: 0}
+  adManager: {fileID: 1999118905}

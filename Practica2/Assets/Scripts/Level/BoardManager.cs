@@ -32,7 +32,7 @@ public class BoardManager : MonoBehaviour
     private /*readonly*/ Color[] _colors;
     private int _completedFlows = 0;
     private int _stepCount = 0;
-    private int _progress = 0;
+    private float _progress = 0;
 
     [SerializeField] private LevelManager levelManager;
 
@@ -524,9 +524,14 @@ public class BoardManager : MonoBehaviour
         // if it has it or it reached the end previously
         if (f.Contains(objective) && !HasTheEndInMiddleOfFlow(f))
         {
+            // deeps copy the flow into it
             flow.Clear();
             foreach (Cell c in f)
             {
+                var previousFlow = GetFlowByCell(c);
+                if (previousFlow != null && !previousFlow.Contains(c))
+                    previousFlow = null;
+                HandleCollisionWithOtherFlow(previousFlow, c);
                 flow.Add(c);
             }
 
@@ -596,28 +601,31 @@ public class BoardManager : MonoBehaviour
             previousFlow = null;
 
         //Add it to the selected list if it's not there yet
-        if (TryAddingCellToFlow(actual, ref _selectedFlow))
+        TryAddingCellToFlow(actual, ref _selectedFlow);
+    }
+
+    private void HandleCollisionWithOtherFlow(List<Cell> previousFlow, Cell actual)
+    {
+        if (previousFlow != null)
         {
-            if (previousFlow != null)
+            ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual), false);
+
+            Cell prev = null;
+
+            foreach (var cell in _selectedFlow.Where(cell => cell != actual))
+                prev = cell;
+
+            if (prev == null)
             {
-                ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual), false);
-
-                Cell prev = null;
-
-                foreach (var cell in _selectedFlow.Where(cell => cell != actual))
-                    prev = cell;
-
-                if (prev == null)
-                {
-                    Debug.Log("Prev was null");
-                    return;
-                }
-
-                actual.SetColor(_selectedCircle.GetColor());
-                UpdateCellConnections(actual, prev);
+                Debug.Log("Prev was null");
+                return;
             }
+
+            actual.SetColor(_selectedCircle.GetColor());
+            UpdateCellConnections(actual, prev);
         }
     }
+
 
     private void TryToRecoverPreviousFlow(Cell actual, int colorIndex)
     {
@@ -718,6 +726,25 @@ public class BoardManager : MonoBehaviour
             GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
             levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
         }
+
+        _progress = 0;
+        _completedFlows = 0;
+        for(int i = 0; i < _flows.Count; i++)
+        {
+            _progress += _flows[i].Count;
+
+            if (_flows[i].Count > 1 && _flows[i].Last().IsCircle())
+                _completedFlows++;
+        }
+
+        int total = _puzzle.Width * _puzzle.Height;
+
+        if (_puzzle.Holes != null)
+            total -= _puzzle.Holes.Count;
+
+        _progress = (_progress / total) * 100;
+
+        updateUITexts();
 
         _selectedCircle = null;
         _selectedFlow = null;
@@ -868,6 +895,6 @@ public class BoardManager : MonoBehaviour
     {
         levelManager.SetConnectedFlowsText(_completedFlows);
         levelManager.SetStepsText(_stepCount);
-        levelManager.SetProgressText(_progress);
+        levelManager.SetProgressText((int)_progress);
     }
 }

@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
 
+    [SerializeField] private AdManager adManager;
+
     int _clue = 3;
 
     private void Awake()
@@ -84,10 +86,12 @@ public class GameManager : MonoBehaviour
             DataManager.SaveCurrentData();
     }
 
-    public void NextLevel()
+    public void NextLevel(bool win)
     {
         if (DataManager.ThereIsNextLevel(_currentLevel))
         {
+            if(win)
+                adManager.ShowInterstitialAd();
             StartLevel(DataManager.NextLevel(_currentLevel));
         }
     }

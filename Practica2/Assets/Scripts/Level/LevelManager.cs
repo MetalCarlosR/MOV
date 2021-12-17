@@ -29,7 +29,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private RawImage finishPanelBar;
     [SerializeField] private RawImage finishPanelMiniBar;
 
-
     // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
     private int best = -1;
     private int totalFlows = 0;
@@ -92,9 +91,9 @@ public class LevelManager : MonoBehaviour
         GameManager.Instance.LoadScene(1);
     }
 
-    public void GoNextCallback()
+    public void GoNextCallback(bool win)
     {
-        GameManager.Instance.NextLevel();
+        GameManager.Instance.NextLevel(win);
     }
 
     public void UseClue()
