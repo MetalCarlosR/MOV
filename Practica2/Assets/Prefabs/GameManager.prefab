@@ -200,4 +200,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   levelSelectorManager: {fileID: 0}
   levelManager: {fileID: 0}
+  currentSkin: {fileID: 11400000, guid: 2409708557566974cb5a8da7254fec19, type: 2}
   adManager: {fileID: 1999118905}

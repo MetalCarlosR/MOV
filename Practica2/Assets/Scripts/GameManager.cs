@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
 
+    [SerializeField] private Skin currentSkin;
+
     [SerializeField] private AdManager adManager;
 
     private int _clue = 3;
@@ -21,17 +23,12 @@ public class GameManager : MonoBehaviour
     {
         if (Instance)
         {
-            //TODO pasarle las cosas
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
             
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
-                // //TODO BORRAR ESTE DEBUG
-                // Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
-                // Instance._currentLevel.bestMovements = Random.Range(5,12);
-                // DataManager.LevelPassed(Instance._currentLevel);
             }
             Destroy(gameObject);
         }
@@ -114,6 +111,16 @@ public class GameManager : MonoBehaviour
         
         _currentLevel.bestMovements = steps;
         DataManager.LevelPassed(_currentLevel);
+    }
+
+    public Skin GetSkin()
+    {
+        return currentSkin;
+    }
+
+    public void SetSkin(Skin s)
+    {
+        currentSkin = s;
     }
     
     private void OnApplicationQuit()

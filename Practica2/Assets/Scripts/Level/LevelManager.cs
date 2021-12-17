@@ -29,7 +29,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private RawImage finishPanelBar;
     [SerializeField] private RawImage finishPanelMiniBar;
 
-    // TODO(Nico): hace falta enviarlo y que lo muestre todo guapete
     private int best = -1;
     private int totalFlows = 0;
 

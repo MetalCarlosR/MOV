@@ -33,23 +33,12 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
     private void Start()
     {
-        //TODO ver si hay que moverlo o hacerlo direcamente aquí
-        LoadAd();
-    }
-
-    // Load content to the Ad Unit:
-    public void LoadAd()
-    {
-        // IMPORTANT! Only load content AFTER initialization (in this example, initialization is handled in a different script).
-        Debug.Log("Loading Ad: " + _adUnitId);
         Advertisement.Load(_adUnitId, this);
     }
 
     // If the ad successfully loads, add a listener to the button and enable it:
     public void OnUnityAdsAdLoaded(string adUnitId)
     {
-        Debug.Log("Ad Loaded: " + adUnitId);
-
         if (adUnitId.Equals(_adUnitId))
         {
             if (showAdButton != null)
@@ -79,12 +68,9 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
     {
         if (adUnitId.Equals(_adUnitId) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
-            Debug.Log("Unity Ads Rewarded Ad Completed");
             // Grant a reward.
-
             if (!rewarded)
             {
-                Debug.Log("TOMA TU PISTA");
                 GameManager.Instance.addClue();
 
                 rewarded = true;

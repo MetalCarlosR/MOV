@@ -42,7 +42,6 @@ public static class PuzzleParser
         }
     }
 
-    //TODO Read both width and height and stop assuming squares
     public static Puzzle ParsePuzzle(string data)
     {
         //Remove all whitespace
