@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class BoardManager : MonoBehaviour
 {
@@ -13,9 +11,7 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private GameObject grid;
 
-    private const int TopBarSize = 1;
-    private const int BottomBarSize = 1;
-
+    [SerializeField] private LevelManager levelManager;
 
     private List<List<Cell>> _flows;
     private List<List<Cell>> _previousFlows;
@@ -27,16 +23,20 @@ public class BoardManager : MonoBehaviour
 
     private PuzzleParser.Puzzle _puzzle;
     private Color[] _colors;
+
     private int _completedFlows = 0;
     private int _stepCount = 0;
     private float _progress = 0;
-
-    [SerializeField] private LevelManager levelManager;
 
     private List<int> _clues;
 
     private bool _handleInput = true;
     
+    /// <summary>
+    /// Initializes a level with the corresponding data
+    /// If it's unable to do it, it will return the previous scene
+    /// </summary>
+    /// <param name="level"></param>
     public void SetupLevel(PuzzleParser.Puzzle level)
     {
         _colors = GameManager.Instance.GetSkin().colors;
@@ -52,19 +52,23 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    //Will be a level object later that has a full description of a level 
+    /// <summary>
+    /// Initializes all data of the level
+    /// </summary>
     private void StartLevel()
     {
         int width = _puzzle.Width;
         int height = _puzzle.Height;
         _cells = new Cell[width, height];
         _clues = new List<int>();
-        
+
+        // recalculate the grid size
         camera.orthographicSize = (height / 2)*1.7f;
 
         if (camera.aspect * (camera.orthographicSize) < (float)width / 2)
             camera.orthographicSize = (width / (camera.aspect * 2));
 
+        // initializes the celss values
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
             {
@@ -79,6 +83,7 @@ public class BoardManager : MonoBehaviour
                 _cells[i, j].SetGridColor(c);
             }
 
+        // adds the end circles of the flows
         _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.FlowCount; i++)
         {
@@ -214,6 +219,93 @@ public class BoardManager : MonoBehaviour
         UpdatePreviousState();
     }
 
+    private void Update()
+    {
+        // if the player is clicking and is able to
+        if (_handleInput && Input.touchCount > 0 && _cells != null)
+        {
+            int width = _cells.GetLength(0);
+            int height = _cells.GetLength(1);
+
+            // gets the touch coordinates
+            Touch touch = Input.GetTouch(0);
+            float x = camera.ScreenToWorldPoint(touch.position).x;
+            float y = camera.ScreenToWorldPoint(touch.position).y;
+
+            Vector3 trv = WorldToLogic(new Vector3(x, y, 0));
+            int logicX = (int)trv.x;
+            int logicY = (int)trv.y;
+
+            //If we click outside the grid we break out
+            if (logicX < 0 || logicX >= width || logicY < 0 || logicY >= height)
+                return;
+
+            Cell actual = _cells[logicX, logicY];
+            //Selecting start of flow
+            if (_selectedCircle == null && touch.phase == TouchPhase.Began)
+            {
+                // if its not in the beginning of a flow
+                if (!actual.IsCircle() && actual.IsInUse())
+                {
+                    _selectedFlow = GetFlowByCell(actual);
+                    _selectedCircle = _selectedFlow.First();
+                    // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
+                    if (_selectedCircle.IsCircle())
+                        _selectedCircle = _selectedFlow.First();
+                    actual.DespawnMiniCircle();
+                    foreach (Cell cell in _selectedFlow)
+                        cell.Empty();
+                }
+                // if it is a circle, resets it from here
+                else if (actual.IsCircle())
+                {
+                    //ClearList
+                    ClearFlow(GetFlowByCell(actual), 0, true);
+                    _selectedCircle = _cells[logicX, logicY];
+                    _selectedFlow = GetFlowByCell(_selectedCircle);
+                    _selectedFlow.Add(actual);
+                }
+                else
+                    return;
+
+                bool differ = StatesDiffer();
+
+                //If they differ we count one step up, only when it's not the same color we touched last round
+                if (differ)
+                {
+                    _stepCount++;
+                    updateUITexts();
+                }
+
+                //Copy the current state to previous when there are changes on any path
+                if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
+                {
+                    levelManager.EnableUndo();
+                    //Deep copy 
+                    UpdatePreviousState();
+                    _previousColor = GetColorIndexByCell(_selectedCircle);
+                }
+            }
+            // if the player is in draging the finger around the board
+            else if (_selectedCircle)
+            {
+                // try adding the actual cell
+                TryToExtendCurrentFlow(actual);
+
+                // checks if the player released the finger and finish the flow if he has
+                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                {
+                    FinishFlow();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the logic coordinates to world ones
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     private Vector3 LogicToWorld(Vector2 position)
     {
         int size = _cells.GetLength(0);
@@ -225,6 +317,11 @@ public class BoardManager : MonoBehaviour
         return new Vector3(position.x - offsetX, offsetY - position.y, 0);
     }
 
+    /// <summary>
+    /// Gets the world coordinates to logic ones
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     private Vector2 WorldToLogic(Vector3 position)
     {
         int size = _cells.GetLength(0);
@@ -235,10 +332,18 @@ public class BoardManager : MonoBehaviour
         return new Vector2((float) Math.Round(position.x + offsetX), (float) Math.Round(offsetY - position.y));
     }
 
+    /// <summary>
+    /// Clears a flow from the first value to the end of the flow.
+    /// If withBackground is true, it will also clean the background of the affected cells
+    /// </summary>
+    /// <param name="flow"></param>
+    /// <param name="first"></param>
+    /// <param name="withBackground"></param>
     private void ClearFlow(List<Cell> flow, int first, bool withBackground)
     {
         int last = flow.Count;
 
+        // resets the cells taking in consideration if it must do it to the background as well
         for (int i = first; i < last; i++)
         {
             if (withBackground)
@@ -285,6 +390,11 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Gets the color index of the _colors array from a cell
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns>If fails, it will return -1</returns>
     private int GetColorIndexByCell(Cell cell)
     {
         for (int i = 0; i < _colors.Length; i++)
@@ -293,85 +403,15 @@ public class BoardManager : MonoBehaviour
         return -1;
     }
 
+    /// <summary>
+    /// Gets the flow which the cell is contained
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns>If fails, it will return null</returns>
     private List<Cell> GetFlowByCell(Cell cell)
     {
         int i = GetColorIndexByCell(cell);
         return i == -1 ? null : _flows[i];
-    }
-
-    private void Update()
-    {
-        if (_handleInput && Input.touchCount > 0 && _cells != null)
-        {
-            int width = _cells.GetLength(0);
-            int height = _cells.GetLength(1);
-
-            Touch touch = Input.GetTouch(0);
-            float x = camera.ScreenToWorldPoint(touch.position).x;
-            float y = camera.ScreenToWorldPoint(touch.position).y;
-
-            Vector3 trv = WorldToLogic(new Vector3(x, y, 0));
-            int logicX = (int) trv.x;
-            int logicY = (int) trv.y;
-
-            //If we click outside the grid we break out
-            if (logicX < 0 || logicX >= width || logicY < 0 || logicY >= height)
-                return;
-
-            Cell actual = _cells[logicX, logicY];
-            //Selecting start of flow
-            if (_selectedCircle == null && touch.phase == TouchPhase.Began)
-            {
-                if (!actual.IsCircle() && actual.IsInUse())
-                {
-                    _selectedFlow = GetFlowByCell(actual);
-                    _selectedCircle = _selectedFlow.First();
-                    // solves a bug that if you disconnect a resolved flow, you can make it larger than you should
-                    if (_selectedCircle.IsCircle())
-                        _selectedCircle = _selectedFlow.First();
-                    actual.DespawnMiniCircle();
-                    foreach (Cell cell in _selectedFlow)
-                        cell.Empty();
-                }
-                else if (actual.IsCircle())
-                {
-                    //ClearList
-                    ClearFlow(GetFlowByCell(actual), 0, true);
-                    _selectedCircle = _cells[logicX, logicY];
-                    _selectedFlow = GetFlowByCell(_selectedCircle);
-                    _selectedFlow.Add(actual);
-                }
-                else
-                    return;
-                
-                bool differ = StatesDiffer();
-
-                //If they differ we count one step up, only when it's not the same color we touched last round
-                if (differ)
-                {
-                    _stepCount++;
-                    updateUITexts();
-                }
-
-                //Copy the current state to previous when there are changes on any path
-                if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
-                {
-                    levelManager.EnableUndo();
-                    //Deep copy 
-                    UpdatePreviousState();
-                    _previousColor = GetColorIndexByCell(_selectedCircle);
-                }
-            }
-            else if (_selectedCircle)
-            {
-                TryToExtendCurrentFlow(actual);
-
-                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
-                {
-                    FinishFlow();
-                }
-            }
-        }
     }
 
     /// <summary>
@@ -603,10 +643,16 @@ public class BoardManager : MonoBehaviour
         TryAddingCellToFlow(actual, ref _selectedFlow);
     }
 
+    /// <summary>
+    /// Resolves the previousFlow and actual cell collision and updates the previousFlow connections
+    /// </summary>
+    /// <param name="previousFlow"></param>
+    /// <param name="actual"></param>
     private void HandleCollisionWithOtherFlow(List<Cell> previousFlow, Cell actual)
     {
         if (previousFlow != null)
         {
+            //
             ClearFlow(previousFlow, previousFlow.FindIndex(cell => cell == actual), false);
 
             Cell prev = null;
@@ -625,11 +671,16 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Tries to restore the previous state of a cell with the colorIndex flow
+    /// </summary>
+    /// <param name="actual"></param>
+    /// <param name="colorIndex"></param>
     private void TryToRecoverPreviousFlow(Cell actual, int colorIndex)
     {
         actual.GetCoords(out int x, out int y);
 
+        //search the cell within the previousFlos
         int index = 0;
         bool found = false;
         foreach (var flow in _previousFlows)
@@ -649,6 +700,7 @@ public class BoardManager : MonoBehaviour
             index++;
         }
 
+        // if it didn't find it, returns and do nothig
         if (!found || index == colorIndex)
             return;
 
@@ -748,15 +800,20 @@ public class BoardManager : MonoBehaviour
         _selectedFlow = null;
     }
 
+    /// <summary>
+    /// Updates the previous flows to be able to go back to a previous state
+    /// </summary>
     private void UpdatePreviousState()
     {
         _previousFlows = new List<List<Cell>>();
         foreach (List<Cell> flow in _flows)
             _previousFlows.Add(new List<Cell>(flow));
     }
-
-    //Returns whether previous state and current differ. With the exception of modifying consecutively the same color.
-    //Because we don't count that as steps.
+    /// <summary>
+    /// Returns whether previous state and current differ. With the exception of modifying consecutively the same color.
+    /// Because we don't count that as steps.
+    /// </summary>
+    /// <returns></returns>
     private bool StatesDiffer()
     {
         //Easy check for early exit
@@ -769,8 +826,12 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Undo the board to the previous input
+    /// </summary>
     public void Undo()
     {
+        // cleans all flows in the board
         foreach (var flow in _flows)
         {
             foreach (Cell cell in flow)
@@ -779,10 +840,12 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        // adds the previousFlows to the flows
         _flows = new List<List<Cell>>();
         foreach (List<Cell> flow in _previousFlows)
             _flows.Add(new List<Cell>(flow));
 
+        // and make sure it's connections are well established
         foreach (var flow in _flows)
         {
             for (int i = 1; i < flow.Count; i++)
@@ -796,11 +859,15 @@ public class BoardManager : MonoBehaviour
                 flow.Last().Fill();
         }
         
+        // at the end, updates the stepCount and updates the UI
         _stepCount--;
         updateUITexts();
     }
 
-    //Returns whether there are clues remaining or not 
+    /// <summary>
+    /// Returns whether there are clues remaining or not 
+    /// </summary>
+    /// <returns></returns>
     public bool UseClue()
     {
         if (_clues.Count == _puzzle.FlowCount)
@@ -830,6 +897,10 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Returns the first flow that doesn't match it's solution
+    /// </summary>
+    /// <returns>If not found, returns -1</returns>
     private int GetFirstWrongFlow()
     {
         for (int i = 0; i < _flows.Count; i++)
@@ -841,6 +912,11 @@ public class BoardManager : MonoBehaviour
         return -1;
     }
 
+    /// <summary>
+    /// Checks if the index flow is equal to it's solution
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     private bool FlowAndAnswerDiffer(int index)
     {
         var flow = _flows[index];
@@ -851,6 +927,7 @@ public class BoardManager : MonoBehaviour
         
         int x, y;
 
+        // if the first was the last, reverse the solution to fit the game one
         if (flow.Count > 0)
         {
             flow.First().GetCoords(out x, out y);
@@ -858,6 +935,7 @@ public class BoardManager : MonoBehaviour
                 solved.Reverse();
         }
 
+        //compares cell by cell if they are the same
         int i = 0;
         foreach (Cell cell in flow)
         {
@@ -870,6 +948,10 @@ public class BoardManager : MonoBehaviour
         return false;
     }
     
+    /// <summary>
+    /// Resolves the index flow following the solution, and marks it as solved by the game
+    /// </summary>
+    /// <param name="index"></param>
     private void ApplySolution(int index)
     {
         var sol = _puzzle.GetFlow(index);
@@ -877,11 +959,12 @@ public class BoardManager : MonoBehaviour
         
         var flow = _flows[index];
         
+        // cleans the flow it's gonna solve
         ClearFlow(flow, 0, false);
         _selectedFlow = flow;
         _selectedCircle = _cells[(int) sol[0].x, (int) sol[0].y];
         
-        
+        // Adds the cells to the flow and connects it properly between them, also adds the stars to the ends of the flow
         foreach (Vector2 coord in sol)
         {
             Cell c = _cells[(int) coord.x, (int) coord.y];
@@ -905,6 +988,9 @@ public class BoardManager : MonoBehaviour
         flow.Last().ShowStar();
     }
 
+    /// <summary>
+    /// Updates the UI texts with the proper information
+    /// </summary>
     private void updateUITexts()
     {
         levelManager.SetConnectedFlowsText(_completedFlows);
