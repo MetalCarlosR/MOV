@@ -26,6 +26,9 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private RawImage finishPanelBar;
     [SerializeField] private RawImage finishPanelMiniBar;
 
+    [SerializeField] private Image passedIcon;
+    [SerializeField] private Image perfectIcon;
+
     // const values to show in the UI
     private int bestMoves = -1;
     private int totalFlows = 0;
@@ -47,6 +50,17 @@ public class LevelManager : MonoBehaviour
         boardManager.SetupLevel(lvl);
 
         totalFlows = lvl.FlowCount;
+
+        if (bestMoves == lvl.FlowCount)
+        {
+            perfectIcon.color = _themeColor;
+            perfectIcon.enabled = true;
+        }
+        else if (bestMoves > lvl.FlowCount)
+        {
+            passedIcon.color = _themeColor;
+            passedIcon.enabled = true;
+        }
         
         SetLevelName(lvl.Width + "x" + lvl.Height);
         SetLevelColor(data.color);
