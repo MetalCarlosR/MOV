@@ -44,8 +44,6 @@ public class BannerAd : MonoBehaviour
     // Implement code to execute when the loadCallback event triggers:
     void OnBannerLoaded()
     {
-        Debug.Log("Banner loaded");
-
         ShowBannerAd();
     }
 
@@ -78,16 +76,7 @@ public class BannerAd : MonoBehaviour
         Advertisement.Banner.Hide();
     }
 
-    void OnBannerClicked() 
-    {
-        Debug.Log("BANNER: Making money by the clicks");
-    }
-    void OnBannerShown()
-    {
-        Debug.Log("BANNER: Making money by the looks");
-    }
-    void OnBannerHidden() 
-    {
-        Debug.Log("BANNER: Not making money any more");
-    }
+    void OnBannerClicked() { }
+    void OnBannerShown() { }
+    void OnBannerHidden() { }
 }

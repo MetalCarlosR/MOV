@@ -8,11 +8,15 @@ public class AdsInitializer : MonoBehaviour, IUnityAdsInitializationListener
     [SerializeField] bool _testMode = true;
     private string _gameId;
 
+    // must be called in Awake because loads will be called as soon as the start function
     void Awake()
     {
         InitializeAds();
     }
 
+    /// <summary>
+    /// Initialize the Advertisment service (Unity Ads 4.0.0)
+    /// </summary>
     public void InitializeAds()
     {
         _gameId = (Application.platform == RuntimePlatform.IPhonePlayer)

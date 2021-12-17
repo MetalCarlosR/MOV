@@ -15,6 +15,9 @@ public class AdManager : MonoBehaviour
         _bannerAd.LoadBanner();
     }
 
+    /// <summary>
+    /// Show an interstitial ad
+    /// </summary>
     public void ShowInterstitialAd()
     {
         _interstitialAd.ShowAd();

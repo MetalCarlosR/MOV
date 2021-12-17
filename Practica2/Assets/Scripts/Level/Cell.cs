@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 /**
  * This class will handle the visual representation of the flow in each cell
@@ -7,9 +6,11 @@ using UnityEngine.Serialization;
 public class Cell : MonoBehaviour
 {
     [SerializeField]
+    [Tooltip("Border of cell")]
     private SpriteRenderer border;
 
     [SerializeField]
+    [Tooltip("Used as a beginning/end of flow and as last selected player position")]
     private SpriteRenderer circle;
 
     [SerializeField]
@@ -17,8 +18,10 @@ public class Cell : MonoBehaviour
     private SpriteRenderer star;
     
     [SerializeField]
+    [Tooltip("Background to fill with the flow's color")]
     private SpriteRenderer background;
 
+    // Connections to be made by the flows
     [SerializeField]
     private SpriteRenderer upConnection;
     [SerializeField]
@@ -28,6 +31,7 @@ public class Cell : MonoBehaviour
     [SerializeField]
     private SpriteRenderer rightConnection;
 
+    // Walls to block the way of the flows
     [SerializeField]
     private SpriteRenderer upWall;
     [SerializeField]
@@ -38,9 +42,14 @@ public class Cell : MonoBehaviour
     private SpriteRenderer rightWall;
 
     private Color _color;
+    
+    // if its a starting/finnishing point for a flow
     private bool _isCircle = false;
+    // if its a hole where in the grid
     private bool _isHole = false;
+    // if its in use by a flow
     private bool _inUse = false;
+    
     private int _x;
     private int _y;
 
@@ -52,13 +61,13 @@ public class Cell : MonoBehaviour
         right
     }
 
+    // the walls status in this cell
+    // used to check if there is a wall in some direction of this cell
     private bool[] _walls = { false, false, false, false };
     
-    
-
     public bool IsCircle()
     {
-     return _isCircle;
+        return _isCircle;
     }
     public bool IsHole()
     {
@@ -71,7 +80,7 @@ public class Cell : MonoBehaviour
     }
     public Color GetColor()
     {
-     return _color;
+        return _color;
     }
 
     public void SetColor(Color c)
@@ -82,6 +91,11 @@ public class Cell : MonoBehaviour
         leftConnection.color = c;
         upConnection.color = c;
         downConnection.color = c;
+    }
+
+    public void SetGridColor(Color c)
+    {
+        border.color = c;
     }
 
     public void ResetCell()
@@ -111,9 +125,9 @@ public class Cell : MonoBehaviour
         DespawnMiniCircle();
     }
 
-    /**
-     * Sets the sprite to render a circle of the given color
-     */
+    /// <summary>
+    /// Sets the sprite to render a circle of the given color
+    /// </summary>
     public void SetCircle(Color c)
     {
         circle.enabled = true;
@@ -202,12 +216,6 @@ public class Cell : MonoBehaviour
     }
     #endregion MiniCircle
 
-    public void SetAsHole()
-    {
-        border.enabled = false;
-        _isHole = true;
-    }
-
     #region Walls
     public void WallUp()
     {
@@ -252,6 +260,12 @@ public class Cell : MonoBehaviour
         j = _y;
     }
     #endregion Coords
+
+    public void SetAsHole()
+    {
+        border.enabled = false;
+        _isHole = true;
+    }
 
     public void ShowStar()
     {

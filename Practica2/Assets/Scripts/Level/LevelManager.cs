@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor;
 
 public class LevelManager : MonoBehaviour
 {
@@ -31,22 +26,31 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private RawImage finishPanelBar;
     [SerializeField] private RawImage finishPanelMiniBar;
 
-    private int best = -1;
+    // const values to show in the UI
+    private int bestMoves = -1;
     private int totalFlows = 0;
 
+    // level tag, pack color and background color of the board
     private Color _themeColor;
     
+    /// <summary>
+    /// Initializes the boardManager and the UI from the data
+    /// </summary>
+    /// <param name="data"></param>
     public void LoadLevel(DataManager.LevelData data)
     {
-        best = data.bestMovements;
+        bestMoves = data.bestMovements;
+
+        _themeColor = data.color;
+
         var lvl = PuzzleParser.ParsePuzzle(data.data);
         boardManager.SetupLevel(lvl);
+
         totalFlows = lvl.FlowCount;
+        
         SetLevelName(lvl.Width + "x" + lvl.Height);
         SetLevelColor(data.color);
         SetLevelNumber(data.name);
-
-        _themeColor = data.color;
 
         SetCluesText(DataManager.clues);
         SetConnectedFlowsText(0);
@@ -74,7 +78,7 @@ public class LevelManager : MonoBehaviour
 
     public void SetStepsText(int steps)
     {
-        string bestStr = (best > 0 ? best.ToString() : "-");
+        string bestStr = (bestMoves > 0 ? bestMoves.ToString() : "-");
         stepCount.text = "Moves: " + steps + " Best: " + bestStr;
     }
 
@@ -92,11 +96,17 @@ public class LevelManager : MonoBehaviour
     {
         levelSize.text = name;
     }
+
+    #region ButtonsCallbacks
     public void GoBackCallback()
     {
         GameManager.Instance.LoadScene(1);
     }
 
+    /// <summary>
+    /// if win is true, the level have been completed and an ad will be played
+    /// </summary>
+    /// <param name="win"></param>
     public void GoNextCallback(bool win)
     {
         GameManager.Instance.NextLevel(win, false);
@@ -111,6 +121,7 @@ public class LevelManager : MonoBehaviour
     {
         GameManager.Instance.RefreshLevel();
     }
+    #endregion ButtonsCallbacks
 
     public void UseClue()
     {
@@ -126,11 +137,21 @@ public class LevelManager : MonoBehaviour
         undoButton.interactable = true;
     }
 
+    public Color GetThemeColor()
+    {
+        return _themeColor;
+    }
+
+    /// <summary>
+    /// Method called when the game is finished, to update the UI and signal de the GameManager
+    /// </summary>
+    /// <param name="perfect"></param>
+    /// <param name="count"></param>
     public void GameFinished(bool perfect, int count)
     {
         finishPanel.SetActive(true);
 
-        if (best > count)
+        if (bestMoves > count)
             SetStepsText(count);
 
         finishPanelStepCount.text = $"Has completado el nivel en {count} pasos";

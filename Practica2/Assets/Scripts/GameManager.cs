@@ -19,17 +19,20 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        // if it exists, try storing the levelManager and the levelSelectorManager
         if (Instance)
         {
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
             
+            // if the levelManager exists, we are in the level scene, so load the game
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
             }
             Destroy(gameObject);
         }
+        // if not, use this gameManager as the Singleton
         else
         {
             Instance = this;
@@ -58,6 +61,7 @@ public class GameManager : MonoBehaviour
         updateClue(1);
     }
 
+    // returns if there was available clues
     public bool ConsumeClue()
     {
         if(DataManager.clues > 0)
@@ -81,6 +85,11 @@ public class GameManager : MonoBehaviour
             DataManager.SaveCurrentData();
     }
 
+    /// <summary>
+    /// Loads the next level and if the previous level was completed, put an ad before changing level
+    /// </summary>
+    /// <param name="win"></param>
+    /// <param name="previous"></param>
     public void NextLevel(bool win, bool previous)
     {
         if (DataManager.ThereIsNextLevel(_currentLevel, previous))
@@ -124,12 +133,12 @@ public class GameManager : MonoBehaviour
         currentSkin = s;
     }
     
+    // If the app quits or pauses, saves the current data
     private void OnApplicationQuit()
     {
         if(Instance == this)
             DataManager.SaveCurrentData();
     }
-
 
     private void OnApplicationPause(bool pauseStatus)
     {

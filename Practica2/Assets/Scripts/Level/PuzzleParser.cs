@@ -36,12 +36,18 @@ public static class PuzzleParser
         {
             _flows[index] = flow;
         }
+
         public List<Vector2> GetFlow(int n)
         {
             return n==-1 || n >= _flows.Length ? null: _flows[n];
         }
     }
 
+    /// <summary>
+    /// Parses a puzzle from file to a puzzle type
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns>The parsed puzzle. If unable, will return null</returns>
     public static Puzzle ParsePuzzle(string data)
     {
         //Remove all whitespace

@@ -22,7 +22,6 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
     public void LoadAd()
     {
         // IMPORTANT! Only load content AFTER initialization (in this example, initialization is handled in a different script).
-        Debug.Log("Loading Ad: " + _adUnitId);
         Advertisement.Load(_adUnitId, this);
     }
 
@@ -30,7 +29,6 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
     public void ShowAd()
     {
         // Note that if the ad content wasn't previously loaded, this method will fail
-        Debug.Log("INTERSTITIAL: Showing Ad: " + _adUnitId);
         Advertisement.Show(_adUnitId, this);
     }
 
@@ -38,7 +36,6 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
     public void OnUnityAdsAdLoaded(string adUnitId)
     {
         // Optionally execute code if the Ad Unit successfully loads content.
-        Debug.Log("INTERSTITIAL: Loaded Ad: " + _adUnitId);
     }
 
     public void OnUnityAdsFailedToLoad(string adUnitId, UnityAdsLoadError error, string message)
@@ -57,18 +54,7 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
     public void OnUnityAdsShowClick(string adUnitId) { }
     public void OnUnityAdsShowComplete(string adUnitId, UnityAdsShowCompletionState showCompletionState) 
     {
-        switch(showCompletionState)
-        {
-            case UnityAdsShowCompletionState.SKIPPED:
-                Debug.Log("INTERSTITIAL: Skipped, only small money in the bank");
-                break;
-            case UnityAdsShowCompletionState.COMPLETED:
-                Debug.Log("INTERSTITIAL: Completed, BIG MONEY in the bank");
-                break;
-            case UnityAdsShowCompletionState.UNKNOWN:
-                Debug.Log("INTERSTITIAL: Unknown, only time will tell how much in the bank");
-                break;
-        }
+        // TODO(Nico): Hace falta?
         LoadAd();
     }
 }

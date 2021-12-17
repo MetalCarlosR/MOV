@@ -72,6 +72,11 @@ public class BoardManager : MonoBehaviour
                     grid.transform);
                 _cells[i, j].gameObject.name = $"({i},{j})";
                 _cells[i, j].SetCoords(i, j);
+                Color c = levelManager.GetThemeColor();
+                c.r *= 0.5f;
+                c.g *= 0.5f;
+                c.b *= 0.5f;
+                _cells[i, j].SetGridColor(c);
             }
 
         _flows = new List<List<Cell>>();
