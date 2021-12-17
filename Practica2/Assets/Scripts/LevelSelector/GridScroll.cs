@@ -23,7 +23,6 @@ public class GridScroll : ScrollRect
         _logicWidth = _transform.rect.width;
         _scrollRect = GetComponent<ScrollRect>();
     }
-
     
     public void SetupScroll(Transform dotGroup)
     {
