@@ -17,8 +17,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private AdManager adManager;
 
-    private int _clue = 3;
-
     private void Awake()
     {
         if (Instance)
@@ -54,12 +52,7 @@ public class GameManager : MonoBehaviour
         _currentLevel = data;
         LoadScene(2);
     }
-
-    public int getClues()
-    {
-        return _clue;
-    }
-
+    
     public void addClue()
     {
         updateClue(1);
@@ -67,7 +60,7 @@ public class GameManager : MonoBehaviour
 
     public bool ConsumeClue()
     {
-        if(_clue > 0)
+        if(DataManager.clues > 0)
         {
             updateClue(-1);
             return true;
@@ -77,9 +70,9 @@ public class GameManager : MonoBehaviour
 
     private void updateClue(int inc)
     {
-        _clue += inc;
+        DataManager.clues += inc;
         if (levelManager != null)
-            levelManager.SetCluesText(_clue);
+            levelManager.SetCluesText(DataManager.clues);
     }
 
     private void OnDestroy()

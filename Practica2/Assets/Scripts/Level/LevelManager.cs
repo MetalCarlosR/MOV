@@ -50,7 +50,7 @@ public class LevelManager : MonoBehaviour
 
         _themeColor = data.color;
 
-        SetCluesText(GameManager.Instance.getClues());
+        SetCluesText(DataManager.clues);
         SetConnectedFlowsText(0);
         SetStepsText(0);
         SetProgressText(0);
