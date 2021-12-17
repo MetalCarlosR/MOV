@@ -37,6 +37,11 @@ public class LevelManager : MonoBehaviour
     
     public void LoadLevel(DataManager.LevelData data)
     {
+        best = data.bestMovements;
+
+        Debug.Log(best);
+        Debug.Log(data.bestMovements);
+
         var lvl = PuzzleParser.ParsePuzzle(data.data);
         boardManager.SetupLevel(lvl);
         totalFlows = lvl.FlowCount;
@@ -93,7 +98,17 @@ public class LevelManager : MonoBehaviour
 
     public void GoNextCallback(bool win)
     {
-        GameManager.Instance.NextLevel(win);
+        GameManager.Instance.NextLevel(win, false);
+    }
+
+    public void GoPreviousCallback()
+    {
+        GameManager.Instance.NextLevel(false, true);
+    }
+
+    public void RefreshLevelCallback()
+    {
+        GameManager.Instance.RefreshLevel();
     }
 
     public void UseClue()
@@ -113,6 +128,13 @@ public class LevelManager : MonoBehaviour
     public void GameFinished(bool perfect, int count)
     {
         finishPanel.SetActive(true);
+
+        if (best > count)
+        {
+            best = count;
+            SetStepsText(count);
+        }
+
         finishPanelStepCount.text = $"Has completado el nivel en {count} pasos";
         finishPanelTitle.text = (perfect ? "¡Perfecto!" : "Nivel Completado");
         
@@ -122,5 +144,6 @@ public class LevelManager : MonoBehaviour
         finishPanelBar.color = aux;
         finishPanelMiniBar.color = _themeColor;
 
+        GameManager.Instance.LevelFinished(perfect, best);
     }
 }
