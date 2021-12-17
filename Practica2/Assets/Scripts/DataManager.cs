@@ -141,7 +141,9 @@ public static class DataManager
 
         Vector2Int pos = GetRealPos(data.name - 1);
         var levelCellData = dataPack.pagesData[pos.x][pos.y];
-        levelCellData.bestMovements = data.bestMovements;
+        
+        if(levelCellData.bestMovements == -1 || levelCellData.bestMovements > data.bestMovements)
+            levelCellData.bestMovements = data.bestMovements;
 
         if (levelCellData.state == LevelData.LevelState.UNCOMPLETED && data.state != LevelData.LevelState.UNCOMPLETED)
             dataPack.completed++;

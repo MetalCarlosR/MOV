@@ -130,10 +130,7 @@ public class LevelManager : MonoBehaviour
         finishPanel.SetActive(true);
 
         if (best > count)
-        {
-            best = count;
             SetStepsText(count);
-        }
 
         finishPanelStepCount.text = $"Has completado el nivel en {count} pasos";
         finishPanelTitle.text = (perfect ? "¡Perfecto!" : "Nivel Completado");
@@ -144,6 +141,6 @@ public class LevelManager : MonoBehaviour
         finishPanelBar.color = aux;
         finishPanelMiniBar.color = _themeColor;
 
-        GameManager.Instance.LevelFinished(perfect, best);
+        GameManager.Instance.LevelFinished(perfect, count);
     }
 }

@@ -826,7 +826,6 @@ public class BoardManager : MonoBehaviour
         if (GetFirstWrongFlow() == -1)
         {
             _handleInput = false;
-            GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
             levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
         }
         
