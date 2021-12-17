@@ -75,7 +75,6 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
                 rewarded = true;
             }
-
             // Load another ad:
             Advertisement.Load(_adUnitId, this);
         }
