@@ -822,6 +822,14 @@ public class BoardManager : MonoBehaviour
         Debug.Log($"Correcting{index}");
         _clues.Add(index);
         ApplySolution(index);
+        _stepCount++;
+        
+        if (GetFirstWrongFlow() == -1)
+        {
+            _handleInput = false;
+            GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
+            levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
+        }
         
         return true;
     }
