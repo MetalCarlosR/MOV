@@ -155,7 +155,6 @@ MonoBehaviour:
   camera: {fileID: 519420031}
   cellPrefab: {fileID: 5426303877525312557, guid: 4401716eab178c346b1e271c31d466f7, type: 3}
   grid: {fileID: 1549792928}
-  currentSkin: {fileID: 11400000, guid: 2409708557566974cb5a8da7254fec19, type: 2}
   levelManager: {fileID: 245919450}
 --- !u!4 &4103345
 Transform:
@@ -481,6 +480,8 @@ MonoBehaviour:
   clues: {fileID: 1957246692}
   cluesButton: {fileID: 688917161}
   undoButton: {fileID: 581234727}
+  previousLevelButton: {fileID: 1606281316}
+  nextLevelButton: {fileID: 777877715}
   finishPanel: {fileID: 238210070}
   finishPanelStepCount: {fileID: 1671849570}
   finishPanelTitle: {fileID: 1671849569}

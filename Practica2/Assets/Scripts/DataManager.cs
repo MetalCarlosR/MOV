@@ -41,12 +41,14 @@ public static class DataManager
         public List<List<LevelData>> pagesData;
         public int completed;
         public string name;
+        public bool locked;
 
         public PackData(string name)
         {
             pagesData = new List<List<LevelData>>();
             this.completed = 0;
             this.name = name;
+            locked = false;
         }
     }
 
@@ -74,6 +76,7 @@ public static class DataManager
             foreach (var pack in group.packs)
             {
                 PackData packData = new PackData(pack.name);
+                packData.locked = pack.locked;
 
                 string[] data = pack.file.ToString().Split('\n');
                 for (int i = 0; i < pack.pages.Length; i++)
@@ -100,7 +103,7 @@ public static class DataManager
                     {
                         int nFinished = int.Parse(lines[0]);
                         packData.completed = nFinished;
-                        for (int i = 2; i <= nFinished; i++)
+                        for (int i = 1; i <= nFinished; i++)
                         {
                             string[] line = lines[i].Split(' ');
                             int level = int.Parse(line[0]) - 1;

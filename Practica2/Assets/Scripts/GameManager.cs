@@ -91,6 +91,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool ThereIsNextLevel(bool previous = false)
+    {
+        bool state = _currentLevel.state != DataManager.LevelData.LevelState.UNCOMPLETED;
+        bool packState = DataManager.GetPackData(_currentLevel.packName).locked;
+        
+        return DataManager.ThereIsNextLevel(_currentLevel, previous) && ((state || !packState) || previous);
+    }
+
     public void RefreshLevel()
     {
         LoadScene(2);

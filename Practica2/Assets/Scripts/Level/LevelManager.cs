@@ -21,6 +21,8 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI clues;
     [SerializeField] private Button cluesButton;
     [SerializeField] private Button undoButton;
+    [SerializeField] private Button previousLevelButton;
+    [SerializeField] private Button nextLevelButton;
     
     [SerializeField] private GameObject finishPanel;
     [SerializeField] private TextMeshProUGUI finishPanelStepCount;
@@ -37,10 +39,6 @@ public class LevelManager : MonoBehaviour
     public void LoadLevel(DataManager.LevelData data)
     {
         best = data.bestMovements;
-
-        Debug.Log(best);
-        Debug.Log(data.bestMovements);
-
         var lvl = PuzzleParser.ParsePuzzle(data.data);
         boardManager.SetupLevel(lvl);
         totalFlows = lvl.FlowCount;
@@ -54,6 +52,9 @@ public class LevelManager : MonoBehaviour
         SetConnectedFlowsText(0);
         SetStepsText(0);
         SetProgressText(0);
+
+        nextLevelButton.interactable = GameManager.Instance.ThereIsNextLevel();
+        previousLevelButton.interactable = GameManager.Instance.ThereIsNextLevel(true);
     }
 
     private void SetLevelColor(Color dataColor)
