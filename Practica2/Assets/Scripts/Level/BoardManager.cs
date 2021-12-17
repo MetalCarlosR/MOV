@@ -347,7 +347,6 @@ public class BoardManager : MonoBehaviour
                     return;
                 
                 bool differ = StatesDiffer();
-                Debug.Log($"{(differ?"DIFFER":"NO-DIFFER")}");
 
                 //If they differ we count one step up, only when it's not the same color we touched last round
                 if (differ)
@@ -588,8 +587,6 @@ public class BoardManager : MonoBehaviour
                 int index = _selectedFlow.FindIndex(cell => cell == actual);
 
                 List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count - (index + 1));
-
-                Debug.Log($"BACK {CutCells.Count}");
 
                 if (index >= 0)
                     ClearFlow(_selectedFlow, index + 1, false);
