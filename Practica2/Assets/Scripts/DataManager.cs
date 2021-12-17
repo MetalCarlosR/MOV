@@ -52,12 +52,23 @@ public static class DataManager
 
     private static readonly string path = Application.persistentDataPath + "/";
     private static List<PackData> _packsData = new List<PackData>();
+    public static int clues = 3;
 
     public static void LoadSaveData(List<PackGroup> groups)
     {
         if (_packsData.Count != 0)
             return;
 
+        string cluesPath = path + "Playerclues.txt";
+        if (File.Exists(cluesPath))
+        {
+            List<string> cluesData = File.ReadAllLines(cluesPath).ToList();
+            if (CompareSha256(cluesData, SystemInfo.deviceModel + "JajaLoHasRoto"))
+                clues = Int32.Parse(cluesData[0]);
+            else
+                clues = 0;
+        }
+        
         foreach (PackGroup group in groups)
         {
             foreach (var pack in group.packs)
@@ -85,7 +96,7 @@ public static class DataManager
                     // ..... nivel completado por linea (nivel estado nMovimientos)
                     //  nivel (1-150) /////// estado (0(perfecto) , 1(completado)) ///// nMovimientos (ej: 6)
                     List<string> lines = File.ReadAllLines(openPath).ToList();
-                    if (CompareSha256(lines))
+                    if (CompareSha256(lines,SystemInfo.deviceModel))
                     {
                         int nFinished = int.Parse(lines[0]);
                         packData.completed = nFinished;
@@ -125,7 +136,6 @@ public static class DataManager
             {
                 data = pack;
                 return;
-                ;
             }
         }
 
@@ -196,6 +206,12 @@ public static class DataManager
 
     public static void SaveCurrentData()
     {
+        string cluesHash = ComputeSha256(clues.ToString() , SystemInfo.deviceModel + "JajaLoHasRoto");
+
+        string[] cluesData = {cluesHash, clues.ToString()};
+        
+        File.WriteAllLines(path + "Playerclues.txt",cluesData);
+        
         List<string> dataToSave = new List<string>();
         foreach (PackData pack in _packsData)
         {
@@ -216,14 +232,14 @@ public static class DataManager
             {
                 dataToSave.Insert(0, (dataToSave.Count).ToString());
 
-                dataToSave.Insert(0, ComputeSha256(String.Join("", dataToSave) + SystemInfo.deviceModel));
+                dataToSave.Insert(0, ComputeSha256(String.Join("", dataToSave),SystemInfo.deviceModel));
 
                 File.WriteAllLines(path + pack.name + ".txt", dataToSave);
             }
         }
     }
 
-    private static string ComputeSha256(string data)
+    private static string ComputeSha256(string data, string endKey)
     {
         // Create a SHA256   
         using (SHA256 sha256Hash = SHA256.Create())
@@ -242,11 +258,11 @@ public static class DataManager
         }
     }
 
-    private static bool CompareSha256(List<string> data)
+    private static bool CompareSha256(List<string> data, string endKey)
     {
         string hash = data[0];
         data.RemoveAt(0);
-        string hashCheck = ComputeSha256(String.Join("", data) + SystemInfo.deviceModel);
+        string hashCheck = ComputeSha256(String.Join("", data) , endKey);
 
         return hash == hashCheck;
     }

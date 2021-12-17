@@ -13,9 +13,6 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField] private GameObject grid;
 
-    // TODO(Nico): esto se tiene que ir al GameManager
-    [SerializeField] private Skin currentSkin;
-
     private const int TopBarSize = 1;
     private const int BottomBarSize = 1;
 
@@ -42,7 +39,7 @@ public class BoardManager : MonoBehaviour
     
     public void SetupLevel(PuzzleParser.Puzzle level)
     {
-        _colors = currentSkin.colors;
+        _colors = GameManager.Instance.GetSkin().colors;
         _puzzle = level;
         if (_puzzle != null)
         {

@@ -13,25 +13,20 @@ public class GameManager : MonoBehaviour
     public LevelManager levelManager = null;
     private DataManager.LevelData _currentLevel;
 
-    [SerializeField] private AdManager adManager;
+    [SerializeField] private Skin currentSkin;
 
-    private int _clue = 3;
+    [SerializeField] private AdManager adManager;
 
     private void Awake()
     {
         if (Instance)
         {
-            //TODO pasarle las cosas
             Instance.levelSelectorManager = levelSelectorManager;
             Instance.levelManager = levelManager;
             
             if (levelManager)
             {
                 levelManager.LoadLevel(Instance._currentLevel);
-                // //TODO BORRAR ESTE DEBUG
-                // Instance._currentLevel.state = (DataManager.LevelData.LevelState)Random.Range(1,3);
-                // Instance._currentLevel.bestMovements = Random.Range(5,12);
-                // DataManager.LevelPassed(Instance._currentLevel);
             }
             Destroy(gameObject);
         }
@@ -57,12 +52,7 @@ public class GameManager : MonoBehaviour
         _currentLevel = data;
         LoadScene(2);
     }
-
-    public int getClues()
-    {
-        return _clue;
-    }
-
+    
     public void addClue()
     {
         updateClue(1);
@@ -70,7 +60,7 @@ public class GameManager : MonoBehaviour
 
     public bool ConsumeClue()
     {
-        if(_clue > 0)
+        if(DataManager.clues > 0)
         {
             updateClue(-1);
             return true;
@@ -80,9 +70,9 @@ public class GameManager : MonoBehaviour
 
     private void updateClue(int inc)
     {
-        _clue += inc;
+        DataManager.clues += inc;
         if (levelManager != null)
-            levelManager.SetCluesText(_clue);
+            levelManager.SetCluesText(DataManager.clues);
     }
 
     private void OnDestroy()
@@ -114,6 +104,16 @@ public class GameManager : MonoBehaviour
         
         _currentLevel.bestMovements = steps;
         DataManager.LevelPassed(_currentLevel);
+    }
+
+    public Skin GetSkin()
+    {
+        return currentSkin;
+    }
+
+    public void SetSkin(Skin s)
+    {
+        currentSkin = s;
     }
     
     private void OnApplicationQuit()

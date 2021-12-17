@@ -16,8 +16,9 @@ public class PlayButton : MonoBehaviour
         block.selectedColor = Color.white;
         block.colorMultiplier = 1;
         block.fadeDuration = 0.1f;
-        // TODO cambiar este color aleatorio por colores predefinidos
-        block.pressedColor = Random.ColorHSV();
+
+        Color[] colors = GameManager.Instance.GetSkin().colors;
+        block.pressedColor = colors[Random.Range(0, colors.Length)];
         b.colors = block;
     }
 
