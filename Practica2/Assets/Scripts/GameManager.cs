@@ -105,4 +105,17 @@ public class GameManager : MonoBehaviour
             _currentLevel.bestMovements = steps;
         DataManager.LevelPassed(_currentLevel);
     }
+    
+    private void OnApplicationQuit()
+    {
+        if(Instance == this)
+            DataManager.SaveCurrentData();
+    }
+
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if(pauseStatus && Instance == this)
+            DataManager.SaveCurrentData();
+    }
 }
