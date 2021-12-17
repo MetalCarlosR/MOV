@@ -828,7 +828,8 @@ public class BoardManager : MonoBehaviour
             _handleInput = false;
             levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
         }
-        
+
+        updateUITexts();
         return true;
     }
 

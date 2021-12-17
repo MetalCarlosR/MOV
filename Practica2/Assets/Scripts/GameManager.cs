@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private AdManager adManager;
 
-    int _clue = 3;
+    private int _clue = 3;
 
     private void Awake()
     {
@@ -56,6 +56,11 @@ public class GameManager : MonoBehaviour
     {
         _currentLevel = data;
         LoadScene(2);
+    }
+
+    public int getClues()
+    {
+        return _clue;
     }
 
     public void addClue()
