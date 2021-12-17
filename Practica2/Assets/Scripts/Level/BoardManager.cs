@@ -531,9 +531,8 @@ public class BoardManager : MonoBehaviour
             foreach (Cell c in f)
             {
                 var previousFlow = GetFlowByCell(c);
-                if (previousFlow != null && !previousFlow.Contains(c))
-                    previousFlow = null;
-                HandleCollisionWithOtherFlow(previousFlow, c);
+                if (!(previousFlow != null && !previousFlow.Contains(c)))
+                    HandleCollisionWithOtherFlow(previousFlow, c);
                 flow.Add(c);
             }
 
@@ -880,11 +879,19 @@ public class BoardManager : MonoBehaviour
         int i = 0;
         
         var flow = _flows[index];
+        
         ClearFlow(flow, 0, false);
-
+        _selectedFlow = flow;
+        _selectedCircle = _cells[(int) sol[0].x, (int) sol[0].y];
+        
+        
         foreach (Vector2 coord in sol)
         {
-            flow.Add(_cells[(int)coord.x,(int)coord.y]);
+            Cell c = _cells[(int) coord.x, (int) coord.y];
+            var previousFlow = GetFlowByCell(c);
+            if (!(previousFlow != null && !previousFlow.Contains(c)))
+                HandleCollisionWithOtherFlow(previousFlow, c);
+            flow.Add(c);
             i++;
         }
         for (i = 1; i < flow.Count; i++)
