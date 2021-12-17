@@ -24,6 +24,7 @@ public class GridScroll : ScrollRect
         _scrollRect = GetComponent<ScrollRect>();
     }
 
+    
     public void SetupScroll(Transform dotGroup)
     {
         _dots.Clear();

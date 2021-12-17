@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 public class PlayButton : MonoBehaviour
 {
-    private void Awake()
+    private void Start()
     {
         Button b = GetComponent<Button>();
         if(!b)

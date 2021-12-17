@@ -178,7 +178,7 @@ public static class DataManager
 
         return targetPos >= 0 && targetPos < max;
     }
-
+    
     public static LevelData NextLevel(LevelData data, bool previous = false)
     {
         GetPack(out PackData dataPack, data.packName);

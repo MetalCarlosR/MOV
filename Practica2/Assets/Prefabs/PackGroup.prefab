@@ -80,6 +80,7 @@ MonoBehaviour:
   bar: {fileID: 6420775570017768008}
   lowerBar: {fileID: 6420775570741067217}
   packText: {fileID: 6420775569291738981}
+  _rectTransform: {fileID: 8970293431063596413}
 --- !u!1001 &6066608062938712462
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -230,6 +230,7 @@ MonoBehaviour:
   perfectUI: {fileID: 3416395694221747599}
   lockedUI: {fileID: 1008072883520227378}
   completedUI: {fileID: 910664172440421020}
+  cellUI: {fileID: 717183182004850063}
 --- !u!1 &3688763661540971643
 GameObject:
   m_ObjectHideFlags: 0

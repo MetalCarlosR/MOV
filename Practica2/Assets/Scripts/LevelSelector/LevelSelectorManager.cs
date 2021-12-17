@@ -10,6 +10,10 @@ public class LevelSelectorManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI levelPackName;
     [SerializeField] private GridScroll gridScroll;
 
+    /// <summary>
+    /// Creates all the groups stored in the groups list.
+    /// Delegates the setup of the groups to the PackGroupUI component.
+    /// </summary>
     void Start()
     {
         float groupSize = 0;
@@ -24,6 +28,13 @@ public class LevelSelectorManager : MonoBehaviour
         scrollGroup.offsetMin = new Vector2(0, (heightOffset.rect.height*0.95f ) - groupSize);
     }
 
+    /// <summary>
+    /// Hides the groups list and setup and shows the pages for the selected pack.
+    /// Also calculates the optimum size of the pages tiles so the number won't be
+    /// calculated repeatedly in each page, always giving priority to the width.
+    /// </summary>
+    /// <param name="pack">Pack to load</param>
+    /// <param name="color">Color associated with the pack</param>
     public void LoadPackGrid(LevelPack pack, Color color)
     {
         levelSelectorGrid.SetActive(true);
@@ -33,6 +44,8 @@ public class LevelSelectorManager : MonoBehaviour
         levelSelectorList.SetActive(false);
         DataManager.PackData packData = DataManager.GetPackData(pack.name);
         
+        
+        // Calculate the tileSize
         float targetWidth = pagesGroup.rect.width;
         float targetHeigth = pagesGroup.rect.height;
 
@@ -50,6 +63,12 @@ public class LevelSelectorManager : MonoBehaviour
         gridScroll.SetupScroll(indicatorGroup.transform);
     }
 
+    /// <summary>
+    /// Callback for the back button. Changes depending on witch part is showing
+    /// right now.
+    /// If is the pack goes back to the group list, if is the group list it goes
+    /// back to the main menu.
+    /// </summary>
     public void Back()
     {
         if (levelSelectorList.gameObject.activeSelf)

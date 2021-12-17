@@ -10,13 +10,13 @@ public class PackGroupUI : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI packText;
 
-    private RectTransform _rectTransform;
+    [SerializeField] private RectTransform _rectTransform;
 
-    private void Awake()
-    {
-        _rectTransform = GetComponent<RectTransform>();
-    }
-
+    /// <summary>
+    /// Creates the group and instantiates all the packs for setup.
+    /// Also scales the transform to fit the children.
+    /// </summary>
+    /// <param name="group">Data from the group to create</param>
     public void CreateGroup(PackGroup group)
     {
         Color barColor = group.color;
@@ -28,7 +28,7 @@ public class PackGroupUI : MonoBehaviour
         foreach (LevelPack pack in group.packs)
         {
             LevelPackUI packUI = Instantiate(levelPackPrefab, _rectTransform).GetComponent<LevelPackUI>();
-            packUI.SetupPack(pack,group.color);
+            packUI.SetupPack(pack, group.color);
         }
     }
 }

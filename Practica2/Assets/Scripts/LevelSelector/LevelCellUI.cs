@@ -10,8 +10,13 @@ public class LevelCellUI : MonoBehaviour
     private DataManager.LevelData _levelData;
     private bool _locked;
     [SerializeField] private TextMeshProUGUI lvlNumber;
-    [SerializeField] private Image border, perfectUI, lockedUI, completedUI;
+    [SerializeField] private Image border, perfectUI, lockedUI, completedUI, cellUI;
 
+    /// <summary>
+    /// Shows and stores all the data from a level so it can pass it later.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="locked"></param>
     public void SetupCell(DataManager.LevelData data, bool locked)
     {
         _levelData = data;
@@ -22,7 +27,7 @@ public class LevelCellUI : MonoBehaviour
         border.color = aColor;
         perfectUI.color = aColor;
         completedUI.color = aColor;
-        GetComponent<Image>().color = data.color;
+        cellUI.color = data.color;
         
         switch (data.state)
         {
@@ -39,6 +44,9 @@ public class LevelCellUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calls GameManager to load the level associated.
+    /// </summary>
     public void LoadLevel()
     {
         if (!_locked)
