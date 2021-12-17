@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 public static class DataManager
 {
@@ -38,7 +41,7 @@ public static class DataManager
         public List<List<LevelData>> pagesData;
         public int completed;
         public string name;
-        
+
         public PackData(string name)
         {
             pagesData = new List<List<LevelData>>();
@@ -81,21 +84,25 @@ public static class DataManager
                     // nCompletados (ej: 10)
                     // ..... nivel completado por linea (nivel estado nMovimientos)
                     //  nivel (1-150) /////// estado (0(perfecto) , 1(completado)) ///// nMovimientos (ej: 6)
-                    string[] lines = File.ReadAllLines(openPath);
-                    int nFinished = int.Parse(lines[0]);
-                    packData.completed = nFinished;
-                    for (int i = 1; i <= nFinished; i++)
+                    List<string> lines = File.ReadAllLines(openPath).ToList();
+                    if (CompareSha256(lines))
                     {
-                        string[] line = lines[i].Split(' ');
-                        int level = int.Parse(line[0]) - 1;
-                        bool perfect = line[1] == "0";
-                        int movements = int.Parse(line[2]);
-                        int listPos = level / 30;
-                        int gridPos = level - listPos * 30;
-                        var levelCellData = packData.pagesData[listPos][gridPos];
-                        levelCellData.bestMovements = movements;
-                        levelCellData.state = perfect ? LevelData.LevelState.PERFECT : LevelData.LevelState.COMPLETED;
-                        packData.pagesData[listPos][gridPos] = levelCellData;
+                        int nFinished = int.Parse(lines[0]);
+                        packData.completed = nFinished;
+                        for (int i = 2; i <= nFinished; i++)
+                        {
+                            string[] line = lines[i].Split(' ');
+                            int level = int.Parse(line[0]) - 1;
+                            bool perfect = line[1] == "0";
+                            int movements = int.Parse(line[2]);
+                            int listPos = level / 30;
+                            int gridPos = level - listPos * 30;
+                            var levelCellData = packData.pagesData[listPos][gridPos];
+                            levelCellData.bestMovements = movements;
+                            levelCellData.state =
+                                perfect ? LevelData.LevelState.PERFECT : LevelData.LevelState.COMPLETED;
+                            packData.pagesData[listPos][gridPos] = levelCellData;
+                        }
                     }
                 }
 
@@ -133,16 +140,17 @@ public static class DataManager
             throw new Exception("Couldn't find that level, oh oh");
 
         Vector2Int pos = GetRealPos(data.name - 1);
-        var levelCellData =  dataPack.pagesData[pos.x][pos.y];
-        levelCellData.bestMovements = data.bestMovements;
+        var levelCellData = dataPack.pagesData[pos.x][pos.y];
+        
+        if(levelCellData.bestMovements == -1 || levelCellData.bestMovements > data.bestMovements)
+            levelCellData.bestMovements = data.bestMovements;
 
         if (levelCellData.state == LevelData.LevelState.UNCOMPLETED && data.state != LevelData.LevelState.UNCOMPLETED)
             dataPack.completed++;
-        
+
         levelCellData.state = data.state;
-        
+
         dataPack.pagesData[pos.x][pos.y] = levelCellData;
-        
     }
 
     public static bool ThereIsNextLevel(LevelData data, bool previous = false)
@@ -157,7 +165,7 @@ public static class DataManager
 
         return targetPos >= 0 && targetPos < max;
     }
-    
+
     public static LevelData NextLevel(LevelData data, bool previous = false)
     {
         GetPack(out PackData dataPack, data.packName);
@@ -167,9 +175,9 @@ public static class DataManager
 
         int max = dataPack.pagesData.Count * 30;
         int targetPos = data.name + (previous ? -2 : 0);
-        
+
         int clampedPos = targetPos >= 0 ? targetPos % max : max + targetPos;
-        
+
         Vector2Int pos = GetRealPos(clampedPos);
 
         return dataPack.pagesData[pos.x][pos.y];
@@ -192,7 +200,6 @@ public static class DataManager
         foreach (PackData pack in _packsData)
         {
             dataToSave.Clear();
-            dataToSave.Add("");
             foreach (List<LevelData> page in pack.pagesData)
             {
                 foreach (LevelData data in page)
@@ -205,11 +212,42 @@ public static class DataManager
                 }
             }
 
-            if (dataToSave.Count != 1)
+            if (dataToSave.Count != 0)
             {
-                dataToSave[0] = (dataToSave.Count - 1).ToString();
+                dataToSave.Insert(0, (dataToSave.Count).ToString());
+
+                dataToSave.Insert(0, ComputeSha256(String.Join("", dataToSave) + SystemInfo.deviceModel));
+
                 File.WriteAllLines(path + pack.name + ".txt", dataToSave);
             }
         }
+    }
+
+    private static string ComputeSha256(string data)
+    {
+        // Create a SHA256   
+        using (SHA256 sha256Hash = SHA256.Create())
+        {
+            // ComputeHash - returns byte array  
+            byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(data));
+
+            // Convert byte array to a string   
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                builder.Append(bytes[i].ToString("x2"));
+            }
+
+            return builder.ToString();
+        }
+    }
+
+    private static bool CompareSha256(List<string> data)
+    {
+        string hash = data[0];
+        data.RemoveAt(0);
+        string hashCheck = ComputeSha256(String.Join("", data) + SystemInfo.deviceModel);
+
+        return hash == hashCheck;
     }
 }
