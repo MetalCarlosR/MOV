@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Ameba
   m_EditorClassIdentifier: 
   name: Paquete Ameba
-  file: {fileID: 4900000, guid: 0fe161a1a4d29244e8523ceae58dd796, type: 3}
+  file: {fileID: 4900000, guid: 4c17668914a6fa9478faceabcd0096d0, type: 3}
+  locked: 0
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 0, b: 0, a: 1}

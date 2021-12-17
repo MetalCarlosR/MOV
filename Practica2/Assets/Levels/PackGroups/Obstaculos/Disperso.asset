@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Disperso
   m_EditorClassIdentifier: 
   name: Paquete Disperso
-  file: {fileID: 4900000, guid: 5190b5dba24dcbe4eb29581e371aa5a2, type: 3}
+  file: {fileID: 4900000, guid: aecba96845448bf4e866e522894d08b0, type: 3}
+  locked: 0
   pages:
   - pageName: 8x8 - dificil
     pageColor: {r: 1, g: 0, b: 0, a: 1}

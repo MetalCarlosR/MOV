@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: "Arco\xEDris"
   m_EditorClassIdentifier: 
   name: "Paquete Arco\xEDris"
-  file: {fileID: 4900000, guid: f5ec77e7ab792b14e81e66c62906c8f8, type: 3}
+  file: {fileID: 4900000, guid: 4c17668914a6fa9478faceabcd0096d0, type: 3}
+  locked: 0
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 0, b: 0, a: 1}

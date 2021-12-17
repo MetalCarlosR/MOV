@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Jardin
   m_EditorClassIdentifier: 
   name: "Paquete Jard\xEDn"
-  file: {fileID: 4900000, guid: 7ba97094492461d42ae87ccb3cb8e5f2, type: 3}
+  file: {fileID: 4900000, guid: 898605c3b29130a418c84e511ce8a494, type: 3}
+  locked: 0
   pages:
   - pageName: "7x7 - f\xE1cil"
     pageColor: {r: 0, g: 1, b: 0, a: 1}

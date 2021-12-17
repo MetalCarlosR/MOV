@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Tinta
   m_EditorClassIdentifier: 
   name: Paquete Tinta
-  file: {fileID: 4900000, guid: 91593cc5f4c5664439556aa837857e46, type: 3}
+  file: {fileID: 4900000, guid: 3a377f5f2afd3004091b7484f0a1c51a, type: 3}
+  locked: 0
   pages:
   - pageName: 1 - 30
     pageColor: {r: 1, g: 0, b: 0, a: 1}
