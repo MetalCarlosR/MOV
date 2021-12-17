@@ -29,7 +29,7 @@ public class BoardManager : MonoBehaviour
     private List<Cell> _selectedFlow = null;
 
     private PuzzleParser.Puzzle _puzzle;
-    private /*readonly*/ Color[] _colors;
+    private Color[] _colors;
     private int _completedFlows = 0;
     private int _stepCount = 0;
     private float _progress = 0;
@@ -63,23 +63,19 @@ public class BoardManager : MonoBehaviour
         _cells = new Cell[width, height];
         _clues = new List<int>();
         
-        camera.orthographicSize = height / 2 + (TopBarSize + BottomBarSize);
+        camera.orthographicSize = (height / 2)*1.7f;
 
-        if (camera.aspect * (camera.orthographicSize) < width / 2)
-        {
+        if (camera.aspect * (camera.orthographicSize) < (float)width / 2)
             camera.orthographicSize = (width / (camera.aspect * 2));
-        }
 
         for (int i = 0; i < width; i++)
-        for (int j = 0; j < height; j++)
-        {
-            _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
-                grid.transform);
-            _cells[i, j].gameObject.name = $"({i},{j})";
-            _cells[i, j].SetCoords(i, j);
-        }
-
-        // TODO(Ricky): Incluir ads en el cómputo chachi de escala y coloca los textos como en el juego
+            for (int j = 0; j < height; j++)
+            {
+                _cells[i, j] = Instantiate(cellPrefab, LogicToWorld(new Vector2(i, j)), Quaternion.identity,
+                    grid.transform);
+                _cells[i, j].gameObject.name = $"({i},{j})";
+                _cells[i, j].SetCoords(i, j);
+            }
 
         _flows = new List<List<Cell>>();
         for (int i = 0; i < _puzzle.FlowCount; i++)
