@@ -342,24 +342,27 @@ public class BoardManager : MonoBehaviour
                     _selectedCircle = _cells[logicX, logicY];
                     _selectedFlow = GetFlowByCell(_selectedCircle);
                     _selectedFlow.Add(actual);
+                }
+                else
+                    return;
+                
+                bool differ = StatesDiffer();
+                Debug.Log($"{(differ?"DIFFER":"NO-DIFFER")}");
 
-                    bool differ = StatesDiffer();
+                //If they differ we count one step up, only when it's not the same color we touched last round
+                if (differ)
+                {
+                    _stepCount++;
+                    updateUITexts();
+                    levelManager.EnableUndo();
+                }
 
-                    //If they differ we count one step up, only when it's not the same color we touched last round
-                    if (differ)
-                    {
-                        _stepCount++;
-                        updateUITexts();
-                        levelManager.EnableUndo();
-                    }
-
-                    //Copy the current state to previous when there are changes on any path
-                    if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
-                    {
-                        //Deep copy 
-                        UpdatePreviousState();
-                        _previousColor = GetColorIndexByCell(_selectedCircle);
-                    }
+                //Copy the current state to previous when there are changes on any path
+                if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
+                {
+                    //Deep copy 
+                    UpdatePreviousState();
+                    _previousColor = GetColorIndexByCell(_selectedCircle);
                 }
             }
             else if (_selectedCircle)
@@ -585,6 +588,8 @@ public class BoardManager : MonoBehaviour
                 int index = _selectedFlow.FindIndex(cell => cell == actual);
 
                 List<Cell> CutCells = _selectedFlow.GetRange(index + 1, _selectedFlow.Count - (index + 1));
+
+                Debug.Log($"BACK {CutCells.Count}");
 
                 if (index >= 0)
                     ClearFlow(_selectedFlow, index + 1, false);
