@@ -86,14 +86,20 @@ public class GameManager : MonoBehaviour
             DataManager.SaveCurrentData();
     }
 
-    public void NextLevel(bool win)
+    public void NextLevel(bool win, bool previous)
     {
-        if (DataManager.ThereIsNextLevel(_currentLevel))
+        if (DataManager.ThereIsNextLevel(_currentLevel, previous))
         {
             if(win)
                 adManager.ShowInterstitialAd();
-            StartLevel(DataManager.NextLevel(_currentLevel));
+            StartLevel(DataManager.NextLevel(_currentLevel, previous));
         }
+    }
+
+    public void RefreshLevel()
+    {
+        LoadScene(2);
+        levelManager.LoadLevel(Instance._currentLevel);
     }
 
     public void LevelFinished(bool perfect, int steps)
@@ -101,8 +107,7 @@ public class GameManager : MonoBehaviour
         if(_currentLevel.state != DataManager.LevelData.LevelState.PERFECT)
             _currentLevel.state = perfect ? DataManager.LevelData.LevelState.PERFECT : DataManager.LevelData.LevelState.COMPLETED;
         
-        if(steps < _currentLevel.bestMovements)
-            _currentLevel.bestMovements = steps;
+        _currentLevel.bestMovements = steps;
         DataManager.LevelPassed(_currentLevel);
     }
 }

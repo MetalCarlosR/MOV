@@ -353,12 +353,12 @@ public class BoardManager : MonoBehaviour
                 {
                     _stepCount++;
                     updateUITexts();
-                    levelManager.EnableUndo();
                 }
 
                 //Copy the current state to previous when there are changes on any path
                 if (differ || _previousColor == GetColorIndexByCell(_selectedCircle))
                 {
+                    levelManager.EnableUndo();
                     //Deep copy 
                     UpdatePreviousState();
                     _previousColor = GetColorIndexByCell(_selectedCircle);
@@ -725,7 +725,6 @@ public class BoardManager : MonoBehaviour
         if (GetFirstWrongFlow() == -1)
         {
             _handleInput = false;
-            GameManager.Instance.LevelFinished(_stepCount == _flows.Count, _stepCount);
             levelManager.GameFinished(_stepCount == _flows.Count, _stepCount);
         }
 
