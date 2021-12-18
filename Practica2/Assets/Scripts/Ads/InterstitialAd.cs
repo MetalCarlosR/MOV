@@ -15,7 +15,7 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
 		_adUnitId = _iOsAdUnitId;
 #elif UNITY_ANDROID
         _adUnitId = _androidAdUnitId;
-#endif
+#endif  
     }
 
     // Load content to the Ad Unit:
@@ -54,7 +54,6 @@ public class InterstitialAd : MonoBehaviour, IUnityAdsLoadListener, IUnityAdsSho
     public void OnUnityAdsShowClick(string adUnitId) { }
     public void OnUnityAdsShowComplete(string adUnitId, UnityAdsShowCompletionState showCompletionState) 
     {
-        // TODO(Nico): Hace falta?
         LoadAd();
     }
 }

@@ -11,12 +11,12 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
 
     [SerializeField] private Button showAdButton;
 
-    bool buttonInteractable = false;
+    private bool _buttonInteractable = false;
 
     // Unity Ads 4.0.0 calls the completed method many times
     // also, there is no API nor examples because is still 10 days old
     // so we track if in this showing the callback had already been called
-    bool rewarded = false;
+    bool _rewarded = false;
 
     void Awake()
     {
@@ -28,7 +28,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         _adUnitId = _androidAdUnitId;
 #endif
         //Disable button until ad is ready to show
-        buttonInteractable = false;
+        _buttonInteractable = false;
     }
 
     private void Start()
@@ -47,7 +47,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
                 showAdButton.interactable = true;
             }
 
-            buttonInteractable = true;
+            _buttonInteractable = true;
         }
     }
 
@@ -60,7 +60,7 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         // Then show the ad:
         Advertisement.Show(_adUnitId, this);
 
-        rewarded = false;
+        _rewarded = false;
     }
 
     // Implement the Show Listener's OnUnityAdsShowComplete callback method to determine if the user gets a reward:
@@ -69,11 +69,11 @@ public class RewardedAdsButton : MonoBehaviour, IUnityAdsLoadListener, IUnityAds
         if (adUnitId.Equals(_adUnitId) && showCompletionState.Equals(UnityAdsShowCompletionState.COMPLETED))
         {
             // Grant a reward.
-            if (!rewarded)
+            if (!_rewarded)
             {
                 GameManager.Instance.addClue();
 
-                rewarded = true;
+                _rewarded = true;
             }
             // Load another ad:
             Advertisement.Load(_adUnitId, this);

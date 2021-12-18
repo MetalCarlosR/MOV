@@ -20,16 +20,12 @@ public class BannerAd : MonoBehaviour
         _adUnitId = _androidAdUnitId;
 #endif
     }
-
-    void Start()
-    {
-        // Set the banner position:
-        Advertisement.Banner.SetPosition(_bannerPosition);
-    }
+    
 
     // Implement a method to call when the Load Banner button is clicked:
     public void LoadBanner()
     {
+        Advertisement.Banner.SetPosition(_bannerPosition);
         // Set up options to notify the SDK of load events:
         BannerLoadOptions options = new BannerLoadOptions
         {
@@ -44,6 +40,8 @@ public class BannerAd : MonoBehaviour
     // Implement code to execute when the loadCallback event triggers:
     void OnBannerLoaded()
     {
+        Debug.Log("Banner loaded");
+
         ShowBannerAd();
     }
 
@@ -76,7 +74,19 @@ public class BannerAd : MonoBehaviour
         Advertisement.Banner.Hide();
     }
 
-    void OnBannerClicked() { }
-    void OnBannerShown() { }
-    void OnBannerHidden() { }
+    void OnBannerClicked() 
+    {
+        Debug.Log("BANNER: Making money by the clicks");
+        // Reloads a new add so the user may press on another ad
+        HideBannerAd();
+        LoadBanner();
+    }
+    void OnBannerShown()
+    {
+        Debug.Log("BANNER: Making money by the looks");
+    }
+    void OnBannerHidden() 
+    {
+        Debug.Log("BANNER: Not making money any more");
+    }
 }

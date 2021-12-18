@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,7 +10,7 @@ public class GridScroll : ScrollRect
     private HorizontalLayoutGroup _group;
     private ScrollRect _scrollRect;
     private List<Image> _dots;
-    private int index = 0;
+    private int _index = 0;
     private float _logicWidth;
     private bool _cooldown = false;
     [SerializeField] private Color selected, unselected;
@@ -24,10 +23,15 @@ public class GridScroll : ScrollRect
         _scrollRect = GetComponent<ScrollRect>();
     }
     
+    /// <summary>
+    /// Setups the parameters for the creation of the scroll environment.
+    /// Instantiates the indicators(dots) that points the curent page.
+    /// </summary>
+    /// <param name="dotGroup">Parent where indicators will be instantiated</param>
     public void SetupScroll(Transform dotGroup)
     {
         _dots.Clear();
-        index = 0;
+        _index = 0;
         _group.padding = new RectOffset();
         foreach (Transform dot in dotGroup)
         {
@@ -37,11 +41,20 @@ public class GridScroll : ScrollRect
         }
 
         if (_dots.Count != 0)
-            _dots[index].color = selected;
+            _dots[_index].color = selected;
         else
             Debug.LogWarning("No dots detected");
     }
 
+    /// <summary>
+    /// Callback given to the scroll component, controls the "snapping" of the groups
+    /// when a certain threshold is passed.
+    /// When said threshold is passed the parent object of the grids changes it padding
+    /// to be centered on the next grid, it also moves all the object so the "tp" is seamless
+    /// and the user don't see a sudden movement.
+    /// After that it gets into a cooldown period util it reaches a near center point
+    /// witch disables the interaction with the scroll from the user.
+    /// </summary>
     public void OnScrollMoved()
     {
         float leftOffset = _transform.offsetMin.x;
@@ -52,16 +65,16 @@ public class GridScroll : ScrollRect
         {
             if (Math.Abs(leftOffset) > _logicWidth / 4)
             {
-                if (index + dir >= _dots.Count || index + dir < 0)
+                if (_index + dir >= _dots.Count || _index + dir < 0)
                     return;
 
-                _dots[index].color = unselected;
+                _dots[_index].color = unselected;
 
-                index += dir;
+                _index += dir;
 
-                _dots[index].color = selected;
+                _dots[_index].color = selected;
 
-                float posOffset = -index * _logicWidth;
+                float posOffset = -_index * _logicWidth;
                 float newLeftOffset = leftOffset + _logicWidth * dir;
 
                 RectOffset padding = _group.padding;
@@ -83,6 +96,10 @@ public class GridScroll : ScrollRect
         }
     }
 
+    /// <summary>
+    /// Callback from parent class with cooldown to prevent undesired movement
+    /// </summary>
+    /// <param name="eventData"></param>
     public override void OnBeginDrag(PointerEventData eventData)
     {
         if(_cooldown)
@@ -90,6 +107,10 @@ public class GridScroll : ScrollRect
         base.OnBeginDrag(eventData);
     }
     
+    /// <summary>
+    /// Callback from parent class with cooldown to prevent undesired movement
+    /// </summary>
+    /// <param name="eventData"></param>
     public override void OnDrag(PointerEventData eventData)
     {
         if(_cooldown)
@@ -97,6 +118,10 @@ public class GridScroll : ScrollRect
         base.OnDrag(eventData);
     }
     
+    /// <summary>
+    /// Callback from parent class with cooldown to prevent undesired movement
+    /// </summary>
+    /// <param name="eventData"></param>
     public override void OnEndDrag(PointerEventData eventData)
     {
         if(_cooldown)

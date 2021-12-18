@@ -63,7 +63,7 @@ public class BoardManager : MonoBehaviour
         _clues = new List<int>();
 
         // recalculate the grid size
-        camera.orthographicSize = (height / 2)*1.7f;
+        camera.orthographicSize = (height / 2)*1.9f;
 
         if (camera.aspect * (camera.orthographicSize) < (float)width / 2)
             camera.orthographicSize = (width / (camera.aspect * 2));
