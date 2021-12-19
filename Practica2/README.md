@@ -1,5 +1,5 @@
 # High level components
-In this section well have a breve description of the more important components of the game.
+In this section well have a brief description of the more important components of the game.
 
 ![esquema](https://user-images.githubusercontent.com/55288550/146690151-c5aaf523-a0e4-41cf-89dc-59097ccd91d2.png)
 
