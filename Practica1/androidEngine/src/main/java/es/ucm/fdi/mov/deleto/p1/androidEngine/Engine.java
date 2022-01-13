@@ -96,6 +96,7 @@ public class Engine extends AbstractEngine {
      * @return the current state to give AndroidOS to store
      */
     public Map<String, String> getState() {
+        saveState();
         return _map;
     }
 
